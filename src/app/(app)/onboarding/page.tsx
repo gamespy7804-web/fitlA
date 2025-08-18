@@ -70,7 +70,13 @@ export default function OnboardingPage() {
 
   const step2Form = useForm<z.infer<typeof step2Schema>>({
     resolver: zodResolver(step2Schema),
-    defaultValues: { gender: 'male' },
+    defaultValues: {
+      age: undefined,
+      weight: undefined,
+      gender: 'male',
+      trainingDays: undefined,
+      trainingDuration: undefined,
+    },
   });
   
   const step3Form = useForm<z.infer<typeof step3Schema>>({
@@ -199,7 +205,7 @@ export default function OnboardingPage() {
                         <FormItem>
                           <FormLabel>Age</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="25" {...field} />
+                            <Input type="number" placeholder="25" {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -212,7 +218,7 @@ export default function OnboardingPage() {
                         <FormItem>
                           <FormLabel>Weight (kg)</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="70" {...field} />
+                            <Input type="number" placeholder="70" {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -247,7 +253,7 @@ export default function OnboardingPage() {
                           <FormItem>
                             <FormLabel>Days per week</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="4" {...field} />
+                              <Input type="number" placeholder="4" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -260,7 +266,7 @@ export default function OnboardingPage() {
                           <FormItem>
                             <FormLabel>Time per session (minutes)</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="60" {...field} />
+                              <Input type="number" placeholder="60" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -313,4 +319,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
