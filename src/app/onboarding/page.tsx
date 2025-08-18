@@ -47,7 +47,7 @@ const onboardingSchema = z.object({
   gender: z.enum(['male', 'female', 'other']),
   trainingDays: z.coerce.number().min(1, 'Al menos 1 día').max(7, 'Máximo 7 días'),
   trainingDuration: z.coerce.number().min(15, 'Al menos 15 minutos').max(240, 'Máximo 240 minutos'),
-  clarificationAnswers: z.string().min(1, 'Por favor responde la pregunta.'),
+  clarificationAnswers: z.string().optional(),
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
@@ -96,7 +96,7 @@ export default function OnboardingPage() {
     if (!isValid) return;
 
     setDirection(1);
-
+    
     // After fitnessLevel, call API to get clarification question
     if (currentQuestionId === 'fitnessLevel') {
       setIsLoading(true);
@@ -105,11 +105,10 @@ export default function OnboardingPage() {
         if (result.clarificationQuestion) {
           setClarificationQuestion(result.clarificationQuestion);
            // The API call is done, now we can move on.
-           if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-          }
+           setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-          toast({ variant: 'destructive', title: 'Algo salió mal' });
+          // No clarification question needed, so submit form
+          handleSubmitForm(form.getValues());
         }
       } catch (error) {
         console.error(error);
@@ -117,16 +116,26 @@ export default function OnboardingPage() {
       } finally {
         setIsLoading(false);
       }
-      return; // Stop here and wait for API call to finish before proceeding
+      return; 
+    }
+    
+    if (currentQuestionId === 'trainingDuration') {
+       setCurrentQuestionIndex(currentQuestionIndex + 1);
+       return;
     }
 
+
     if (currentQuestionId === 'clarificationAnswers') {
-      handleSubmitForm();
+      handleSubmitForm(form.getValues());
       return;
     }
     
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+       if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
+         handleSubmitForm(form.getValues());
+       } else {
+         setCurrentQuestionIndex(currentQuestionIndex + 1);
+       }
     }
   };
 
@@ -137,10 +146,10 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleSubmitForm = async () => {
+  const handleSubmitForm = async (values: OnboardingData) => {
     setIsLoading(true);
     try {
-      const result = await generateWorkoutRoutine(form.getValues());
+      const result = await generateWorkoutRoutine(values);
       console.log('Generated Routine:', result.structuredRoutine || result.routine);
       toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
       router.push('/dashboard');
@@ -155,7 +164,7 @@ export default function OnboardingPage() {
   const renderInput = (field: any) => {
     const question = questions[currentQuestionIndex];
     if (question.type === 'select') {
-      const options = question.id === 'fitnessLevel'
+      const options: Record<string,string> = question.id === 'fitnessLevel'
         ? { principiante: 'beginner', intermedio: 'intermediate', avanzado: 'advanced' }
         : { masculino: 'male', femenino: 'female', otro: 'other' };
 
@@ -191,6 +200,8 @@ export default function OnboardingPage() {
       opacity: 0,
     }),
   };
+  
+  const isClarificationStep = currentQuestionId === 'clarificationAnswers';
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center">
@@ -201,9 +212,12 @@ export default function OnboardingPage() {
             Vamos a personalizar tu viaje de fitness.
           </CardDescription>
           <div className="flex justify-center gap-2 pt-4">
-            {questions.map((q, index) => (
+            {questions.slice(0, questions.length -1).map((q, index) => (
                 <div key={q.id} className={`h-2 rounded-full transition-all duration-300 ${index < currentQuestionIndex ? 'bg-primary w-6' : index === currentQuestionIndex ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
             ))}
+            {clarificationQuestion && (
+                 <div className={`h-2 rounded-full transition-all duration-300 ${questions.length - 2 < currentQuestionIndex ? 'bg-primary w-6' : 'bg-muted w-2' }`} />
+            )}
           </div>
         </CardHeader>
         <CardContent className="overflow-hidden relative h-64">
@@ -223,7 +237,7 @@ export default function OnboardingPage() {
               >
                   <Form {...form}>
                     <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
-                      {currentQuestionId === 'clarificationAnswers' ? (
+                      {isClarificationStep ? (
                          <div>
                            <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                               <Bot className="text-primary size-8 shrink-0 mt-1" />
@@ -256,17 +270,18 @@ export default function OnboardingPage() {
                       )}
                       
                       <div className="flex justify-between items-center pt-4">
-                          <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0}>
+                          <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0 || isLoading}>
                             <ChevronLeft /> Atrás
                           </Button>
                           
-                          {currentQuestionId === 'clarificationAnswers' ? (
+                          {isClarificationStep ? (
                              <Button type="submit" disabled={isLoading}>
                                {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generar Mi Plan</>}
                              </Button>
                           ) : (
                             <Button type="submit" disabled={isLoading}>
-                              {isLoading ? <Loader2 className="animate-spin" /> : 'Siguiente'} <ChevronRight />
+                              {isLoading ? <Loader2 className="animate-spin" /> : (currentQuestionId === 'trainingDuration' ? 'Generar Mi Plan' : 'Siguiente' )}
+                              {currentQuestionId !== 'trainingDuration' && <ChevronRight />}
                            </Button>
                           )}
                       </div>
@@ -279,3 +294,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
