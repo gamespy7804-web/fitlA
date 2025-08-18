@@ -36,8 +36,17 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formSchema = z.object({
   goals: z.string().min(3, 'Goals must be at least 3 characters.'),
@@ -95,7 +104,7 @@ export function WorkoutGeneratorDialog() {
           Generate New Workout
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-headline flex items-center gap-2">
             <Sparkles className="text-primary" /> AI Workout Generator
@@ -179,10 +188,47 @@ export function WorkoutGeneratorDialog() {
             <h3 className="font-semibold font-headline">
               Your New Workout Routine
             </h3>
-            <ScrollArea className="h-64">
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap p-1">
-                {result.routine}
-              </p>
+            <ScrollArea className="h-96">
+              {result.isWeightTraining === false && result.structuredRoutine ? (
+                <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
+                  {result.structuredRoutine.map((day, index) => (
+                    <AccordionItem value={`item-${index}`} key={day.day}>
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-4">
+                          <Badge className="text-lg px-3 py-1">Day {day.day}</Badge>
+                          <span className="text-xl font-semibold font-headline">{day.title}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Exercise</TableHead>
+                              <TableHead>Sets</TableHead>
+                              <TableHead>Reps/Time</TableHead>
+                              <TableHead>Rest</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {day.exercises.map((exercise) => (
+                              <TableRow key={exercise.name}>
+                                <TableCell className="font-medium">{exercise.name}</TableCell>
+                                <TableCell>{exercise.sets}</TableCell>
+                                <TableCell>{exercise.reps}</TableCell>
+                                <TableCell>{exercise.rest}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap p-1">
+                  {result.routine}
+                </p>
+              )}
             </ScrollArea>
             <DialogFooter>
               <Button onClick={() => setIsOpen(false)}>
