@@ -101,14 +101,15 @@ export default function OnboardingPage() {
     if (currentQuestionId === 'fitnessLevel') {
       setIsLoading(true);
       try {
-        const result = await generateWorkoutRoutine(form.getValues());
+        const { sport, goals, fitnessLevel } = form.getValues();
+        const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel });
         if (result.clarificationQuestion) {
           setClarificationQuestion(result.clarificationQuestion);
-           // The API call is done, now we can move on.
-           setCurrentQuestionIndex(currentQuestionIndex + 1);
+           // The API call is done, now we can move on to the clarification step
+           setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
         } else {
-          // No clarification question needed, so submit form
-          handleSubmitForm(form.getValues());
+          // No clarification question needed, so move to age
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
       } catch (error) {
         console.error(error);
@@ -120,7 +121,12 @@ export default function OnboardingPage() {
     }
     
     if (currentQuestionId === 'trainingDuration') {
-       setCurrentQuestionIndex(currentQuestionIndex + 1);
+       // if we have a clarification question, go to it, otherwise submit
+       if (clarificationQuestion) {
+         setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
+       } else {
+         handleSubmitForm(form.getValues());
+       }
        return;
     }
 
@@ -132,6 +138,7 @@ export default function OnboardingPage() {
     
     if (currentQuestionIndex < questions.length - 1) {
        if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
+         // This case might not be hit anymore, but as a safeguard
          handleSubmitForm(form.getValues());
        } else {
          setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -142,7 +149,11 @@ export default function OnboardingPage() {
   const handleBack = () => {
     setDirection(-1);
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      if (currentQuestionId === 'clarificationAnswers') {
+        setCurrentQuestionIndex(questions.findIndex(q => q.id === 'trainingDuration'))
+      } else {
+        setCurrentQuestionIndex(currentQuestionIndex - 1);
+      }
     }
   };
 
@@ -152,6 +163,7 @@ export default function OnboardingPage() {
       const result = await generateWorkoutRoutine(values);
       console.log('Generated Routine:', result.structuredRoutine || result.routine);
       toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
+      // In a real app, you would save the routine to the user's state/DB
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
@@ -164,9 +176,12 @@ export default function OnboardingPage() {
   const renderInput = (field: any) => {
     const question = questions[currentQuestionIndex];
     if (question.type === 'select') {
-      const options: Record<string,string> = question.id === 'fitnessLevel'
-        ? { principiante: 'beginner', intermedio: 'intermediate', avanzado: 'advanced' }
-        : { masculino: 'male', femenino: 'female', otro: 'other' };
+      let options: Record<string,string> = {};
+      if (question.id === 'fitnessLevel') {
+        options = { principiante: 'beginner', intermedio: 'intermediate', avanzado: 'advanced' };
+      } else if (question.id === 'gender') {
+        options = { masculino: 'male', femenino: 'female', otro: 'other' };
+      }
 
       return (
         <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -203,6 +218,14 @@ export default function OnboardingPage() {
   
   const isClarificationStep = currentQuestionId === 'clarificationAnswers';
 
+  const finalSteps = ['age', 'weight', 'gender', 'trainingDays', 'trainingDuration'];
+  const totalSteps = 3 + (clarificationQuestion ? 1 : 0) + finalSteps.length;
+  let completedSteps = currentQuestionIndex;
+  if(currentQuestionId === 'clarificationAnswers') {
+    completedSteps = questions.length - 1;
+  }
+
+
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
@@ -212,12 +235,9 @@ export default function OnboardingPage() {
             Vamos a personalizar tu viaje de fitness.
           </CardDescription>
           <div className="flex justify-center gap-2 pt-4">
-            {questions.slice(0, questions.length -1).map((q, index) => (
-                <div key={q.id} className={`h-2 rounded-full transition-all duration-300 ${index < currentQuestionIndex ? 'bg-primary w-6' : index === currentQuestionIndex ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
+             {Array.from({ length: totalSteps }).map((_, index) => (
+                <div key={index} className={`h-2 rounded-full transition-all duration-300 ${index < completedSteps ? 'bg-primary w-6' : index === completedSteps ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
             ))}
-            {clarificationQuestion && (
-                 <div className={`h-2 rounded-full transition-all duration-300 ${questions.length - 2 < currentQuestionIndex ? 'bg-primary w-6' : 'bg-muted w-2' }`} />
-            )}
           </div>
         </CardHeader>
         <CardContent className="overflow-hidden relative h-64">
@@ -274,14 +294,14 @@ export default function OnboardingPage() {
                             <ChevronLeft /> Atrás
                           </Button>
                           
-                          {isClarificationStep ? (
+                          {(isClarificationStep || (currentQuestionId === 'trainingDuration' && !clarificationQuestion)) ? (
                              <Button type="submit" disabled={isLoading}>
                                {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generar Mi Plan</>}
                              </Button>
                           ) : (
                             <Button type="submit" disabled={isLoading}>
-                              {isLoading ? <Loader2 className="animate-spin" /> : (currentQuestionId === 'trainingDuration' ? 'Generar Mi Plan' : 'Siguiente' )}
-                              {currentQuestionId !== 'trainingDuration' && <ChevronRight />}
+                              {isLoading ? <Loader2 className="animate-spin" /> : 'Siguiente' }
+                              <ChevronRight />
                            </Button>
                           )}
                       </div>
@@ -294,3 +314,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
