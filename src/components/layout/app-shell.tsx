@@ -23,6 +23,7 @@ import {
   User,
 } from 'lucide-react';
 import { Logo } from '../logo';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
@@ -35,6 +36,12 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  if (pathname === '/onboarding') {
+    return <>{children}</>;
+  }
+
 
   return (
     <SidebarProvider>
