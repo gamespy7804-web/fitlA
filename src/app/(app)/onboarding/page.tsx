@@ -82,8 +82,8 @@ export default function OnboardingPage() {
       age: undefined,
       weight: undefined,
       gender: 'male',
-      trainingDays: undefined,
-      trainingDuration: undefined,
+      trainingDays: 3,
+      trainingDuration: 60,
       clarificationAnswers: '',
     },
     mode: 'onChange'
