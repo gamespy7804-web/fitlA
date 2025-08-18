@@ -79,8 +79,8 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: 'intermediate',
-      age: undefined,
-      weight: undefined,
+      age: '' as any,
+      weight: '' as any,
       gender: 'male',
       trainingDays: 3,
       trainingDuration: 60,
@@ -294,5 +294,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
