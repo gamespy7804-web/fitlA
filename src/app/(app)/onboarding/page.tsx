@@ -39,29 +39,29 @@ import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide
 import { useRouter } from 'next/navigation';
 
 const onboardingSchema = z.object({
-  sport: z.string().min(3, 'Sport must be at least 3 characters.'),
-  goals: z.string().min(3, 'Goals must be at least 3 characters.'),
+  sport: z.string().min(3, 'El deporte debe tener al menos 3 caracteres.'),
+  goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  age: z.coerce.number().min(10, 'Must be at least 10').max(100, 'Must be 100 or less'),
-  weight: z.coerce.number().min(30, 'Must be at least 30kg').max(200, 'Must be 200kg or less'),
+  age: z.coerce.number().min(10, 'Debes tener al menos 10 años').max(100, 'Debes tener 100 años o menos'),
+  weight: z.coerce.number().min(30, 'Debe ser al menos 30kg').max(200, 'Debe ser 200kg o menos'),
   gender: z.enum(['male', 'female', 'other']),
-  trainingDays: z.coerce.number().min(1, 'At least 1 day').max(7, 'At most 7 days'),
-  trainingDuration: z.coerce.number().min(15, 'At least 15 minutes').max(240, 'At most 240 minutes'),
-  clarificationAnswers: z.string().min(1, 'Please answer the question.'),
+  trainingDays: z.coerce.number().min(1, 'Al menos 1 día').max(7, 'Máximo 7 días'),
+  trainingDuration: z.coerce.number().min(15, 'Al menos 15 minutos').max(240, 'Máximo 240 minutos'),
+  clarificationAnswers: z.string().min(1, 'Por favor responde la pregunta.'),
 });
 
 type OnboardingData = z.infer<typeof onboardingSchema>;
 
 const questions = [
-  { id: 'sport', label: 'Primary Sport', placeholder: 'e.g., Soccer, Weightlifting', type: 'text' },
-  { id: 'goals', label: 'Your Goals', placeholder: 'e.g., Increase vertical jump, run a 5k', type: 'text' },
-  { id: 'fitnessLevel', label: 'Fitness Level', options: ['beginner', 'intermediate', 'advanced'], type: 'select' },
-  { id: 'age', label: 'Age', placeholder: '25', type: 'number' },
-  { id: 'weight', label: 'Weight (kg)', placeholder: '70', type: 'number' },
-  { id: 'gender', label: 'Gender', options: ['male', 'female', 'other'], type: 'select' },
-  { id: 'trainingDays', label: 'Days per week to train', placeholder: '4', type: 'number' },
-  { id: 'trainingDuration', label: 'Time per session (minutes)', placeholder: '60', type: 'number' },
-  { id: 'clarificationAnswers', label: '', placeholder: 'e.g., I can do 10 push-ups...', type: 'text' },
+  { id: 'sport', label: 'Deporte Principal', placeholder: 'ej., Fútbol, Halterofilia', type: 'text' },
+  { id: 'goals', label: 'Tus Metas', placeholder: 'ej., Aumentar salto vertical, correr 5k', type: 'text' },
+  { id: 'fitnessLevel', label: 'Nivel de Condición Física', options: ['principiante', 'intermedio', 'avanzado'], type: 'select' },
+  { id: 'age', label: 'Edad', placeholder: '25', type: 'number' },
+  { id: 'weight', label: 'Peso (kg)', placeholder: '70', type: 'number' },
+  { id: 'gender', label: 'Género', options: ['masculino', 'femenino', 'otro'], type: 'select' },
+  { id: 'trainingDays', label: 'Días de entrenamiento por semana', placeholder: '4', type: 'number' },
+  { id: 'trainingDuration', label: 'Tiempo por sesión (minutos)', placeholder: '60', type: 'number' },
+  { id: 'clarificationAnswers', label: '', placeholder: 'ej., Puedo hacer 10 flexiones...', type: 'text' },
 ] as const;
 
 
@@ -109,11 +109,11 @@ export default function OnboardingPage() {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
           }
         } else {
-          toast({ variant: 'destructive', title: 'Something went wrong' });
+          toast({ variant: 'destructive', title: 'Algo salió mal' });
         }
       } catch (error) {
         console.error(error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not get clarification question.' });
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener la pregunta de clarificación.' });
       } finally {
         setIsLoading(false);
       }
@@ -142,11 +142,11 @@ export default function OnboardingPage() {
     try {
       const result = await generateWorkoutRoutine(form.getValues());
       console.log('Generated Routine:', result.structuredRoutine || result.routine);
-      toast({ title: 'Workout Routine Generated!', description: "We're redirecting you to the dashboard." });
+      toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not generate workout routine.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo generar la rutina de entrenamiento.' });
     } finally {
       setIsLoading(false);
     }
@@ -155,14 +155,18 @@ export default function OnboardingPage() {
   const renderInput = (field: any) => {
     const question = questions[currentQuestionIndex];
     if (question.type === 'select') {
+      const options = question.id === 'fitnessLevel'
+        ? { principiante: 'beginner', intermedio: 'intermediate', avanzado: 'advanced' }
+        : { masculino: 'male', femenino: 'female', otro: 'other' };
+
       return (
         <Select onValueChange={field.onChange} defaultValue={field.value}>
           <FormControl>
             <SelectTrigger><SelectValue /></SelectTrigger>
           </FormControl>
           <SelectContent>
-            {question.options?.map(option => (
-              <SelectItem key={option} value={option} className="capitalize">{option}</SelectItem>
+            {Object.entries(options).map(([label, value]) => (
+              <SelectItem key={value} value={value} className="capitalize">{label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -192,9 +196,9 @@ export default function OnboardingPage() {
     <div className="container mx-auto flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl text-center">Welcome to TrainSmart AI</CardTitle>
+          <CardTitle className="font-headline text-2xl text-center">Bienvenido a TrainSmart AI</CardTitle>
           <CardDescription className="text-center">
-            Let&apos;s personalize your fitness journey.
+            Vamos a personalizar tu viaje de fitness.
           </CardDescription>
           <div className="flex justify-center gap-2 pt-4">
             {questions.map((q, index) => (
@@ -223,14 +227,14 @@ export default function OnboardingPage() {
                          <div>
                            <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                               <Bot className="text-primary size-8 shrink-0 mt-1" />
-                              <p className="text-secondary-foreground">{clarificationQuestion || 'AI is thinking...'}</p>
+                              <p className="text-secondary-foreground">{clarificationQuestion || 'La IA está pensando...'}</p>
                            </div>
                            <FormField
                               control={form.control}
                               name="clarificationAnswers"
                               render={({ field }) => (
                                 <FormItem className="mt-4">
-                                  <FormLabel>Your Answer</FormLabel>
+                                  <FormLabel>Tu Respuesta</FormLabel>
                                   <FormControl>{renderInput(field)}</FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -253,16 +257,16 @@ export default function OnboardingPage() {
                       
                       <div className="flex justify-between items-center pt-4">
                           <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0}>
-                            <ChevronLeft /> Back
+                            <ChevronLeft /> Atrás
                           </Button>
                           
                           {currentQuestionId === 'clarificationAnswers' ? (
                              <Button type="submit" disabled={isLoading}>
-                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generate My Plan</>}
+                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generar Mi Plan</>}
                              </Button>
                           ) : (
                             <Button type="submit" disabled={isLoading}>
-                              {isLoading ? <Loader2 className="animate-spin" /> : 'Next'} <ChevronRight />
+                              {isLoading ? <Loader2 className="animate-spin" /> : 'Siguiente'} <ChevronRight />
                            </Button>
                           )}
                       </div>

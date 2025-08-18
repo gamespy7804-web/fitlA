@@ -32,11 +32,11 @@ const prompt = ai.definePrompt({
   name: 'realTimeFeedbackPrompt',
   input: {schema: RealTimeFeedbackInputSchema},
   output: {schema: RealTimeFeedbackOutputSchema},
-  prompt: `You are an AI-powered fitness coach providing real-time feedback on exercise form.
+  prompt: `Eres un entrenador de fitness con IA que proporciona información en tiempo real sobre la forma de hacer ejercicio. Tu respuesta debe ser en español.
 
-  Analyze the video of the user performing the {{{exerciseType}}} exercise and provide feedback to improve their form and reduce the risk of injury.
+  Analiza el vídeo del usuario realizando el ejercicio {{{exerciseType}}} y dale tu opinión para mejorar su forma y reducir el riesgo de lesiones.
 
-  Video: {{media url=videoDataUri}}`,
+  Vídeo: {{media url=videoDataUri}}`,
 });
 
 const realTimeFeedbackFlow = ai.defineFlow(

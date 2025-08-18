@@ -12,10 +12,10 @@ import {
 import { Share2 } from 'lucide-react';
 
 const logData = [
-  { date: '2024-07-22', workout: 'Upper Body Strength', duration: '55 min', volume: '5,400 kg' },
-  { date: '2024-07-20', workout: 'Lower Body Power', duration: '65 min', volume: '8,200 kg' },
-  { date: '2024-07-18', workout: 'Full Body Conditioning', duration: '45 min', volume: 'N/A' },
-  { date: '2024-07-15', workout: 'Upper Body Strength', duration: '50 min', volume: '5,150 kg' },
+  { date: '2024-07-22', workout: 'Fuerza del Tren Superior', duration: '55 min', volume: '5,400 kg' },
+  { date: '2024-07-20', workout: 'Potencia del Tren Inferior', duration: '65 min', volume: '8,200 kg' },
+  { date: '2024-07-18', workout: 'Acondicionamiento de Cuerpo Completo', duration: '45 min', volume: 'N/A' },
+  { date: '2024-07-15', workout: 'Fuerza del Tren Superior', duration: '50 min', volume: '5,150 kg' },
 ];
 
 export default function LogPage() {
@@ -24,30 +24,30 @@ export default function LogPage() {
        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Training Log
+            Registro de Entrenamiento
           </h1>
           <p className="text-muted-foreground">
-            Review your past workouts and track your long-term progress.
+            Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.
           </p>
         </div>
         <Button variant="secondary">
           <Share2 className="mr-2" />
-          Share My Progress
+          Compartir Mi Progreso
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Workout History</CardTitle>
+          <CardTitle className="font-headline">Historial de Entrenamiento</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Workout</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Total Volume</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Entrenamiento</TableHead>
+                <TableHead>Duración</TableHead>
+                <TableHead>Volumen Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

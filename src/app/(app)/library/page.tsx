@@ -38,7 +38,7 @@ function ExerciseCard({ exercise }: { exercise: Exercise }) {
       <CardFooter>
         <Button variant="secondary" className="w-full">
           <Eye className="mr-2" />
-          View Details
+          Ver Detalles
         </Button>
       </CardFooter>
     </Card>
@@ -50,15 +50,15 @@ export default function LibraryPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Exercise Library
+          Biblioteca de Ejercicios
         </h1>
         <p className="text-muted-foreground">
-          Browse our database of sport-specific exercises.
+          Explora nuestra base de datos de ejercicios específicos para cada deporte.
         </p>
       </div>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search exercises..." className="pl-9" />
+        <Input placeholder="Buscar ejercicios..." className="pl-9" />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

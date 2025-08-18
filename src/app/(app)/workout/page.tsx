@@ -12,35 +12,35 @@ import { Label } from '@/components/ui/label';
 import { Check, Flame, Repeat, TrendingUp, Weight } from 'lucide-react';
 
 const workoutPlan = {
-  name: "Foundation Builder - Week 1",
+  name: "Constructor de Cimientos - Semana 1",
   days: [
     {
       day: 1,
-      title: "Upper Body Strength",
+      title: "Fuerza del Tren Superior",
       exercises: [
-        { name: "Bench Press", sets: 3, reps: "8-10" },
-        { name: "Pull Ups", sets: 3, reps: "To Failure" },
-        { name: "Overhead Press", sets: 3, reps: "8-10" },
-        { name: "Dumbbell Rows", sets: 3, reps: "10-12" },
+        { name: "Press de Banca", sets: 3, reps: "8-10" },
+        { name: "Dominadas", sets: 3, reps: "Al fallo" },
+        { name: "Press Militar", sets: 3, reps: "8-10" },
+        { name: "Remo con Mancuerna", sets: 3, reps: "10-12" },
       ],
     },
     {
       day: 2,
-      title: "Lower Body Power",
+      title: "Potencia del Tren Inferior",
       exercises: [
-        { name: "Barbell Squats", sets: 4, reps: "6-8" },
-        { name: "Romanian Deadlifts", sets: 3, reps: "10-12" },
-        { name: "Leg Press", sets: 3, reps: "10-12" },
-        { name: "Calf Raises", sets: 4, reps: "15-20" },
+        { name: "Sentadilla con Barra", sets: 4, reps: "6-8" },
+        { name: "Peso Muerto Rumano", sets: 3, reps: "10-12" },
+        { name: "Prensa de Piernas", sets: 3, reps: "10-12" },
+        { name: "Elevación de Talones", sets: 4, reps: "15-20" },
       ],
     },
     {
       day: 3,
-      title: "Full Body Conditioning",
+      title: "Acondicionamiento de Cuerpo Completo",
       exercises: [
-        { name: "Kettlebell Swings", sets: 5, reps: "20" },
-        { name: "Box Jumps", sets: 3, reps: "10" },
-        { name: "Plank", sets: 3, reps: "60s" },
+        { name: "Balanceo con Kettlebell", sets: 5, reps: "20" },
+        { name: "Salto al Cajón", sets: 3, reps: "10" },
+        { name: "Plancha", sets: 3, reps: "60s" },
         { name: "Sprints", sets: 5, reps: "30s" },
       ],
     },
@@ -56,12 +56,12 @@ export default function WorkoutPage() {
             {workoutPlan.name}
           </h1>
           <p className="text-muted-foreground">
-            Log your sets, reps, and weight to track your progress.
+            Registra tus series, repeticiones y peso para seguir tu progreso.
           </p>
         </div>
         <Button variant="secondary">
           <TrendingUp className="mr-2" />
-          Generate Next Week&apos;s Progression
+          Generar Progresión de la Próxima Semana
         </Button>
       </div>
 
@@ -70,7 +70,7 @@ export default function WorkoutPage() {
           <AccordionItem value={`item-${index}`} key={day.day}>
             <AccordionTrigger>
               <div className="flex items-center gap-4">
-                <Badge className="text-lg px-3 py-1">Day {day.day}</Badge>
+                <Badge className="text-lg px-3 py-1">Día {day.day}</Badge>
                 <span className="text-xl font-semibold font-headline">{day.title}</span>
               </div>
             </AccordionTrigger>
@@ -81,19 +81,19 @@ export default function WorkoutPage() {
                     <CardHeader>
                       <CardTitle className='flex justify-between items-center'>
                         <span>{exercise.name}</span>
-                        <Badge variant="outline">{exercise.sets} sets x {exercise.reps} reps</Badge>
+                        <Badge variant="outline">{exercise.sets} series x {exercise.reps} reps</Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {Array.from({ length: exercise.sets }).map((_, setIndex) => (
                         <div key={setIndex} className="flex items-center gap-4">
-                          <div className='w-10 text-center font-bold text-primary'>Set {setIndex + 1}</div>
+                          <div className='w-10 text-center font-bold text-primary'>Serie {setIndex + 1}</div>
                           <div className="flex-1 grid grid-cols-2 gap-4">
                             <div>
-                              <Label htmlFor={`weight-${index}-${setIndex}`} className="sr-only">Weight</Label>
+                              <Label htmlFor={`weight-${index}-${setIndex}`} className="sr-only">Peso</Label>
                               <div className="relative">
                                 <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input id={`weight-${index}-${setIndex}`} type="number" placeholder="Weight (kg)" className="pl-9" />
+                                <Input id={`weight-${index}-${setIndex}`} type="number" placeholder="Peso (kg)" className="pl-9" />
                               </div>
                             </div>
                             <div>
@@ -116,7 +116,7 @@ export default function WorkoutPage() {
               <div className="mt-6 text-center">
                   <Button size="lg">
                     <Flame className="mr-2" />
-                    Complete {day.title} Workout
+                    Completar Entrenamiento de {day.title}
                   </Button>
               </div>
             </AccordionContent>

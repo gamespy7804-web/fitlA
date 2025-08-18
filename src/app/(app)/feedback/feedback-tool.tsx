@@ -17,7 +17,7 @@ import { Camera, Loader2, Sparkles, Video } from 'lucide-react';
 export function FeedbackTool() {
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [exercise, setExercise] = useState<string>('Barbell Squat');
+  const [exercise, setExercise] = useState<string>('Sentadilla con Barra');
   const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
 
@@ -37,8 +37,8 @@ export function FeedbackTool() {
       console.error('Error providing feedback:', error);
       toast({
         variant: 'destructive',
-        title: 'Analysis Failed',
-        description: 'Could not analyze the video. Please try again.',
+        title: 'Análisis Fallido',
+        description: 'No se pudo analizar el video. Por favor, inténtalo de nuevo.',
       });
     } finally {
       setIsLoading(false);
@@ -59,25 +59,25 @@ export function FeedbackTool() {
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Live Camera Feed</CardTitle>
-          <CardDescription>Position yourself so your full body is visible.</CardDescription>
+          <CardTitle className="font-headline">Cámara en Vivo</CardTitle>
+          <CardDescription>Colócate de manera que todo tu cuerpo sea visible.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="aspect-video bg-muted rounded-md flex items-center justify-center">
             <div className="text-center text-muted-foreground">
               <Camera className="mx-auto h-12 w-12" />
-              <p>Camera feed is off</p>
+              <p>La cámara está apagada</p>
             </div>
           </div>
           <div className="mt-4 flex gap-4">
             <Select onValueChange={setExercise} defaultValue={exercise}>
               <SelectTrigger>
-                <SelectValue placeholder="Select exercise" />
+                <SelectValue placeholder="Seleccionar ejercicio" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Barbell Squat">Barbell Squat</SelectItem>
-                <SelectItem value="Deadlift">Deadlift</SelectItem>
-                <SelectItem value="Bench Press">Bench Press</SelectItem>
+                <SelectItem value="Sentadilla con Barra">Sentadilla con Barra</SelectItem>
+                <SelectItem value="Peso Muerto">Peso Muerto</SelectItem>
+                <SelectItem value="Press de Banca">Press de Banca</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleRecord} className="w-40" disabled={isLoading}>
@@ -86,7 +86,7 @@ export function FeedbackTool() {
               ) : (
                 <Video className="mr-2" />
               )}
-              {isRecording ? 'Stop' : 'Record'}
+              {isRecording ? 'Detener' : 'Grabar'}
             </Button>
           </div>
         </CardContent>
@@ -95,15 +95,15 @@ export function FeedbackTool() {
         <CardHeader>
           <CardTitle className="font-headline flex items-center gap-2">
             <Sparkles className="text-primary" />
-            AI Feedback
+            Feedback de IA
           </CardTitle>
-          <CardDescription>Instant analysis of your form.</CardDescription>
+          <CardDescription>Análisis instantáneo de tu forma.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           {isLoading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Analyzing your form...</span>
+              <span>Analizando tu forma...</span>
             </div>
           )}
           {feedback && (
@@ -111,7 +111,7 @@ export function FeedbackTool() {
           )}
           {!isLoading && !feedback && (
             <p className="text-muted-foreground">
-              Record a video of your exercise to get feedback.
+              Graba un video de tu ejercicio para obtener feedback.
             </p>
           )}
         </CardContent>

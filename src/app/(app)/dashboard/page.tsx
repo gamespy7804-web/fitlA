@@ -18,10 +18,10 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Welcome back, Athlete!
+            ¡Bienvenido de nuevo, Atleta!
           </h1>
           <p className="text-muted-foreground">
-            Here&apos;s a snapshot of your training progress.
+            Aquí tienes un resumen de tu progreso.
           </p>
         </div>
         <WorkoutGeneratorDialog />
@@ -32,19 +32,19 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2">
               <Dumbbell className="text-primary" />
-              Current Workout
+              Entrenamiento Actual
             </CardTitle>
             <CardDescription>
-              Your plan for this week.
+              Tu plan para esta semana.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">Day 3: Full Body Strength</p>
-            <p className="text-sm text-muted-foreground">5 exercises remaining</p>
+            <p className="font-semibold">Día 3: Fuerza de Cuerpo Completo</p>
+            <p className="text-sm text-muted-foreground">5 ejercicios restantes</p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full">
-              <Link href="/workout">Go to Workout</Link>
+              <Link href="/workout">Ir a Entrenar</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -53,20 +53,20 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2">
               <Scan className="text-primary" />
-              Analyze Form
+              Analizar Forma
             </CardTitle>
             <CardDescription>
-              Get real-time feedback on your technique.
+              Recibe feedback en tiempo real sobre tu técnica.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Record yourself performing an exercise to get instant AI-powered feedback.
+              Grábate realizando un ejercicio para obtener feedback instantáneo de la IA.
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full" variant="secondary">
-              <Link href="/feedback">Analyze Technique</Link>
+              <Link href="/feedback">Analizar Técnica</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -75,20 +75,20 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2">
               <Share2 className="text-primary" />
-              Share Progress
+              Compartir Progreso
             </CardTitle>
             <CardDescription>
-              Share your latest achievements.
+              Comparte tus últimos logros.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Just hit a new Personal Record on squats! Share your success with your friends and coach.
+             ¡Acabo de alcanzar un nuevo récord personal en sentadillas! Comparte tu éxito con tus amigos y entrenador.
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full" variant="secondary">
-              <Link href="/log">View & Share</Link>
+              <Link href="/log">Ver y Compartir</Link>
             </Button>
           </CardFooter>
         </Card>

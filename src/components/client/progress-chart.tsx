@@ -17,21 +17,21 @@ import {
 } from '@/components/ui/chart';
 
 const chartData = [
-  { month: 'January', volume: 186, pr: 80 },
-  { month: 'February', volume: 305, pr: 200 },
-  { month: 'March', volume: 237, pr: 120 },
-  { month: 'April', volume: 73, pr: 190 },
-  { month: 'May', volume: 209, pr: 130 },
-  { month: 'June', volume: 214, pr: 140 },
+  { month: 'Enero', volume: 186, pr: 80 },
+  { month: 'Febrero', volume: 305, pr: 200 },
+  { month: 'Marzo', volume: 237, pr: 120 },
+  { month: 'Abril', volume: 73, pr: 190 },
+  { month: 'Mayo', volume: 209, pr: 130 },
+  { month: 'Junio', volume: 214, pr: 140 },
 ];
 
 const chartConfig = {
   volume: {
-    label: 'Training Volume',
+    label: 'Volumen de Entrenamiento',
     color: 'hsl(var(--primary))',
   },
   pr: {
-    label: 'Personal Record (kg)',
+    label: 'Récord Personal (kg)',
     color: 'hsl(var(--accent))',
   },
 } satisfies ChartConfig;
@@ -40,8 +40,8 @@ export function ProgressChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='font-headline'>Progress Overview</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle className='font-headline'>Resumen de Progreso</CardTitle>
+        <CardDescription>Enero - Junio 2024</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">

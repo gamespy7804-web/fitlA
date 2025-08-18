@@ -49,8 +49,8 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formSchema = z.object({
-  goals: z.string().min(3, 'Goals must be at least 3 characters.'),
-  sport: z.string().min(3, 'Sport must be at least 3 characters.'),
+  goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
+  sport: z.string().min(3, 'El deporte debe tener al menos 3 caracteres.'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
 });
 
@@ -79,8 +79,8 @@ export function WorkoutGeneratorDialog() {
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Error generating routine',
-        description: 'An unexpected error occurred. Please try again.',
+        title: 'Error al generar la rutina',
+        description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
       });
     } finally {
       setIsLoading(false);
@@ -101,16 +101,16 @@ export function WorkoutGeneratorDialog() {
       <DialogTrigger asChild>
         <Button>
           <Sparkles className="mr-2" />
-          Generate New Workout
+          Generar Nuevo Entrenamiento
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-headline flex items-center gap-2">
-            <Sparkles className="text-primary" /> AI Workout Generator
+            <Sparkles className="text-primary" /> Generador de Entrenamiento con IA
           </DialogTitle>
           <DialogDescription>
-            Describe your goals to get a personalized workout routine.
+            Describe tus metas para obtener una rutina de entrenamiento personalizada.
           </DialogDescription>
         </DialogHeader>
         {!result && (
@@ -121,10 +121,10 @@ export function WorkoutGeneratorDialog() {
                 name="goals"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Goals</FormLabel>
+                    <FormLabel>Tus Metas</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="e.g., Lose weight, build muscle"
+                        placeholder="ej., Perder peso, ganar músculo"
                         {...field}
                       />
                     </FormControl>
@@ -137,9 +137,9 @@ export function WorkoutGeneratorDialog() {
                 name="sport"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Primary Sport</FormLabel>
+                    <FormLabel>Deporte Principal</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Soccer, Basketball" {...field} />
+                      <Input placeholder="ej., Fútbol, Baloncesto" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,22 +150,22 @@ export function WorkoutGeneratorDialog() {
                 name="fitnessLevel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fitness Level</FormLabel>
+                    <FormLabel>Nivel de Condición Física</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select your fitness level" />
+                          <SelectValue placeholder="Selecciona tu nivel de condición física" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="beginner">Beginner</SelectItem>
+                        <SelectItem value="beginner">Principiante</SelectItem>
                         <SelectItem value="intermediate">
-                          Intermediate
+                          Intermedio
                         </SelectItem>
-                        <SelectItem value="advanced">Advanced</SelectItem>
+                        <SelectItem value="advanced">Avanzado</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -177,7 +177,7 @@ export function WorkoutGeneratorDialog() {
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Generate Routine
+                  Generar Rutina
                 </Button>
               </DialogFooter>
             </form>
@@ -186,7 +186,7 @@ export function WorkoutGeneratorDialog() {
         {result && (
           <div className="space-y-4">
             <h3 className="font-semibold font-headline">
-              Your New Workout Routine
+              Tu Nueva Rutina de Entrenamiento
             </h3>
             <ScrollArea className="h-96">
               {result.isWeightTraining === false && result.structuredRoutine ? (
@@ -195,7 +195,7 @@ export function WorkoutGeneratorDialog() {
                     <AccordionItem value={`item-${index}`} key={day.day}>
                       <AccordionTrigger>
                         <div className="flex items-center gap-4">
-                          <Badge className="text-lg px-3 py-1">Day {day.day}</Badge>
+                          <Badge className="text-lg px-3 py-1">Día {day.day}</Badge>
                           <span className="text-xl font-semibold font-headline">{day.title}</span>
                         </div>
                       </AccordionTrigger>
@@ -203,10 +203,10 @@ export function WorkoutGeneratorDialog() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Exercise</TableHead>
-                              <TableHead>Sets</TableHead>
-                              <TableHead>Reps/Time</TableHead>
-                              <TableHead>Rest</TableHead>
+                              <TableHead>Ejercicio</TableHead>
+                              <TableHead>Series</TableHead>
+                              <TableHead>Reps/Tiempo</TableHead>
+                              <TableHead>Descanso</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -232,7 +232,7 @@ export function WorkoutGeneratorDialog() {
             </ScrollArea>
             <DialogFooter>
               <Button onClick={() => setIsOpen(false)}>
-                Close
+                Cerrar
               </Button>
             </DialogFooter>
           </div>

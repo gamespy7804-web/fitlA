@@ -9,56 +9,56 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Settings
+          Configuración
         </h1>
         <p className="text-muted-foreground">
-          Manage your account and app preferences.
+          Gestiona tu cuenta y las preferencias de la aplicación.
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Profile</CardTitle>
-          <CardDescription>Update your personal information.</CardDescription>
+          <CardTitle className="font-headline">Perfil</CardTitle>
+          <CardDescription>Actualiza tu información personal.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input id="name" defaultValue="Alex Doe" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input id="email" type="email" defaultValue="alex.doe@example.com" />
             </div>
           </div>
-           <Button>Save Changes</Button>
+           <Button>Guardar Cambios</Button>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Wearable Integration</CardTitle>
-          <CardDescription>Sync with your devices to capture more data.</CardDescription>
+          <CardTitle className="font-headline">Integración con Wearables</CardTitle>
+          <CardDescription>Sincroniza con tus dispositivos para capturar más datos.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-md bg-secondary/50">
             <div>
               <p className="font-medium">Apple Health</p>
-              <p className="text-sm text-muted-foreground">Sync workouts and activity.</p>
+              <p className="text-sm text-muted-foreground">Sincronizar entrenamientos y actividad.</p>
             </div>
             <Switch />
           </div>
           <div className="flex items-center justify-between p-4 rounded-md bg-secondary/50">
             <div>
               <p className="font-medium">Garmin Connect</p>
-              <p className="text-sm text-muted-foreground">Sync workouts, steps, and sleep.</p>
+              <p className="text-sm text-muted-foreground">Sincronizar entrenamientos, pasos y sueño.</p>
             </div>
             <Switch />
           </div>
            <div className="flex items-center justify-between p-4 rounded-md bg-secondary/50">
             <div>
               <p className="font-medium">Strava</p>
-              <p className="text-sm text-muted-foreground">Sync your runs and rides.</p>
+              <p className="text-sm text-muted-foreground">Sincroniza tus carreras y paseos en bicicleta.</p>
             </div>
             <Switch />
           </div>

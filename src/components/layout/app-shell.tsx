@@ -26,12 +26,12 @@ import { Logo } from '../logo';
 import { useRouter } from 'next/navigation';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutGrid, label: 'Dashboard' },
-  { href: '/workout', icon: Dumbbell, label: 'Workout Routine' },
-  { href: '/log', icon: ClipboardList, label: 'Training Log' },
-  { href: '/feedback', icon: Scan, label: 'Real-time Feedback' },
-  { href: '/library', icon: Library, label: 'Exercise Library' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
+  { href: '/dashboard', icon: LayoutGrid, label: 'Panel' },
+  { href: '/workout', icon: Dumbbell, label: 'Rutina de Entrenamiento' },
+  { href: '/log', icon: ClipboardList, label: 'Registro de Entrenamiento' },
+  { href: '/feedback', icon: Scan, label: 'Feedback en Tiempo Real' },
+  { href: '/library', icon: Library, label: 'Biblioteca de Ejercicios' },
+  { href: '/settings', icon: Settings, label: 'Configuración' },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -82,7 +82,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarTrigger className="md:hidden" />
           <div className="flex items-center gap-4 ml-auto">
             <User className="w-5 h-5" />
-            <span className="font-medium text-sm">User</span>
+            <span className="font-medium text-sm">Usuario</span>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
