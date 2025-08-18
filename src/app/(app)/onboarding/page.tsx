@@ -2,9 +2,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   generateWorkoutRoutine,
   type WorkoutRoutineOutput,
@@ -34,87 +35,112 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Bot } from 'lucide-react';
+import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-const step1Schema = z.object({
+const onboardingSchema = z.object({
   sport: z.string().min(3, 'Sport must be at least 3 characters.'),
   goals: z.string().min(3, 'Goals must be at least 3 characters.'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-});
-
-const step2Schema = z.object({
-  age: z.coerce.number().min(10).max(100),
-  weight: z.coerce.number().min(30).max(200),
+  age: z.coerce.number().min(10, 'Must be at least 10').max(100, 'Must be 100 or less'),
+  weight: z.coerce.number().min(30, 'Must be at least 30kg').max(200, 'Must be 200kg or less'),
   gender: z.enum(['male', 'female', 'other']),
-  trainingDays: z.coerce.number().min(1).max(7),
-  trainingDuration: z.coerce.number().min(15).max(240),
-});
-
-const step3Schema = z.object({
+  trainingDays: z.coerce.number().min(1, 'At least 1 day').max(7, 'At most 7 days'),
+  trainingDuration: z.coerce.number().min(15, 'At least 15 minutes').max(240, 'At most 240 minutes'),
   clarificationAnswers: z.string().min(1, 'Please answer the question.'),
 });
 
+type OnboardingData = z.infer<typeof onboardingSchema>;
+
+const questions = [
+  { id: 'sport', label: 'Primary Sport', placeholder: 'e.g., Soccer, Weightlifting', type: 'text' },
+  { id: 'goals', label: 'Your Goals', placeholder: 'e.g., Increase vertical jump, run a 5k', type: 'text' },
+  { id: 'fitnessLevel', label: 'Fitness Level', options: ['beginner', 'intermediate', 'advanced'], type: 'select' },
+  { id: 'age', label: 'Age', placeholder: '25', type: 'number' },
+  { id: 'weight', label: 'Weight (kg)', placeholder: '70', type: 'number' },
+  { id: 'gender', label: 'Gender', options: ['male', 'female', 'other'], type: 'select' },
+  { id: 'trainingDays', label: 'Days per week to train', placeholder: '4', type: 'number' },
+  { id: 'trainingDuration', label: 'Time per session (minutes)', placeholder: '60', type: 'number' },
+  { id: 'clarificationAnswers', label: '', placeholder: 'e.g., I can do 10 push-ups...', type: 'text' },
+] as const;
+
+
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
-  const [formData, setFormData] = useState({});
+  const [direction, setDirection] = useState(1);
   const { toast } = useToast();
   const router = useRouter();
 
-  const step1Form = useForm<z.infer<typeof step1Schema>>({
-    resolver: zodResolver(step1Schema),
-    defaultValues: { sport: '', goals: '', fitnessLevel: 'intermediate' },
-  });
-
-  const step2Form = useForm<z.infer<typeof step2Schema>>({
-    resolver: zodResolver(step2Schema),
+  const form = useForm<OnboardingData>({
+    resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      sport: '',
+      goals: '',
+      fitnessLevel: 'intermediate',
       age: undefined,
       weight: undefined,
       gender: 'male',
       trainingDays: undefined,
       trainingDuration: undefined,
+      clarificationAnswers: '',
     },
-  });
-  
-  const step3Form = useForm<z.infer<typeof step3Schema>>({
-    resolver: zodResolver(step3Schema),
-    defaultValues: { clarificationAnswers: '' },
+    mode: 'onChange'
   });
 
-  const handleStep1Submit = async (values: z.infer<typeof step1Schema>) => {
-    setIsLoading(true);
-    setFormData(values);
-    try {
-      const result = await generateWorkoutRoutine(values);
-      if (result.clarificationQuestion) {
-        setClarificationQuestion(result.clarificationQuestion);
-        setStep(2);
-      } else {
-        // Should not happen if API is designed correctly
-        toast({ variant: 'destructive', title: 'Something went wrong' });
+  const currentQuestionId = questions[currentQuestionIndex].id;
+
+  const handleNext = async () => {
+    const isValid = await form.trigger(currentQuestionId as keyof OnboardingData);
+    if (!isValid) return;
+
+    setDirection(1);
+
+    // After fitnessLevel, call API to get clarification question
+    if (currentQuestionId === 'fitnessLevel') {
+      setIsLoading(true);
+      try {
+        const result = await generateWorkoutRoutine(form.getValues());
+        if (result.clarificationQuestion) {
+          setClarificationQuestion(result.clarificationQuestion);
+           // The API call is done, now we can move on.
+           if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+          }
+        } else {
+          toast({ variant: 'destructive', title: 'Something went wrong' });
+        }
+      } catch (error) {
+        console.error(error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not get clarification question.' });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not get clarification question.' });
-    } finally {
-      setIsLoading(false);
+      return; // Stop here and wait for API call to finish before proceeding
+    }
+
+    if (currentQuestionId === 'clarificationAnswers') {
+      handleSubmitForm();
+      return;
+    }
+    
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
 
-  const handleStep2Submit = (values: z.infer<typeof step2Schema>) => {
-    setFormData((prev) => ({ ...prev, ...values }));
-    setStep(3);
+  const handleBack = () => {
+    setDirection(-1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
   };
-  
-  const handleStep3Submit = async (values: z.infer<typeof step3Schema>) => {
+
+  const handleSubmitForm = async () => {
     setIsLoading(true);
-    const finalData = { ...formData, ...values };
     try {
-      const result = await generateWorkoutRoutine(finalData);
-      // Here you would typically save the routine and redirect
+      const result = await generateWorkoutRoutine(form.getValues());
       console.log('Generated Routine:', result.structuredRoutine || result.routine);
       toast({ title: 'Workout Routine Generated!', description: "We're redirecting you to the dashboard." });
       router.push('/dashboard');
@@ -126,194 +152,124 @@ export default function OnboardingPage() {
     }
   };
 
+  const renderInput = (field: any) => {
+    const question = questions[currentQuestionIndex];
+    if (question.type === 'select') {
+      return (
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormControl>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {question.options?.map(option => (
+              <SelectItem key={option} value={option} className="capitalize">{option}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+    return <Input type={question.type} placeholder={question.placeholder} {...field} value={field.value ?? ''} />;
+  };
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 30 : -30,
+      opacity: 0,
+    }),
+  };
+
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Welcome to TrainSmart AI</CardTitle>
-          <CardDescription>
-            Let&apos;s personalize your fitness journey. Tell us a bit about yourself.
+          <CardTitle className="font-headline text-2xl text-center">Welcome to TrainSmart AI</CardTitle>
+          <CardDescription className="text-center">
+            Let&apos;s personalize your fitness journey.
           </CardDescription>
+          <div className="flex justify-center gap-2 pt-4">
+            {questions.map((q, index) => (
+                <div key={q.id} className={`h-2 rounded-full transition-all duration-300 ${index < currentQuestionIndex ? 'bg-primary w-6' : index === currentQuestionIndex ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
+            ))}
+          </div>
         </CardHeader>
-        <CardContent>
-          {step === 1 && (
-            <Form {...step1Form}>
-              <form onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-4">
-                <h3 className="text-xl font-semibold font-headline">Step 1: Your Foundation</h3>
-                 <FormField
-                    control={step1Form.control}
-                    name="sport"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Primary Sport</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Soccer, Weightlifting" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={step1Form.control}
-                    name="goals"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Your Goals</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Increase vertical jump, run a 5k" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={step1Form.control}
-                    name="fitnessLevel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fitness Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="beginner">Beginner</SelectItem>
-                            <SelectItem value="intermediate">Intermediate</SelectItem>
-                            <SelectItem value="advanced">Advanced</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? <Loader2 className="animate-spin" /> : 'Next'}
-                </Button>
-              </form>
-            </Form>
-          )}
-
-          {step === 2 && (
-             <Form {...step2Form}>
-              <form onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-4">
-                 <h3 className="text-xl font-semibold font-headline">Step 2: Your Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={step2Form.control}
-                      name="age"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Age</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="25" {...field} value={field.value ?? ''} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+        <CardContent className="overflow-hidden relative h-64">
+           <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={currentQuestionIndex}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 }
+                }}
+                className="absolute w-full px-6"
+              >
+                  <Form {...form}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
+                      {currentQuestionId === 'clarificationAnswers' ? (
+                         <div>
+                           <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
+                              <Bot className="text-primary size-8 shrink-0 mt-1" />
+                              <p className="text-secondary-foreground">{clarificationQuestion || 'AI is thinking...'}</p>
+                           </div>
+                           <FormField
+                              control={form.control}
+                              name="clarificationAnswers"
+                              render={({ field }) => (
+                                <FormItem className="mt-4">
+                                  <FormLabel>Your Answer</FormLabel>
+                                  <FormControl>{renderInput(field)}</FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+                      ) : (
+                        <FormField
+                          control={form.control}
+                          name={currentQuestionId as keyof OnboardingData}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-lg">{questions[currentQuestionIndex].label}</FormLabel>
+                              <FormControl>{renderInput(field)}</FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       )}
-                    />
-                     <FormField
-                      control={step2Form.control}
-                      name="weight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Weight (kg)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="70" {...field} value={field.value ?? ''} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={step2Form.control}
-                      name="gender"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Gender</FormLabel>
-                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={step2Form.control}
-                        name="trainingDays"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Days per week</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="4" {...field} value={field.value ?? ''} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={step2Form.control}
-                        name="trainingDuration"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Time per session (minutes)</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="60" {...field} value={field.value ?? ''} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                   </div>
-                 <div className="flex justify-between">
-                    <Button type="button" variant="secondary" onClick={() => setStep(1)}>Back</Button>
-                    <Button type="submit">Next</Button>
-                 </div>
-              </form>
-             </Form>
-          )}
-
-          {step === 3 && (
-            <Form {...step3Form}>
-              <form onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-6">
-                <div>
-                   <h3 className="text-xl font-semibold font-headline">Step 3: AI Assessment</h3>
-                   <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
-                      <Bot className="text-primary size-8 shrink-0 mt-1" />
-                      <p className="text-secondary-foreground">{clarificationQuestion}</p>
-                   </div>
-                </div>
-
-                <FormField
-                  control={step3Form.control}
-                  name="clarificationAnswers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Answer</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., I can do 10 push-ups, I can run 1.5km..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-between">
-                  <Button type="button" variant="secondary" onClick={() => setStep(2)}>Back</Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generate My Plan</>}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          )}
+                      
+                      <div className="flex justify-between items-center pt-4">
+                          <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0}>
+                            <ChevronLeft /> Back
+                          </Button>
+                          
+                          {currentQuestionId === 'clarificationAnswers' ? (
+                             <Button type="submit" disabled={isLoading}>
+                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generate My Plan</>}
+                             </Button>
+                          ) : (
+                            <Button type="submit" disabled={isLoading}>
+                              {isLoading ? <Loader2 className="animate-spin" /> : 'Next'} <ChevronRight />
+                           </Button>
+                          )}
+                      </div>
+                    </form>
+                  </Form>
+              </motion.div>
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>
