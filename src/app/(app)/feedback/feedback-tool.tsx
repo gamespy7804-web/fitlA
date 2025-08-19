@@ -217,7 +217,7 @@ function FeedbackToolContent() {
               <AlertTitle>Error de Cámara</AlertTitle>
               <AlertDescription>
                 No se pudo acceder a la cámara. Por favor, revisa los permisos en tu navegador y asegúrate de que no esté siendo usada por otra aplicación.
-              </Aler/AlertDescription>
+              </AlertDescription>
             </Alert>
            )}
         </CardContent>
