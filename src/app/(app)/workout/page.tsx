@@ -12,12 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Flame, Repeat, TrendingUp, Weight } from 'lucide-react';
+import { Check, Flame, Repeat, TrendingUp, Weight, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   WorkoutRoutineOutput,
 } from '@/ai/flows/workout-routine-generator';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type SetLog = { weight: number; reps: number; completed: boolean };
 type ExerciseLog = { name: string; sets: SetLog[] };
@@ -116,7 +117,7 @@ export default function WorkoutPage() {
     };
 
     // Store in local storage
-    const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
+    const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as any[];
     allCompleted.push(completedWorkout);
     localStorage.setItem('completedWorkouts', JSON.stringify(allCompleted));
     
@@ -174,10 +175,18 @@ export default function WorkoutPage() {
                       <Card key={exercise.name}>
                         <CardHeader>
                           <CardTitle className="flex justify-between items-center">
-                            <span>{exercise.name}</span>
-                            <Badge variant="outline">
+                            <span className="flex-1">{exercise.name}</span>
+                            <Badge variant="outline" className="mx-2">
                               {exercise.sets} series x {exercise.reps} reps
                             </Badge>
+                            {exercise.requiresFeedback && (
+                               <Button asChild size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
+                                <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`}>
+                                  <Video className="mr-2" />
+                                  Grabar
+                                </Link>
+                              </Button>
+                            )}
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
