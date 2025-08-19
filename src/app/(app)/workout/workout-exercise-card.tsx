@@ -39,7 +39,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
         <CardTitle className="flex justify-between items-center">
           <span className="flex-1 font-headline text-2xl">{exercise.name}</span>
           <Badge variant="outline" className="mx-2">
-            {exercise.originalExercise.sets} x {exercise.originalExercise.reps}
+            {exercise.originalExercise.reps}
           </Badge>
           {exercise.originalExercise.requiresFeedback && (
             <Button asChild size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
