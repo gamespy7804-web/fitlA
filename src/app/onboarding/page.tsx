@@ -38,12 +38,20 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+const emptyStringToUndefined = z.literal('').transform(() => undefined);
+
 const onboardingSchema = z.object({
   sport: z.string().min(3, 'El deporte debe tener al menos 3 caracteres.'),
   goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  age: z.coerce.number().min(10, 'Debes tener al menos 10 años').max(100, 'Debes tener 100 años o menos'),
-  weight: z.coerce.number().min(30, 'Debe ser al menos 30kg').max(200, 'Debe ser 200kg o menos'),
+  age: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number().min(10, 'Debes tener al menos 10 años').max(100, 'Debes tener 100 años o menos').optional()
+  ),
+  weight: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number().min(30, 'Debe ser al menos 30kg').max(200, 'Debe ser 200kg o menos').optional()
+  ),
   gender: z.enum(['male', 'female', 'other']),
   trainingDays: z.coerce.number().min(1, 'Al menos 1 día').max(7, 'Máximo 7 días'),
   trainingDuration: z.coerce.number().min(15, 'Al menos 15 minutos').max(240, 'Máximo 240 minutos'),
@@ -79,8 +87,8 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: 'intermediate',
-      age: '' as any,
-      weight: '' as any,
+      age: undefined,
+      weight: undefined,
       gender: 'male',
       trainingDays: 3,
       trainingDuration: 60,
@@ -114,6 +122,8 @@ export default function OnboardingPage() {
       } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener la pregunta de clarificación.' });
+        // if AI fails, still go to next question
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
       } finally {
         setIsLoading(false);
       }
@@ -151,7 +161,11 @@ export default function OnboardingPage() {
     if (currentQuestionIndex > 0) {
       if (currentQuestionId === 'clarificationAnswers') {
         setCurrentQuestionIndex(questions.findIndex(q => q.id === 'trainingDuration'))
-      } else {
+      } else if (currentQuestionId === 'age' && clarificationQuestion) {
+        // If we came from clarification question, go back to fitness level
+        setCurrentQuestionIndex(questions.findIndex(q => q.id === 'fitnessLevel'))
+      }
+      else {
         setCurrentQuestionIndex(currentQuestionIndex - 1);
       }
     }
@@ -314,5 +328,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
