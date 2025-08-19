@@ -18,7 +18,7 @@ export default function DashboardPage() {
         </div>
         <AdaptiveProgressionDialog className="w-full md:w-auto text-primary-foreground justify-center bg-primary hover:bg-primary/90">
              <Zap />
-             Sugerir Progresión
+             Generar Próxima Semana
         </AdaptiveProgressionDialog>
       </div>
 

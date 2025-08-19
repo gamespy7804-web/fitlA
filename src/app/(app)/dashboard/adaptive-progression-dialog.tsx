@@ -147,7 +147,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         <Button disabled={!canProgress} className={cn("w-full", className)}>
             {children || <>
             <Zap />
-            <span>Sugerir Progresión</span>
+            <span>Generar Próxima Semana</span>
             </>}
         </Button>
       </DialogTrigger>
