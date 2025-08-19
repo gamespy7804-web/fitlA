@@ -24,7 +24,9 @@ const AdaptiveProgressionInputSchema = z.object({
     .describe(
       'The user\'s self-reported fitness level after the last cycle (e.g., "easy", "just right", "hard").'
     ),
-  originalRoutine: z.string().describe("The user's original workout routine, used as a baseline for the new progression.")
+  originalRoutine: z.string().describe("The user's original workout routine, used as a baseline for the new progression."),
+  trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train for the new cycle."),
+  trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes for the new cycle."),
 });
 export type AdaptiveProgressionInput = z.infer<typeof AdaptiveProgressionInputSchema>;
 
@@ -49,7 +51,11 @@ const prompt = ai.definePrompt({
   - Si el usuario reportó que fue "justo" y la adherencia es alta, aplica una sobrecarga progresiva moderada. Aumenta ligeramente las repeticiones o el peso en los ejercicios clave.
   - Analiza el rendimiento real (datos de entrenamiento) para hacer ajustes precisos. Si el usuario superó consistentemente las repeticiones objetivo, aumenta el peso o las repeticiones para ese ejercicio. Si no alcanzó el objetivo, mantén o reduce ligeramente la dificultad.
 
-  El nuevo plan que generes DEBE seguir la misma estructura que el original (mismos días de entrenamiento, duración similar, mismos indicadores de 'requiresFeedback' y 'requiresWeight').
+  **Nuevas Preferencias (Opcional):**
+  {{#if trainingDays}}- **Nuevos Días de Entrenamiento por Semana:** {{{trainingDays}}}. Si se proporciona este valor, el NUEVO plan debe tener este número exacto de días de entrenamiento. Si no, mantén el número de días del plan original.{{/if}}
+  {{#if trainingDuration}}- **Nueva Duración del Entrenamiento por Sesión:** {{{trainingDuration}}} minutos. Si se proporciona este valor, la duración de cada sesión en el NUEVO plan debe aproximarse a este número. Si no, mantén una duración similar a la del plan original.{{/if}}
+
+  El nuevo plan que generes DEBE seguir la misma estructura que el original en términos de indicadores 'requiresFeedback' y 'requiresWeight' para ejercicios similares. Si se agregan nuevos ejercicios, determina estos indicadores de manera apropiada.
 
   **Rutina Original (para referencia estructural):**
   \`\`\`json

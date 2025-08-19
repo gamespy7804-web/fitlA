@@ -35,16 +35,35 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
+  trainingDays: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number().min(1).max(7).optional()
+  ),
+  trainingDuration: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.coerce.number().min(15).max(240).optional()
+  ),
 });
 
 export function AdaptiveProgressionDialog({ children, className }: { children?: React.ReactNode, className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [canProgress, setCanProgress] = useState(false);
+  const [originalRoutine, setOriginalRoutine] = useState<WorkoutRoutineOutput | null>(null);
   const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      selfReportedFitness: 'just-right',
+      trainingDays: undefined,
+      trainingDuration: undefined,
+    },
+  });
 
   useEffect(() => {
     const checkProgress = () => {
@@ -54,6 +73,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       if (storedRoutine) {
         try {
             const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+            setOriginalRoutine(parsedRoutine);
             // Enable progression if there's a routine and at least one log has been completed.
             if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
               if (detailedLogs.length > 0) {
@@ -73,23 +93,23 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       }
     };
     
-    // Check on mount and when dialog opens
     checkProgress();
-
-    // Also check when window gets focus, in case logs were updated in another tab.
     window.addEventListener('focus', checkProgress);
+    window.addEventListener('storage', checkProgress);
 
     return () => {
         window.removeEventListener('focus', checkProgress);
+        window.removeEventListener('storage', checkProgress);
     }
   }, []);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      selfReportedFitness: 'just-right',
-    },
-  });
+  useEffect(() => {
+    if (originalRoutine?.structuredRoutine) {
+      form.setValue('trainingDays', originalRoutine.structuredRoutine.length);
+      const avgDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0) / originalRoutine.structuredRoutine.length;
+      form.setValue('trainingDuration', Math.round(avgDuration));
+    }
+  }, [originalRoutine, form, isOpen]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -97,19 +117,21 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       const originalRoutineJSON = localStorage.getItem('workoutRoutine');
       const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
 
-      if (!originalRoutineJSON || !detailedLogsJSON) {
+      if (!originalRoutineJSON || !detailedLogsJSON || !originalRoutine?.structuredRoutine) {
         toast({ variant: 'destructive', title: 'Datos insuficientes', description: 'No se encontraron datos de la rutina o registros detallados.' });
         setIsLoading(false);
         return;
       }
-      const originalRoutine: WorkoutRoutineOutput = JSON.parse(originalRoutineJSON);
-      const adherence = (JSON.parse(detailedLogsJSON).length / (originalRoutine.structuredRoutine?.length || 1));
+      
+      const adherence = (JSON.parse(detailedLogsJSON).length / (originalRoutine.structuredRoutine.length || 1));
 
       const newRoutine = await adaptiveProgressionGenerator({
         selfReportedFitness: values.selfReportedFitness,
         originalRoutine: originalRoutineJSON,
         trainingData: detailedLogsJSON,
         adherence,
+        trainingDays: values.trainingDays,
+        trainingDuration: values.trainingDuration,
       });
 
       localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
@@ -138,7 +160,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      form.reset();
+      form.reset({ selfReportedFitness: 'just-right'});
       setIsLoading(false);
     }
   };
@@ -148,8 +170,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       <DialogTrigger asChild>
         <Button disabled={!canProgress} className={cn("w-full", className)}>
             {children || <>
-            <Zap />
-            <span>Generar Próxima Semana</span>
+            <span>Generar Nueva Rutina</span>
             </>}
         </Button>
       </DialogTrigger>
@@ -159,7 +180,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
             <Zap className="text-primary" /> Generar Progresión de IA
           </DialogTitle>
           <DialogDescription>
-            Evalúa tu último ciclo de entrenamiento para generar el siguiente.
+            Evalúa tu último ciclo y ajusta tus preferencias para generar el siguiente.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -186,6 +207,37 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                 </FormItem>
               )}
             />
+            <div className="space-y-2 pt-2">
+                <p className="text-sm font-medium">Ajustes para la próxima semana (Opcional)</p>
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="trainingDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Días/Semana</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="ej. 3" {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="trainingDuration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Min/Sesión</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="ej. 60" {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+            </div>
             <DialogFooter>
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -198,4 +250,3 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     </Dialog>
   );
 }
-
