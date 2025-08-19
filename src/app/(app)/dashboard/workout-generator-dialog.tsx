@@ -55,7 +55,7 @@ const formSchema = z.object({
   clarificationAnswers: z.string().optional(),
 });
 
-export function WorkoutGeneratorDialog() {
+export function WorkoutGeneratorDialog({ children }: { children?: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
@@ -132,14 +132,19 @@ export function WorkoutGeneratorDialog() {
       setIsLoading(false);
     }
   };
+  
+  const handleDialogClose = () => {
+    setIsOpen(false);
+    window.location.reload();
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <Sparkles className="mr-2" />
-          Generar Nuevo Entrenamiento
-        </Button>
+        <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted'>
+            <Sparkles />
+            <span>Generar Nuevo Entrenamiento</span>
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
@@ -318,8 +323,8 @@ export function WorkoutGeneratorDialog() {
               )}
             </ScrollArea>
             <DialogFooter>
-              <Button onClick={() => setIsOpen(false)}>
-                Cerrar
+              <Button onClick={handleDialogClose}>
+                Cerrar y Recargar
               </Button>
             </DialogFooter>
           </div>

@@ -38,7 +38,7 @@ const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
 });
 
-export function AdaptiveProgressionDialog() {
+export function AdaptiveProgressionDialog({ children }: { children?: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [canProgress, setCanProgress] = useState(false);
@@ -51,7 +51,6 @@ export function AdaptiveProgressionDialog() {
       
       if (storedRoutine) {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        // Enable button if all workouts in the current routine have been completed
         if (parsedRoutine.structuredRoutine && detailedLogs.length >= parsedRoutine.structuredRoutine.length) {
           setCanProgress(true);
         } else {
@@ -89,7 +88,6 @@ export function AdaptiveProgressionDialog() {
         adherence,
       });
 
-      // Save the new routine and reset logs for the new cycle
       localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
       localStorage.setItem('completedWorkouts', '[]');
       localStorage.setItem('detailedWorkoutLogs', '[]');
@@ -99,7 +97,6 @@ export function AdaptiveProgressionDialog() {
         description: 'Tu plan de entrenamiento ha sido actualizado. ¡A por ello!',
       });
       setIsOpen(false);
-      // Force a page reload to update the dashboard with the new routine
       window.location.reload();
 
     } catch (error) {
@@ -125,10 +122,10 @@ export function AdaptiveProgressionDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" disabled={!canProgress}>
-          <Zap className="mr-2" />
-          Sugerir Progresión
-        </Button>
+         <button disabled={!canProgress} className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed'>
+            <Zap />
+            <span>Sugerir Progresión</span>
+        </button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
