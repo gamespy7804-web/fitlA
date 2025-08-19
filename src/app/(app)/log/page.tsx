@@ -10,12 +10,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Share2 } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const logData = [
   { date: '2024-07-22', workout: 'Fuerza del Tren Superior', duration: '55 min', volume: '5,400 kg' },
   { date: '2024-07-20', workout: 'Potencia del Tren Inferior', duration: '65 min', volume: '8,200 kg' },
   { date: '2024-07-18', workout: 'Acondicionamiento de Cuerpo Completo', duration: '45 min', volume: 'N/A' },
   { date: '2024-07-15', workout: 'Fuerza del Tren Superior', duration: '50 min', volume: '5,150 kg' },
+  { date: '2024-06-25', workout: 'Fuerza del Tren Superior', duration: '50 min', volume: '4,900 kg' },
+  { date: '2024-06-22', workout: 'Potencia del Tren Inferior', duration: '60 min', volume: '7,800 kg' },
+  { date: '2024-05-15', workout: 'Acondicionamiento de Cuerpo Completo', duration: '45 min', volume: 'N/A' },
+  { date: '2024-05-10', workout: 'Fuerza del Tren Superior', duration: '52 min', volume: '4,500 kg' },
 ];
 
 export default function LogPage() {
@@ -53,7 +59,9 @@ export default function LogPage() {
             <TableBody>
               {logData.map((log) => (
                 <TableRow key={log.date}>
-                  <TableCell className="font-medium">{log.date}</TableCell>
+                  <TableCell className="font-medium">
+                    {format(new Date(log.date), "d 'de' MMMM, yyyy", { locale: es })}
+                  </TableCell>
                   <TableCell>{log.workout}</TableCell>
                   <TableCell>{log.duration}</TableCell>
                   <TableCell>{log.volume}</TableCell>

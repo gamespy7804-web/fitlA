@@ -25,8 +25,8 @@
     --ring: 145 56% 71%; /* accent */
     --radius: 0.5rem;
 
-    --chart-1: 98 44% 52%;
-    --chart-2: 145 56% 71%;
+    --chart-1: hsl(var(--primary));
+    --chart-2: hsl(var(--accent));
     --chart-3: 210 40% 96%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
