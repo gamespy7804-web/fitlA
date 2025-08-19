@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,10 +10,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ChatbotSheet } from '@/components/chatbot/chatbot-sheet';
 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   if (pathname === '/onboarding') {
     return <>{children}</>;
@@ -29,17 +32,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Chatbot">
+                  <Button variant="ghost" size="icon" aria-label="Chatbot" onClick={() => setIsChatbotOpen(true)}>
                       <Bot className="w-5 h-5" />
                   </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                  <p>Pregúntale a la IA (Próximamente)</p>
+                  <p>Pregúntale a la IA</p>
               </TooltipContent>
             </Tooltip>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        <ChatbotSheet open={isChatbotOpen} onOpenChange={setIsChatbotOpen} />
       </div>
     </TooltipProvider>
   );
