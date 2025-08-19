@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, Scan, User, Plus, Sparkles } from 'lucide-react';
+import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -12,13 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu"
 import React from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
-import { AdaptiveProgressionDialog } from '@/app/(app)/dashboard/adaptive-progression-dialog';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
   { href: '/log', icon: BarChart2, label: 'Registro' },
   { href: null, icon: Plus, label: 'Actions' }, // Placeholder for the action button
-  { href: '/feedback', icon: Scan, label: 'Análisis' },
+  { href: '/games', icon: Gamepad2, label: 'Juegos' },
   { href: '/settings', icon: User, label: 'Perfil' },
 ];
 
@@ -51,6 +50,12 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                                 <span>Generar Nuevo Entrenamiento</span>
                             </button>
                         </WorkoutGeneratorDialog>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                          <Link href="/feedback" className="w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted">
+                            <Scan />
+                            <span>Análisis de Forma</span>
+                          </Link>
                       </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
