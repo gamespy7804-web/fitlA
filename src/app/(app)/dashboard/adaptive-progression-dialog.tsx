@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -53,8 +54,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       if (storedRoutine) {
         try {
             const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+            // Enable progression if there's a routine and at least one log has been completed.
             if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
-              if (detailedLogs.length >= parsedRoutine.structuredRoutine.length) {
+              if (detailedLogs.length > 0) {
                 setCanProgress(true);
               } else {
                 setCanProgress(false);
@@ -196,3 +198,4 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     </Dialog>
   );
 }
+
