@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -66,7 +67,7 @@ export function WorkoutNodePath() {
 
   return (
     <TooltipProvider>
-      <div className="relative flex flex-col items-center w-full p-8">
+      <div className="relative flex flex-col items-center w-full p-8 pt-20">
         {/* The Path SVG */}
         <svg
           className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-auto"
@@ -76,21 +77,13 @@ export function WorkoutNodePath() {
           preserveAspectRatio="none"
         >
           <path
-            d={`M 50 60 ${routine.map((_, i) => `C 50 ${i*120 + 80}, ${i % 2 === 0 ? 100 : 0} ${i*120 + 120}, 50 ${i*120 + 180}`).join(' ')}`}
+            d={`M 50 0 ${routine.map((_, i) => `C 50 ${i*120 + 20}, ${i % 2 === 0 ? 100 : 0} ${i*120 + 60}, 50 ${i*120 + 120}`).join(' ')}`}
             stroke="hsl(var(--border))"
             strokeWidth="4"
             fill="none"
             strokeDasharray="10 10"
           />
         </svg>
-
-        {/* Start Node */}
-         <div className="relative z-10 flex flex-col items-center mb-10">
-           <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg ring-4 ring-background">
-             <Flag className="w-10 h-10 text-primary-foreground" />
-           </div>
-           <p className="mt-2 font-bold text-lg">Inicio</p>
-         </div>
 
         {routine.map((day, index) => {
           const isCompleted = completedDays.includes(day.title);
