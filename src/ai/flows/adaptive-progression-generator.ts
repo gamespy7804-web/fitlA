@@ -3,13 +3,12 @@
  * @fileOverview This file defines a Genkit flow for generating weekly workout progressions based on user data.
  *
  * - adaptiveProgressionGenerator - A function that generates a weekly workout progression.
- * - AdaptiveProgressionInput - The input type for the adaptiveProgressionGenerator function.
- * - AdaptiveProgressionOutput - The return type for the adaptiveProgressionGenerator function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { WorkoutRoutineOutputSchema, DailyWorkoutSchema, ExerciseDetailSchema } from './workout-routine-generator';
+import { WorkoutRoutineOutputSchema } from './types';
+import type { WorkoutRoutineOutput } from './types';
 
 const AdaptiveProgressionInputSchema = z.object({
   trainingData: z

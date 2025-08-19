@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   type WorkoutRoutineOutput,
-  type DailyWorkoutSchema as DaySchema,
-  type ExerciseDetailSchema as ExerciseSchema,
-} from '@/ai/flows/workout-routine-generator';
+  type DailyWorkout as DaySchema,
+  type ExerciseDetail as ExerciseSchema,
+} from '@/ai/flows/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Flame, Loader2 } from 'lucide-react';

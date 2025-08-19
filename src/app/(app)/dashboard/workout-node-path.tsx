@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
+import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { Check, Dumbbell, Lock, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {

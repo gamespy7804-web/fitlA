@@ -3,8 +3,6 @@
  * @fileOverview This file defines a Genkit flow for providing real-time feedback on exercise technique using AI.
  *
  * - realTimeFeedback - A function that accepts video data and returns feedback on the user's exercise form.
- * - RealTimeFeedbackInput - The input type for the realTimeFeedback function, including video data URI and exercise type.
- * - RealTimeFeedbackOutput - The return type for the realTimeFeedback function, providing feedback on the user's form.
  */
 
 import {ai} from '@/ai/genkit';

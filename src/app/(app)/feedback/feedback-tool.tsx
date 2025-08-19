@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Loader2, Sparkles, Video, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
+import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 
 function FeedbackToolContent() {
   const searchParams = useSearchParams();

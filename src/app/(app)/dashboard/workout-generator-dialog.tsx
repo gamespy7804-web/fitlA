@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  generateWorkoutRoutine,
-  type WorkoutRoutineOutput,
-} from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
+import { type WorkoutRoutineOutput } from '@/ai/flows/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
