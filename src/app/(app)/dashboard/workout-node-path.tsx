@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 
 type CompletedDay = {
   workout: string;
@@ -125,6 +126,12 @@ export function WorkoutNodePath() {
             </div>
           );
         })}
+
+        <div className="mt-8 w-full max-w-sm">
+            <AdaptiveProgressionDialog className="w-full md:w-auto text-primary-foreground justify-center bg-primary hover:bg-primary/90">
+                Generar Próxima Semana
+            </AdaptiveProgressionDialog>
+        </div>
       </div>
     </TooltipProvider>
   );

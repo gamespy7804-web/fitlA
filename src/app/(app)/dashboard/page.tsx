@@ -2,8 +2,6 @@
 
 import { WorkoutNodePath } from './workout-node-path';
 import { PerformanceFeedback } from './performance-feedback';
-import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
-import { Zap } from 'lucide-react';
 
 export default function DashboardPage() {
 
@@ -16,10 +14,6 @@ export default function DashboardPage() {
           </h1>
           <PerformanceFeedback />
         </div>
-        <AdaptiveProgressionDialog className="w-full md:w-auto text-primary-foreground justify-center bg-primary hover:bg-primary/90">
-             <Zap />
-             Generar Próxima Semana
-        </AdaptiveProgressionDialog>
       </div>
 
       <WorkoutNodePath />
