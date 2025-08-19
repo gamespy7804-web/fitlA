@@ -2,6 +2,7 @@
 
 import { WorkoutNodePath } from './workout-node-path';
 import { PerformanceFeedback } from './performance-feedback';
+import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 
 export default function DashboardPage() {
 
@@ -14,6 +15,11 @@ export default function DashboardPage() {
           </h1>
           <PerformanceFeedback />
         </div>
+        <AdaptiveProgressionDialog>
+             <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-foreground justify-center'>
+                Sugerir Progresión
+            </button>
+        </AdaptiveProgressionDialog>
       </div>
 
       <WorkoutNodePath />

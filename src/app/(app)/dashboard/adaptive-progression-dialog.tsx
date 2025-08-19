@@ -33,32 +33,54 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
 });
 
-export function AdaptiveProgressionDialog({ children }: { children?: React.ReactNode }) {
+export function AdaptiveProgressionDialog({ children, className }: { children?: React.ReactNode, className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [canProgress, setCanProgress] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (isOpen) {
+    const checkProgress = () => {
       const storedRoutine = localStorage.getItem('workoutRoutine');
       const detailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
       
       if (storedRoutine) {
-        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        if (parsedRoutine.structuredRoutine && detailedLogs.length >= parsedRoutine.structuredRoutine.length) {
-          setCanProgress(true);
-        } else {
-          setCanProgress(false);
+        try {
+            const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+            if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
+              if (detailedLogs.length >= parsedRoutine.structuredRoutine.length) {
+                setCanProgress(true);
+              } else {
+                setCanProgress(false);
+              }
+            } else {
+               setCanProgress(false);
+            }
         }
+        catch (e) {
+            setCanProgress(false);
+        }
+      } else {
+         setCanProgress(false);
       }
+    };
+    
+    // Check on mount and when dialog opens
+    checkProgress();
+
+    // Also check when window gets focus, in case logs were updated in another tab.
+    window.addEventListener('focus', checkProgress);
+
+    return () => {
+        window.removeEventListener('focus', checkProgress);
     }
-  }, [isOpen]);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -121,11 +143,13 @@ export function AdaptiveProgressionDialog({ children }: { children?: React.React
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-         <button disabled={!canProgress} className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed'>
+      <DialogTrigger asChild disabled={!canProgress}>
+        <Button disabled={!canProgress} className={cn("w-full", className)}>
+            {children || <>
             <Zap />
             <span>Sugerir Progresión</span>
-        </button>
+            </>}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

@@ -23,7 +23,6 @@ const navItems = [
 
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const childrenArray = React.Children.toArray(children);
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
@@ -40,9 +39,6 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="top" align="center" className="mb-4 w-64 p-2 space-y-1">
-                      <DropdownMenuItem asChild>
-                        {childrenArray[1]}
-                      </DropdownMenuItem>
                        <DropdownMenuItem asChild>
                          <WorkoutGeneratorDialog>
                             <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted'>
