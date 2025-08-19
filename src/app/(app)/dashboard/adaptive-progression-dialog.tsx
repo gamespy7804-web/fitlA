@@ -143,7 +143,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild disabled={!canProgress}>
+      <DialogTrigger asChild>
         <Button disabled={!canProgress} className={cn("w-full", className)}>
             {children || <>
             <Zap />
