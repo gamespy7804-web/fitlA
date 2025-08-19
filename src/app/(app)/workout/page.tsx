@@ -206,24 +206,26 @@ export default function WorkoutPage() {
                                   Serie {setIndex + 1}
                                 </div>
                                 <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4">
-                                  <div>
-                                    <Label
-                                      htmlFor={`weight-${dayIndex}-${exIndex}-${setIndex}`}
-                                      className="sr-only"
-                                    >
-                                      Peso
-                                    </Label>
-                                    <div className="relative">
-                                      <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <Input
-                                        id={`weight-${dayIndex}-${exIndex}-${setIndex}`}
-                                        type="number"
-                                        placeholder="Peso (kg)"
-                                        className="pl-9"
-                                        onChange={(e) => handleSetChange(dayIndex, exIndex, setIndex, 'weight', e.target.value)}
-                                      />
+                                  {exercise.requiresWeight ? (
+                                    <div>
+                                      <Label
+                                        htmlFor={`weight-${dayIndex}-${exIndex}-${setIndex}`}
+                                        className="sr-only"
+                                      >
+                                        Peso
+                                      </Label>
+                                      <div className="relative">
+                                        <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                          id={`weight-${dayIndex}-${exIndex}-${setIndex}`}
+                                          type="number"
+                                          placeholder="Peso (kg)"
+                                          className="pl-9"
+                                          onChange={(e) => handleSetChange(dayIndex, exIndex, setIndex, 'weight', e.target.value)}
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
+                                  ) : <div />}
                                   <div>
                                     <Label
                                       htmlFor={`reps-${dayIndex}-${exIndex}-${setIndex}`}

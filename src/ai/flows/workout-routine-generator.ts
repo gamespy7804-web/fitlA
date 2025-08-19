@@ -32,6 +32,7 @@ const ExerciseDetailSchema = z.object({
   reps: z.string().describe('Number of repetitions or duration.'),
   rest: z.string().describe('Rest time between sets.'),
   requiresFeedback: z.boolean().describe('Whether this exercise requires video feedback for form correction.'),
+  requiresWeight: z.boolean().describe('Whether this exercise requires weight to be logged.'),
 });
 
 const DailyWorkoutSchema = z.object({
@@ -82,6 +83,7 @@ const prompt = ai.definePrompt({
   - El plan DEBE cumplir estrictamente con los 'trainingDays' y 'trainingDuration' proporcionados. La suma de las duraciones de los ejercicios más los tiempos de descanso de cada día debe aproximarse a la 'trainingDuration'.
   - Ten en cuenta todos los parámetros del usuario: deporte, objetivos, nivel de condición física, edad, peso, sexo y sus respuestas a las preguntas aclaratorias.
   - Para CADA ejercicio, determina si se beneficiaría de un análisis de la técnica mediante vídeo para corregir la postura. Establece 'requiresFeedback' en true para ejercicios complejos o de alto riesgo como Sentadillas, Pesos Muertos, Press de Banca, Saltos al cajón, etc. Para ejercicios más simples como planchas o estiramientos, establécelo en false.
+  - Para CADA ejercicio, determina si se debe registrar el peso. Establece 'requiresWeight' en true para ejercicios que normalmente implican levantamiento de pesas (p. ej., Sentadillas, Press de Banca, Peso Muerto) y en false para ejercicios de peso corporal (p. ej., Flexiones, Planchas, Estiramientos).
   - Determina si el deporte se basa principalmente en el entrenamiento con pesas (por ejemplo, Halterofilia, Powerlifting, Fisicoculturismo, CrossFit).
     - Si ES un deporte de entrenamiento con pesas:
       - Establece 'isWeightTraining' en true.
