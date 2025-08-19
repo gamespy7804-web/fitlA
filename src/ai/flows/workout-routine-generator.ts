@@ -29,7 +29,7 @@ export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
 const ExerciseDetailSchema = z.object({
   name: z.string().describe('Name of the exercise.'),
   sets: z.string().describe('Number of sets.'),
-  reps: z.string().describe('Number of repetitions or duration.'),
+  reps: z.string().describe('Number of repetitions (e.g., "8-12") or a duration in seconds (e.g., "30 seg").'),
   rest: z.string().describe('Rest time between sets.'),
   requiresFeedback: z.boolean().describe('Whether this exercise requires video feedback for form correction.'),
   requiresWeight: z.boolean().describe('Whether this exercise requires weight to be logged.'),
@@ -84,6 +84,7 @@ const prompt = ai.definePrompt({
   - Ten en cuenta todos los parámetros del usuario: deporte, objetivos, nivel de condición física, edad, peso, sexo y sus respuestas a las preguntas aclaratorias.
   - Para CADA ejercicio, determina si se beneficiaría de un análisis de la técnica mediante vídeo para corregir la postura. Establece 'requiresFeedback' en true para ejercicios complejos o de alto riesgo como Sentadillas, Pesos Muertos, Press de Banca, Saltos al cajón, etc. Para ejercicios más simples como planchas o estiramientos, establécelo en false.
   - Para CADA ejercicio, determina si se debe registrar el peso. Establece 'requiresWeight' en true para ejercicios que normalmente implican levantamiento de pesas (p. ej., Sentadillas, Press de Banca, Peso Muerto) y en false para ejercicios de peso corporal (p. ej., Flexiones, Planchas, Estiramientos).
+  - Para CADA ejercicio, el campo 'reps' DEBE contener un número de repeticiones (p. ej., "8-12") O una duración (p. ej., "30 seg"). NUNCA debe contener ambos.
   - Determina si el deporte se basa principalmente en el entrenamiento con pesas (por ejemplo, Halterofilia, Powerlifting, Fisicoculturismo, CrossFit).
     - Si ES un deporte de entrenamiento con pesas:
       - Establece 'isWeightTraining' en true.
