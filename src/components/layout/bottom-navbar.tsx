@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Scan, User, Bot, Gamepad2 } from 'lucide-react';
+import { Home, Scan, User, Bot, Gamepad2, BarChart2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -14,13 +14,7 @@ import { Dumbbell, ClipboardList } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
-  { 
-    icon: Bot, 
-    label: 'Productividad',
-    subItems: [
-      { href: '/log', icon: ClipboardList, label: 'Registro' },
-    ] 
-  },
+  { href: '/log', icon: BarChart2, label: 'Productividad' },
   { href: '/feedback', icon: Scan, label: 'Análisis' },
   { href: '/games', icon: Gamepad2, label: 'Juegos' },
   { href: '/settings', icon: User, label: 'Perfil' },
