@@ -7,13 +7,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Loader2, Send, User } from 'lucide-react';
+import { Bot, Loader2, Send, User, Sparkles } from 'lucide-react';
 import { chat } from '@/ai/flows/chatbot-flow';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 type Message = {
@@ -25,9 +26,10 @@ type Message = {
 interface ChatbotSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenGenerator: () => void;
 }
 
-export function ChatbotSheet({ open, onOpenChange }: ChatbotSheetProps) {
+export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotSheetProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,6 +99,11 @@ export function ChatbotSheet({ open, onOpenChange }: ChatbotSheetProps) {
         </SheetHeader>
         <ScrollArea className="flex-1 my-4 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
+            {messages.length === 0 && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                    <p>¡Hola! Soy tu asistente de fitness. ¿En qué puedo ayudarte hoy?</p>
+                </div>
+            )}
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -145,20 +152,26 @@ export function ChatbotSheet({ open, onOpenChange }: ChatbotSheetProps) {
             )}
           </div>
         </ScrollArea>
-        <div className="flex items-center gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Escribe tu mensaje..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-            <Send className="w-4 h-4" />
-            <span className="sr-only">Enviar</span>
-          </Button>
-        </div>
+        <SheetFooter className="flex-col sm:flex-col gap-2">
+            <Button variant="outline" onClick={onOpenGenerator}>
+                <Sparkles className="mr-2" />
+                Generar Nueva Rutina
+            </Button>
+            <div className="flex items-center gap-2">
+            <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Escribe tu mensaje..."
+                disabled={isLoading}
+                className="flex-1"
+            />
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+                <Send className="w-4 h-4" />
+                <span className="sr-only">Enviar</span>
+            </Button>
+            </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

@@ -55,8 +55,13 @@ const formSchema = z.object({
   clarificationAnswers: z.string().optional(),
 });
 
-export function WorkoutGeneratorDialog({ children }: { children?: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
+interface WorkoutGeneratorDialogProps {
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function WorkoutGeneratorDialog({ children, open, onOpenChange }: WorkoutGeneratorDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
@@ -124,7 +129,7 @@ export function WorkoutGeneratorDialog({ children }: { children?: React.ReactNod
   }
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    onOpenChange?.(open);
     if (!open) {
       form.reset();
       setResult(null);
@@ -134,18 +139,13 @@ export function WorkoutGeneratorDialog({ children }: { children?: React.ReactNod
   };
   
   const handleDialogClose = () => {
-    setIsOpen(false);
+    handleOpenChange(false);
     window.location.reload();
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted'>
-            <Sparkles />
-            <span>Generar Nuevo Entrenamiento</span>
-        </button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-headline flex items-center gap-2">

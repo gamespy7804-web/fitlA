@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, Scan, User, Plus } from 'lucide-react';
+import { Home, BarChart2, Scan, User, Plus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import React from 'react';
+import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
+import { AdaptiveProgressionDialog } from '@/app/(app)/dashboard/adaptive-progression-dialog';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
@@ -43,7 +45,12 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                         {childrenArray[1]}
                       </DropdownMenuItem>
                        <DropdownMenuItem asChild>
-                        {childrenArray[0]}
+                         <WorkoutGeneratorDialog>
+                            <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted'>
+                                <Sparkles />
+                                <span>Generar Nuevo Entrenamiento</span>
+                            </button>
+                        </WorkoutGeneratorDialog>
                       </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
