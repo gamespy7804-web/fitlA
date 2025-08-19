@@ -18,7 +18,6 @@ const navItems = [
     icon: Bot, 
     label: 'Productividad',
     subItems: [
-      { href: '/workout', icon: Dumbbell, label: 'Rutina' },
       { href: '/log', icon: ClipboardList, label: 'Registro' },
     ] 
   },
