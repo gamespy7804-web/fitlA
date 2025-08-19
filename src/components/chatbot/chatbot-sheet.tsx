@@ -12,10 +12,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Loader2, Send, User, Sparkles } from 'lucide-react';
+import { Bot, Loader2, Send, User, Sparkles, Plus } from 'lucide-react';
 import { chat } from '@/ai/flows/chatbot-flow';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type Message = {
   id: string;
@@ -152,12 +158,21 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
             )}
           </div>
         </ScrollArea>
-        <SheetFooter className="flex-col sm:flex-col gap-2">
-            <Button variant="outline" onClick={onOpenGenerator}>
-                <Sparkles className="mr-2" />
-                Generar Nueva Rutina
-            </Button>
+        <SheetFooter>
             <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Plus />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top">
+                <DropdownMenuItem onClick={onOpenGenerator}>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span>Generar Nueva Rutina</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
