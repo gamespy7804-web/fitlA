@@ -33,6 +33,13 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
   const allSetsInExercise = exercise.sets.length;
   const isLastSet = setIndex === allSetsInExercise - 1;
 
+  const isSetDataEntered = () => {
+    if (exercise.originalExercise.requiresWeight) {
+      return (set.reps > 0) && (set.weight > 0);
+    }
+    return set.reps > 0;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -91,7 +98,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
         </div>
 
         <div className="mt-6 text-center">
-            <Button size="lg" onClick={handleCompleteClick} className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button size="lg" onClick={handleCompleteClick} disabled={!isSetDataEntered()} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Check className="mr-2"/>
                 {isLastSet ? "Finalizar Ejercicio" : "Listo para Descansar"}
             </Button>
