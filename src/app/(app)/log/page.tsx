@@ -1,3 +1,5 @@
+'use client';
+
 import { ProgressChart } from '@/components/client/progress-chart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,22 +14,37 @@ import {
 import { Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
 
-const logData = [
-  { date: '2024-07-22', workout: 'Fuerza del Tren Superior', duration: '55 min', volume: '5,400 kg' },
-  { date: '2024-07-20', workout: 'Potencia del Tren Inferior', duration: '65 min', volume: '8,200 kg' },
-  { date: '2024-07-18', workout: 'Acondicionamiento de Cuerpo Completo', duration: '45 min', volume: 'N/A' },
-  { date: '2024-07-15', workout: 'Fuerza del Tren Superior', duration: '50 min', volume: '5,150 kg' },
-  { date: '2024-06-25', workout: 'Fuerza del Tren Superior', duration: '50 min', volume: '4,900 kg' },
-  { date: '2024-06-22', workout: 'Potencia del Tren Inferior', duration: '60 min', volume: '7,800 kg' },
-  { date: '2024-05-15', workout: 'Acondicionamiento de Cuerpo Completo', duration: '45 min', volume: 'N/A' },
-  { date: '2024-05-10', workout: 'Fuerza del Tren Superior', duration: '52 min', volume: '4,500 kg' },
-];
+type LogEntry = {
+  date: string;
+  workout: string;
+  duration: string;
+  volume: string;
+};
 
 export default function LogPage() {
+  const [logData, setLogData] = useState<LogEntry[]>([]);
+
+  useEffect(() => {
+    // In a real app, you would fetch this from a database.
+    // For this demo, we'll use localStorage.
+    const completed = JSON.parse(
+      localStorage.getItem('completedWorkouts') || '[]'
+    ) as { date: string; workout: string; duration: number; volume: number }[];
+
+    const formattedData = completed.map((item) => ({
+      ...item,
+      duration: `${item.duration} min`,
+      volume: item.volume > 0 ? `${item.volume.toLocaleString()} kg` : 'N/A',
+    })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    setLogData(formattedData);
+  }, []);
+
   return (
     <div className="space-y-6">
-       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
             Registro de Entrenamiento
@@ -36,7 +53,7 @@ export default function LogPage() {
             Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.
           </p>
         </div>
-        <Button variant="secondary">
+        <Button variant="secondary" disabled={logData.length === 0}>
           <Share2 className="mr-2" />
           Compartir Mi Progreso
         </Button>
@@ -47,31 +64,40 @@ export default function LogPage() {
           <CardTitle className="font-headline">Historial de Entrenamiento</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Entrenamiento</TableHead>
-                <TableHead>Duración</TableHead>
-                <TableHead>Volumen Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {logData.map((log) => (
-                <TableRow key={log.date}>
-                  <TableCell className="font-medium">
-                    {format(new Date(log.date), "d 'de' MMMM, yyyy", { locale: es })}
-                  </TableCell>
-                  <TableCell>{log.workout}</TableCell>
-                  <TableCell>{log.duration}</TableCell>
-                  <TableCell>{log.volume}</TableCell>
+          {logData.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Entrenamiento</TableHead>
+                  <TableHead>Duración</TableHead>
+                  <TableHead>Volumen Total</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {logData.map((log) => (
+                  <TableRow key={log.date}>
+                    <TableCell className="font-medium">
+                      {format(new Date(log.date), "d 'de' MMMM, yyyy", {
+                        locale: es,
+                      })}
+                    </TableCell>
+                    <TableCell>{log.workout}</TableCell>
+                    <TableCell>{log.duration}</TableCell>
+                    <TableCell>{log.volume}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center text-muted-foreground py-12">
+              <p>Aún no has registrado ningún entrenamiento.</p>
+              <p className="text-sm">Completa una sesión para verla aquí.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
-      
+
       <ProgressChart />
     </div>
   );
