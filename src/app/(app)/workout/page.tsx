@@ -9,7 +9,7 @@ import {
 } from '@/ai/flows/workout-routine-generator';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Flame, Loader2, Dumbbell } from 'lucide-react';
+import { Flame, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
@@ -21,6 +21,7 @@ export default function WorkoutPage() {
   const [day, setDay] = useState<DaySchema | null>(null);
   const [exerciseLog, setExerciseLog] = useState<ExerciseLog[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,49 +72,40 @@ export default function WorkoutPage() {
     setExerciseLog(newLog);
   };
 
-  const updateSetLog = (exIndex: number, newSets: SetLog[]) => {
+  const updateSetLog = (exIndex: number, setIndex: number, newSet: SetLog) => {
     const newLog = [...exerciseLog];
-    newLog[exIndex].sets = newSets;
+    newLog[exIndex].sets[setIndex] = newSet;
     setExerciseLog(newLog);
   };
   
   const handleSetComplete = () => {
-     // Find the next uncompleted set in the current exercise
-    const currentSets = exerciseLog[currentExerciseIndex].sets;
-    const nextSetIndex = currentSets.findIndex(set => !set.completed);
-  
-    // If all sets in the current exercise are complete, move to the next exercise
-    if (nextSetIndex === -1) {
-      if (currentExerciseIndex < exerciseLog.length - 1) {
-        // Start rest period before next exercise
-        const restTime = parseInt(exerciseLog[currentExerciseIndex].originalExercise.rest) || 60;
-        setRestDuration(restTime);
-        setIsResting(true);
-      } else {
-         // This was the last set of the last exercise
-         handleCompleteWorkout();
-      }
+    const newLog = [...exerciseLog];
+    newLog[currentExerciseIndex].sets[currentSetIndex].completed = true;
+    setExerciseLog(newLog);
+
+    const isLastSetOfExercise = currentSetIndex === exerciseLog[currentExerciseIndex].sets.length - 1;
+    const isLastExercise = currentExerciseIndex === exerciseLog.length - 1;
+
+    if (isLastSetOfExercise && isLastExercise) {
+      handleCompleteWorkout();
     } else {
-       // Start rest for the next set
-       const restTime = parseInt(exerciseLog[currentExerciseIndex].originalExercise.rest) || 60;
-       setRestDuration(restTime);
-       setIsResting(true);
+      const restTime = parseInt(exerciseLog[currentExerciseIndex].originalExercise.rest) || 60;
+      setRestDuration(restTime);
+      setIsResting(true);
     }
   };
 
   const handleRestComplete = () => {
     setIsResting(false);
-    const currentSets = exerciseLog[currentExerciseIndex].sets;
-    const isExerciseFinished = currentSets.every(set => set.completed);
+    
+    const isLastSetOfExercise = currentSetIndex === exerciseLog[currentExerciseIndex].sets.length - 1;
 
-    if (isExerciseFinished) {
-      if (currentExerciseIndex < exerciseLog.length - 1) {
-        setCurrentExerciseIndex(currentExerciseIndex + 1);
-      } else {
-        handleCompleteWorkout();
-      }
+    if (isLastSetOfExercise) {
+      setCurrentExerciseIndex(currentExerciseIndex + 1);
+      setCurrentSetIndex(0);
+    } else {
+      setCurrentSetIndex(currentSetIndex + 1);
     }
-    // If not finished, the user will just proceed to the next set within the same exercise card
   };
 
   const handleCompleteWorkout = () => {
@@ -184,9 +176,11 @@ export default function WorkoutPage() {
 
       {!allExercisesComplete ? (
         <WorkoutExerciseCard
-          key={currentExercise.name}
+          key={`${currentExercise.name}-${currentSetIndex}`}
           exercise={currentExercise}
-          onSetsChange={(newSets) => updateSetLog(currentExerciseIndex, newSets)}
+          set={currentExercise.sets[currentSetIndex]}
+          setIndex={currentSetIndex}
+          onSetChange={(newSet) => updateSetLog(currentExerciseIndex, currentSetIndex, newSet)}
           onSetComplete={handleSetComplete}
         />
       ) : (
@@ -200,15 +194,6 @@ export default function WorkoutPage() {
              </Button>
            </CardContent>
         </Card>
-      )}
-
-      {allExercisesComplete && (
-         <div className="mt-6 text-center">
-            <Button size="lg" onClick={handleCompleteWorkout}>
-              <Flame className="mr-2" />
-              Completar Entrenamiento
-            </Button>
-          </div>
       )}
     </div>
   );
