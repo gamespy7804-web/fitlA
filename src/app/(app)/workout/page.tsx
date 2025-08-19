@@ -13,6 +13,7 @@ import { Flame, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
+import { Stopwatch } from './stopwatch';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
@@ -23,6 +24,7 @@ export default function WorkoutPage() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
+  const [isTiming, setIsTiming] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -108,6 +110,14 @@ export default function WorkoutPage() {
     }
   };
 
+  const handleStopwatchDone = (time: number) => {
+    // Update the reps for the current set with the stopwatch time
+    const newLog = [...exerciseLog];
+    newLog[currentExerciseIndex].sets[currentSetIndex].reps = time;
+    setExerciseLog(newLog);
+    setIsTiming(false);
+  };
+
   const handleCompleteWorkout = () => {
     if (!day) return;
 
@@ -165,6 +175,10 @@ export default function WorkoutPage() {
   if (isResting) {
     return <RestTimer duration={restDuration} onComplete={handleRestComplete} />;
   }
+  
+  if (isTiming) {
+    return <Stopwatch onDone={handleStopwatchDone} />;
+  }
 
   if (!day || exerciseLog.length === 0) {
     return (
@@ -197,6 +211,7 @@ export default function WorkoutPage() {
           setIndex={currentSetIndex}
           onSetChange={(newSet) => updateSetLog(currentExerciseIndex, currentSetIndex, newSet)}
           onSetComplete={handleSetComplete}
+          onStartTimer={() => setIsTiming(true)}
         />
       ) : (
         <Card>

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Check, Repeat, Weight, Video, Zap } from 'lucide-react';
+import { Check, Repeat, Weight, Video, Timer } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
 
 interface WorkoutExerciseCardProps {
@@ -15,9 +15,10 @@ interface WorkoutExerciseCardProps {
   setIndex: number;
   onSetChange: (set: SetLog) => void;
   onSetComplete: () => void;
+  onStartTimer: () => void;
 }
 
-export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSetComplete }: WorkoutExerciseCardProps) {
+export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSetComplete, onStartTimer }: WorkoutExerciseCardProps) {
 
   const handleSetFieldChange = (field: 'weight' | 'reps', value: string) => {
     const newSet = { ...set };
@@ -32,8 +33,14 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
   
   const allSetsInExercise = exercise.sets.length;
   const isLastSet = setIndex === allSetsInExercise - 1;
+  const isTimedExercise = exercise.originalExercise.reps.includes('seg');
 
   const isSetDataEntered = () => {
+    // For timed exercises, we only need a value greater than 0 in reps (seconds)
+    if (isTimedExercise) {
+        return set.reps > 0;
+    }
+    // For rep-based exercises
     if (exercise.originalExercise.requiresWeight) {
       return (set.reps > 0) && (set.weight > 0);
     }
@@ -87,7 +94,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
                 <Input
                   id={`reps-${setIndex}`}
                   type="number"
-                  placeholder={exercise.originalExercise.reps.includes('seg') ? 'Segundos' : 'Reps'}
+                  placeholder={isTimedExercise ? 'Segundos' : 'Reps'}
                   className="pl-9"
                   value={set.reps || ''}
                   onChange={(e) => handleSetFieldChange('reps', e.target.value)}
@@ -96,6 +103,15 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
             </div>
           </div>
         </div>
+
+        {isTimedExercise && (
+             <div className="mt-4 text-center">
+                <Button variant="outline" onClick={onStartTimer}>
+                    <Timer className="mr-2" />
+                    Iniciar Cronómetro
+                </Button>
+            </div>
+        )}
 
         <div className="mt-6 text-center">
             <Button size="lg" onClick={handleCompleteClick} disabled={!isSetDataEntered()} className="bg-accent text-accent-foreground hover:bg-accent/90">
