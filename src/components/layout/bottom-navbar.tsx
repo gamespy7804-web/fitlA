@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Dumbbell, Library, ClipboardList } from 'lucide-react';
+import { Dumbbell, ClipboardList } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
@@ -20,7 +20,6 @@ const navItems = [
     subItems: [
       { href: '/workout', icon: Dumbbell, label: 'Rutina' },
       { href: '/log', icon: ClipboardList, label: 'Registro' },
-      { href: '/library', icon: Library, label: 'Ejercicios' },
     ] 
   },
   { href: '/feedback', icon: Scan, label: 'Análisis' },
