@@ -120,16 +120,31 @@ export default function WorkoutPage() {
       });
     });
 
-    const completedWorkout = {
+    // Save summary for chart
+    const completedWorkoutSummary = {
       date: new Date().toISOString(),
       workout: day.title,
       duration: day.duration,
       volume: totalVolume,
     };
 
-    const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
-    allCompleted.push(completedWorkout);
-    localStorage.setItem('completedWorkouts', JSON.stringify(allCompleted));
+    const allCompletedSummaries = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
+    allCompletedSummaries.push(completedWorkoutSummary);
+    localStorage.setItem('completedWorkouts', JSON.stringify(allCompletedSummaries));
+
+    // Save detailed log for adaptive progression
+    const detailedWorkoutLog = {
+      date: new Date().toISOString(),
+      title: day.title,
+      log: exerciseLog.map(ex => ({
+          name: ex.name,
+          sets: ex.sets
+      }))
+    };
+    
+    const allDetailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
+    allDetailedLogs.push(detailedWorkoutLog);
+    localStorage.setItem('detailedWorkoutLogs', JSON.stringify(allDetailedLogs));
 
     toast({
       title: '¡Entrenamiento Completado!',
