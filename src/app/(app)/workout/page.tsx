@@ -122,7 +122,12 @@ function WorkoutPageContent() {
     if (!day) return;
 
     let totalVolume = 0;
+    const exercisesForFeedback: string[] = [];
+
     exerciseLog.forEach(ex => {
+      if (ex.originalExercise.requiresFeedback) {
+          exercisesForFeedback.push(ex.name);
+      }
       ex.sets.forEach(set => {
         if (set.completed) {
           totalVolume += (set.weight || 0) * (set.reps || 0);
@@ -156,10 +161,23 @@ function WorkoutPageContent() {
     allDetailedLogs.push(detailedWorkoutLog);
     localStorage.setItem('detailedWorkoutLogs', JSON.stringify(allDetailedLogs));
 
-    toast({
-      title: '¡Entrenamiento Completado!',
-      description: `${day.title} ha sido guardado. Redirigiendo...`,
-    });
+    // Save exercises that need feedback
+    if (exercisesForFeedback.length > 0) {
+        const pendingFeedback = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
+        const newPending = [...new Set([...pendingFeedback, ...exercisesForFeedback])];
+        localStorage.setItem('pendingFeedbackExercises', JSON.stringify(newPending));
+        
+        toast({
+          title: '¡Buen trabajo!',
+          description: `Tienes ${newPending.length} ejercicio(s) nuevo(s) para análisis de forma. Ve a la herramienta de feedback para grabarlos.`,
+          duration: 5000,
+        });
+    } else {
+        toast({
+            title: '¡Entrenamiento Completado!',
+            description: `${day.title} ha sido guardado. Redirigiendo...`,
+        });
+    }
 
     setTimeout(() => router.push('/dashboard'), 2000);
   };

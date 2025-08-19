@@ -10,8 +10,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
+import { Badge } from '../ui/badge';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
@@ -23,6 +24,19 @@ const navItems = [
 
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+        const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
+        setPendingFeedbackCount(pending.length);
+    }
+    updateCount();
+    window.addEventListener('storage', updateCount);
+    return () => {
+        window.removeEventListener('storage', updateCount);
+    }
+  }, [])
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
@@ -48,9 +62,14 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                         </WorkoutGeneratorDialog>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                          <Link href="/feedback" className="w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted">
-                            <Scan />
-                            <span>Análisis de Forma</span>
+                          <Link href="/feedback" className="w-full flex items-center justify-between gap-2 text-left p-2 rounded-md hover:bg-muted">
+                            <div className='flex items-center gap-2'>
+                                <Scan />
+                                <span>Análisis de Forma</span>
+                            </div>
+                            {pendingFeedbackCount > 0 && (
+                                <Badge variant="destructive" className='h-6 w-6 flex items-center justify-center p-0'>{pendingFeedbackCount}</Badge>
+                            )}
                           </Link>
                       </DropdownMenuItem>
                   </DropdownMenuContent>
