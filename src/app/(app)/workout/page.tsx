@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   type WorkoutRoutineOutput,
@@ -18,7 +18,7 @@ import { Stopwatch } from './stopwatch';
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
 
-export default function WorkoutPage() {
+function WorkoutPageContent() {
   const [day, setDay] = useState<DaySchema | null>(null);
   const [exerciseLog, setExerciseLog] = useState<ExerciseLog[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -59,7 +59,7 @@ export default function WorkoutPage() {
       router.push('/dashboard');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   const initializeWorkoutLog = (dayData: DaySchema) => {
     const newLog = dayData.exercises.map((exercise) => ({
@@ -224,4 +224,13 @@ export default function WorkoutPage() {
       )}
     </div>
   );
+}
+
+
+export default function WorkoutPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <WorkoutPageContent />
+    </Suspense>
+  )
 }
