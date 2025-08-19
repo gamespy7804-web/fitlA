@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import {
   WorkoutRoutineOutput,
 } from '@/ai/flows/workout-routine-generator';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 type SetLog = { weight: number; reps: number; completed: boolean };
@@ -29,6 +29,8 @@ export default function WorkoutPage() {
   const [workoutLog, setWorkoutLog] = useState<DayLog[]>([]);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dayParam = searchParams.get('day');
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -37,16 +39,18 @@ export default function WorkoutPage() {
       setWorkoutPlan(parsedRoutine);
       initializeWorkoutLog(parsedRoutine);
     } else {
-      // If no routine, maybe redirect to generator or show a message
       router.push('/dashboard');
     }
   }, [router]);
 
   const initializeWorkoutLog = (plan: WorkoutRoutineOutput) => {
     if (plan.isWeightTraining === false && plan.structuredRoutine) {
+       const completed = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as { workout: string }[];
+       const completedTitles = completed.map(c => c.workout);
+
       const newLog = plan.structuredRoutine.map((day) => ({
         title: day.title,
-        completed: false,
+        completed: completedTitles.includes(day.title),
         exercises: day.exercises.map((exercise) => ({
           name: exercise.name,
           sets: Array.from({ length: parseInt(exercise.sets, 10) || 3 }, () => ({
@@ -85,7 +89,7 @@ export default function WorkoutPage() {
     if (!day) return;
 
     let totalVolume = 0;
-    let totalDuration = 0; // Simple duration estimate
+    let totalDuration = 0;
     const workoutTitle = workoutPlan?.structuredRoutine?.[dayIndex].title || 'Entrenamiento';
     const workoutOriginalDuration = workoutPlan?.structuredRoutine?.[dayIndex].duration || 60;
 
@@ -94,19 +98,21 @@ export default function WorkoutPage() {
       ex.sets.forEach(set => {
         if (set.completed) {
           totalVolume += set.weight * set.reps;
-          // Estimate 2 mins per completed set (work + rest)
           totalDuration += 2;
         }
       })
     });
 
     if (totalVolume === 0 && totalDuration === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Entrenamiento Vacío',
-        description: 'Debes completar al menos una serie para guardar el registro.',
-      });
-      return;
+       const hasCompletedSets = day.exercises.some(ex => ex.sets.some(s => s.completed));
+       if (!hasCompletedSets) {
+          toast({
+            variant: 'destructive',
+            title: 'Entrenamiento Vacío',
+            description: 'Debes completar al menos una serie para guardar el registro.',
+          });
+          return;
+       }
     }
 
     const completedWorkout = {
@@ -116,20 +122,22 @@ export default function WorkoutPage() {
       volume: totalVolume,
     };
 
-    // Store in local storage
     const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as any[];
     allCompleted.push(completedWorkout);
     localStorage.setItem('completedWorkouts', JSON.stringify(allCompleted));
     
-    // Mark day as complete in UI
     const newLog = [...workoutLog];
     newLog[dayIndex].completed = true;
     setWorkoutLog(newLog);
 
     toast({
       title: '¡Entrenamiento Completado!',
-      description: `${workoutTitle} ha sido guardado en tu registro.`,
+      description: `${workoutTitle} ha sido guardado en tu registro. Redirigiendo al panel...`,
     });
+    
+    setTimeout(() => {
+        router.push('/dashboard');
+    }, 2000);
   };
 
   if (!workoutPlan) {
@@ -137,13 +145,15 @@ export default function WorkoutPage() {
   }
   
   const routine = workoutPlan.structuredRoutine;
+  const defaultAccordionValue = dayParam ? `item-${dayParam}` : undefined;
+
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-             Tu Entrenamiento
+             Tu Plan de Entrenamiento
           </h1>
           <p className="text-muted-foreground">
             Registra tus series, repeticiones y peso para seguir tu progreso.
@@ -151,11 +161,11 @@ export default function WorkoutPage() {
         </div>
         <Button variant="secondary">
           <TrendingUp className="mr-2" />
-          Generar Progresión
+          Sugerir Progresión
         </Button>
       </div>
        {workoutPlan.isWeightTraining === false && routine ? (
-          <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
+          <Accordion type="single" collapsible defaultValue={defaultAccordionValue} className="w-full">
             {routine.map((day, dayIndex) => (
               <AccordionItem value={`item-${dayIndex}`} key={day.day} disabled={workoutLog[dayIndex]?.completed}>
                 <AccordionTrigger>
@@ -183,7 +193,7 @@ export default function WorkoutPage() {
                                <Button asChild size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
                                 <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`}>
                                   <Video className="mr-2" />
-                                  Grabar
+                                  Analizar
                                 </Link>
                               </Button>
                             )}
@@ -250,7 +260,7 @@ export default function WorkoutPage() {
                   <div className="mt-6 text-center">
                     <Button size="lg" onClick={() => handleCompleteWorkout(dayIndex)}>
                       <Flame className="mr-2" />
-                      Completar Entrenamiento de {day.title}
+                      Completar Entrenamiento
                     </Button>
                   </div>
                 </AccordionContent>
