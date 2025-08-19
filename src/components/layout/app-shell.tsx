@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from 'next/navigation';
-import { Bot, User } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -37,8 +37,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <p>Pregúntale a la IA (Próximamente)</p>
               </TooltipContent>
             </Tooltip>
-            <User className="w-5 h-5" />
-            <span className="font-medium text-sm">Usuario</span>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
