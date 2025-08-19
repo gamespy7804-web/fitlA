@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -38,8 +38,7 @@ const chartConfig = {
 export function ProgressChart() {
   const [chartData, setChartData] = useState<any[]>([]);
 
-  useEffect(() => {
-    // In a real app, you'd fetch this data. Here we use local storage.
+  const loadChartData = useCallback(() => {
     const completedWorkouts: CompletedWorkout[] = JSON.parse(
       localStorage.getItem('completedWorkouts') || '[]'
     );
@@ -59,12 +58,25 @@ export function ProgressChart() {
       .sort((a, b) => a.month.localeCompare(b.month))
       .map(d => ({
         ...d,
-        // Format month name for display
-        month: format(new Date(d.month), 'MMMM', { locale: es }),
+        month: format(new Date(`${d.month}-01`), "MMMM", { locale: es }),
       }));
       
     setChartData(sortedData);
   }, []);
+
+  useEffect(() => {
+    loadChartData();
+
+    // Add event listeners to update data when it changes
+    window.addEventListener('storage', loadChartData);
+    window.addEventListener('focus', loadChartData);
+
+    // Cleanup listeners
+    return () => {
+        window.removeEventListener('storage', loadChartData);
+        window.removeEventListener('focus', loadChartData);
+    };
+  }, [loadChartData]);
 
   return (
     <Card>
@@ -86,17 +98,19 @@ export function ProgressChart() {
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1, 3)}
               />
               <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" tickFormatter={(value) => `${value / 1000}k`} />
               <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--accent))" />
               <ChartTooltip
+                cursor={false}
                 content={<ChartTooltipContent
                   formatter={(value, name) => {
-                    if (name === 'volume') return `${value.toLocaleString()} kg`;
+                    if (name === 'volume') return `${(value as number).toLocaleString()} kg`;
                     if (name === 'duration') return `${value} min`;
                     return value;
                   }}
+                  labelFormatter={(label) => <span className='capitalize'>{label}</span>}
                 />}
               />
               <Bar yAxisId="left" dataKey="volume" fill="var(--color-volume)" radius={4} />

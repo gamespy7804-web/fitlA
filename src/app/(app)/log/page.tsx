@@ -14,7 +14,7 @@ import {
 import { Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 type LogEntry = {
   date: string;
@@ -25,10 +25,8 @@ type LogEntry = {
 
 export default function LogPage() {
   const [logData, setLogData] = useState<LogEntry[]>([]);
-
-  useEffect(() => {
-    // In a real app, you would fetch this from a database.
-    // For this demo, we'll use localStorage.
+  
+  const loadLogData = useCallback(() => {
     const completed = JSON.parse(
       localStorage.getItem('completedWorkouts') || '[]'
     ) as { date: string; workout: string; duration: number; volume: number }[];
@@ -41,6 +39,21 @@ export default function LogPage() {
 
     setLogData(formattedData);
   }, []);
+
+
+  useEffect(() => {
+    loadLogData();
+
+    // Add event listeners to update data when it changes in another tab or on focus
+    window.addEventListener('storage', loadLogData);
+    window.addEventListener('focus', loadLogData);
+
+    // Cleanup listeners
+    return () => {
+      window.removeEventListener('storage', loadLogData);
+      window.removeEventListener('focus', loadLogData);
+    };
+  }, [loadLogData]);
 
   return (
     <div className="space-y-6">
@@ -75,8 +88,8 @@ export default function LogPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logData.map((log) => (
-                  <TableRow key={log.date}>
+                {logData.map((log, index) => (
+                  <TableRow key={`${log.date}-${index}`}>
                     <TableCell className="font-medium">
                       {format(new Date(log.date), "d 'de' MMMM, yyyy", {
                         locale: es,
