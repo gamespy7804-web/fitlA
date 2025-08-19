@@ -1,287 +1,215 @@
 'use client';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { Check, Flame, Repeat, TrendingUp, Weight, Video } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-  WorkoutRoutineOutput,
-} from '@/ai/flows/workout-routine-generator';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import {
+  type WorkoutRoutineOutput,
+  type DailyWorkoutSchema as DaySchema,
+  type ExerciseDetailSchema as ExerciseSchema,
+} from '@/ai/flows/workout-routine-generator';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Flame, Loader2, Dumbbell } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { WorkoutExerciseCard } from './workout-exercise-card';
+import { RestTimer } from './rest-timer';
 
-type SetLog = { weight: number; reps: number; completed: boolean };
-type ExerciseLog = { name: string; sets: SetLog[] };
-type DayLog = { title: string; exercises: ExerciseLog[]; completed: boolean };
+export type SetLog = { weight: number; reps: number; completed: boolean };
+export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
 
 export default function WorkoutPage() {
-  const [workoutPlan, setWorkoutPlan] = useState<WorkoutRoutineOutput | null>(null);
-  const [workoutLog, setWorkoutLog] = useState<DayLog[]>([]);
+  const [day, setDay] = useState<DaySchema | null>(null);
+  const [exerciseLog, setExerciseLog] = useState<ExerciseLog[]>([]);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [restDuration, setRestDuration] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dayParam = searchParams.get('day');
-
+  
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
-    if (storedRoutine) {
-      const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-      setWorkoutPlan(parsedRoutine);
-      initializeWorkoutLog(parsedRoutine);
+    const dayParam = searchParams.get('day');
+    
+    if (storedRoutine && dayParam) {
+      try {
+        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+        const dayIndex = parseInt(dayParam, 10);
+
+        if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine[dayIndex]) {
+          const targetDay = parsedRoutine.structuredRoutine[dayIndex];
+          setDay(targetDay);
+          initializeWorkoutLog(targetDay);
+        } else {
+          toast({ variant: 'destructive', title: 'Rutina no encontrada' });
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Error al cargar la rutina' });
+        router.push('/dashboard');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       router.push('/dashboard');
     }
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const initializeWorkoutLog = (plan: WorkoutRoutineOutput) => {
-    if (plan.isWeightTraining === false && plan.structuredRoutine) {
-       const completed = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as { workout: string }[];
-       const completedTitles = completed.map(c => c.workout);
+  const initializeWorkoutLog = (dayData: DaySchema) => {
+    const newLog = dayData.exercises.map((exercise) => ({
+      name: exercise.name,
+      originalExercise: exercise,
+      sets: Array.from({ length: parseInt(exercise.sets, 10) || 1 }, () => ({
+        weight: 0,
+        reps: 0,
+        completed: false,
+      })),
+    }));
+    setExerciseLog(newLog);
+  };
 
-      const newLog = plan.structuredRoutine.map((day) => ({
-        title: day.title,
-        completed: completedTitles.includes(day.title),
-        exercises: day.exercises.map((exercise) => ({
-          name: exercise.name,
-          sets: Array.from({ length: parseInt(exercise.sets, 10) || 3 }, () => ({
-            weight: 0,
-            reps: 0,
-            completed: false,
-          })),
-        })),
-      }));
-      setWorkoutLog(newLog);
+  const updateSetLog = (exIndex: number, newSets: SetLog[]) => {
+    const newLog = [...exerciseLog];
+    newLog[exIndex].sets = newSets;
+    setExerciseLog(newLog);
+  };
+  
+  const handleSetComplete = () => {
+     // Find the next uncompleted set in the current exercise
+    const currentSets = exerciseLog[currentExerciseIndex].sets;
+    const nextSetIndex = currentSets.findIndex(set => !set.completed);
+  
+    // If all sets in the current exercise are complete, move to the next exercise
+    if (nextSetIndex === -1) {
+      if (currentExerciseIndex < exerciseLog.length - 1) {
+        // Start rest period before next exercise
+        const restTime = parseInt(exerciseLog[currentExerciseIndex].originalExercise.rest) || 60;
+        setRestDuration(restTime);
+        setIsResting(true);
+      } else {
+         // This was the last set of the last exercise
+         handleCompleteWorkout();
+      }
+    } else {
+       // Start rest for the next set
+       const restTime = parseInt(exerciseLog[currentExerciseIndex].originalExercise.rest) || 60;
+       setRestDuration(restTime);
+       setIsResting(true);
     }
   };
 
-  const handleSetChange = (
-    dayIndex: number,
-    exIndex: number,
-    setIndex: number,
-    field: 'weight' | 'reps',
-    value: string
-  ) => {
-    const newLog = [...workoutLog];
-    const numValue = parseInt(value, 10) || 0;
-    newLog[dayIndex].exercises[exIndex].sets[setIndex][field] = numValue;
-    setWorkoutLog(newLog);
+  const handleRestComplete = () => {
+    setIsResting(false);
+    const currentSets = exerciseLog[currentExerciseIndex].sets;
+    const isExerciseFinished = currentSets.every(set => set.completed);
+
+    if (isExerciseFinished) {
+      if (currentExerciseIndex < exerciseLog.length - 1) {
+        setCurrentExerciseIndex(currentExerciseIndex + 1);
+      } else {
+        handleCompleteWorkout();
+      }
+    }
+    // If not finished, the user will just proceed to the next set within the same exercise card
   };
 
-  const toggleSetComplete = (dayIndex: number, exIndex: number, setIndex: number) => {
-    const newLog = [...workoutLog];
-    const currentStatus = newLog[dayIndex].exercises[exIndex].sets[setIndex].completed;
-    newLog[dayIndex].exercises[exIndex].sets[setIndex].completed = !currentStatus;
-    setWorkoutLog(newLog);
-  }
-
-  const handleCompleteWorkout = (dayIndex: number) => {
-    const day = workoutLog[dayIndex];
+  const handleCompleteWorkout = () => {
     if (!day) return;
 
     let totalVolume = 0;
-    let totalDuration = 0;
-    const workoutTitle = workoutPlan?.structuredRoutine?.[dayIndex].title || 'Entrenamiento';
-    const workoutOriginalDuration = workoutPlan?.structuredRoutine?.[dayIndex].duration || 60;
-
-
-    day.exercises.forEach(ex => {
+    exerciseLog.forEach(ex => {
       ex.sets.forEach(set => {
         if (set.completed) {
-          totalVolume += set.weight * set.reps;
-          totalDuration += 2;
+          totalVolume += (set.weight || 0) * (set.reps || 0);
         }
-      })
+      });
     });
-
-    if (totalVolume === 0 && totalDuration === 0) {
-       const hasCompletedSets = day.exercises.some(ex => ex.sets.some(s => s.completed));
-       if (!hasCompletedSets) {
-          toast({
-            variant: 'destructive',
-            title: 'Entrenamiento Vacío',
-            description: 'Debes completar al menos una serie para guardar el registro.',
-          });
-          return;
-       }
-    }
 
     const completedWorkout = {
       date: new Date().toISOString(),
-      workout: workoutTitle,
-      duration: workoutOriginalDuration,
+      workout: day.title,
+      duration: day.duration,
       volume: totalVolume,
     };
 
-    const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as any[];
+    const allCompleted = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
     allCompleted.push(completedWorkout);
     localStorage.setItem('completedWorkouts', JSON.stringify(allCompleted));
-    
-    const newLog = [...workoutLog];
-    newLog[dayIndex].completed = true;
-    setWorkoutLog(newLog);
 
     toast({
       title: '¡Entrenamiento Completado!',
-      description: `${workoutTitle} ha sido guardado en tu registro. Redirigiendo al panel...`,
+      description: `${day.title} ha sido guardado. Redirigiendo...`,
     });
-    
-    setTimeout(() => {
-        router.push('/dashboard');
-    }, 2000);
+
+    setTimeout(() => router.push('/dashboard'), 2000);
   };
-
-  if (!workoutPlan) {
-    return <div>Cargando rutina...</div>; // Or a better loading state
-  }
   
-  const routine = workoutPlan.structuredRoutine;
-  const defaultAccordionValue = dayParam ? `item-${dayParam}` : undefined;
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
+  if (isResting) {
+    return <RestTimer duration={restDuration} onComplete={handleRestComplete} />;
+  }
+
+  if (!day || exerciseLog.length === 0) {
+    return (
+      <Card className="text-center">
+        <CardHeader><CardTitle>Error al Cargar</CardTitle></CardHeader>
+        <CardContent><p>No se pudo cargar el entrenamiento del día.</p></CardContent>
+      </Card>
+    );
+  }
+
+  const currentExercise = exerciseLog[currentExerciseIndex];
+  const allExercisesComplete = currentExerciseIndex >= exerciseLog.length;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline">
-             Tu Plan de Entrenamiento
-          </h1>
-          <p className="text-muted-foreground">
-            Registra tus series, repeticiones y peso para seguir tu progreso.
-          </p>
-        </div>
-        <Button variant="secondary">
-          <TrendingUp className="mr-2" />
-          Sugerir Progresión
-        </Button>
+       <div>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">
+          {day.title}
+        </h1>
+        <p className="text-muted-foreground">
+          Ejercicio {currentExerciseIndex + 1} de {exerciseLog.length}
+        </p>
       </div>
-       {workoutPlan.isWeightTraining === false && routine ? (
-          <Accordion type="single" collapsible defaultValue={defaultAccordionValue} className="w-full">
-            {routine.map((day, dayIndex) => (
-              <AccordionItem value={`item-${dayIndex}`} key={day.day} disabled={workoutLog[dayIndex]?.completed}>
-                <AccordionTrigger>
-                  <div className="flex items-center gap-4 w-full">
-                    <Badge className="text-lg px-3 py-1">Día {day.day}</Badge>
-                    <span className="text-xl font-semibold font-headline">{day.title}</span>
-                    {workoutLog[dayIndex]?.completed && (
-                      <Badge variant="outline" className="ml-auto mr-4 bg-green-800/50 text-primary-foreground border-green-500">
-                        <Check className="mr-2" /> Completado
-                      </Badge>
-                    )}
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {day.exercises.map((exercise, exIndex) => (
-                      <Card key={exercise.name}>
-                        <CardHeader>
-                          <CardTitle className="flex justify-between items-center">
-                            <span className="flex-1">{exercise.name}</span>
-                            <Badge variant="outline" className="mx-2">
-                              {exercise.sets} series x {exercise.reps} reps
-                            </Badge>
-                            {exercise.requiresFeedback && (
-                               <Button asChild size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
-                                <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`}>
-                                  <Video className="mr-2" />
-                                  Analizar
-                                </Link>
-                              </Button>
-                            )}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                           {workoutLog[dayIndex]?.exercises[exIndex]?.sets.map((_, setIndex) => (
-                              <div key={setIndex} className="flex items-center gap-2 sm:gap-4">
-                                <div className="w-10 text-center font-bold text-primary">
-                                  Serie {setIndex + 1}
-                                </div>
-                                <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4">
-                                  {exercise.requiresWeight ? (
-                                    <div>
-                                      <Label
-                                        htmlFor={`weight-${dayIndex}-${exIndex}-${setIndex}`}
-                                        className="sr-only"
-                                      >
-                                        Peso
-                                      </Label>
-                                      <div className="relative">
-                                        <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                          id={`weight-${dayIndex}-${exIndex}-${setIndex}`}
-                                          type="number"
-                                          placeholder="Peso (kg)"
-                                          className="pl-9"
-                                          onChange={(e) => handleSetChange(dayIndex, exIndex, setIndex, 'weight', e.target.value)}
-                                        />
-                                      </div>
-                                    </div>
-                                  ) : <div />}
-                                  <div>
-                                    <Label
-                                      htmlFor={`reps-${dayIndex}-${exIndex}-${setIndex}`}
-                                      className="sr-only"
-                                    >
-                                      Reps
-                                    </Label>
-                                    <div className="relative">
-                                      <Repeat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                      <Input
-                                        id={`reps-${dayIndex}-${exIndex}-${setIndex}`}
-                                        type="number"
-                                        placeholder="Reps"
-                                        className="pl-9"
-                                        onChange={(e) => handleSetChange(dayIndex, exIndex, setIndex, 'reps', e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <Button
-                                  size="icon"
-                                  variant={workoutLog[dayIndex]?.exercises[exIndex]?.sets[setIndex]?.completed ? 'default' : 'ghost'}
-                                  onClick={() => toggleSetComplete(dayIndex, exIndex, setIndex)}
-                                  className={workoutLog[dayIndex]?.exercises[exIndex]?.sets[setIndex]?.completed ? "bg-green-500 hover:bg-green-600" : "text-muted-foreground hover:text-primary"}
-                                >
-                                  <Check />
-                                </Button>
-                              </div>
-                            ))}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  <div className="mt-6 text-center">
-                    <Button size="lg" onClick={() => handleCompleteWorkout(dayIndex)}>
-                      <Flame className="mr-2" />
-                      Completar Entrenamiento
-                    </Button>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Rutina de Entrenamiento con Pesas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap">{workoutPlan.routine}</p>
-              <p className="mt-4 text-sm text-muted-foreground">
-                El registro detallado para rutinas de entrenamiento con pesas estará disponible próximamente.
-              </p>
-            </CardContent>
-          </Card>
-       )}
+
+      {!allExercisesComplete ? (
+        <WorkoutExerciseCard
+          key={currentExercise.name}
+          exercise={currentExercise}
+          onSetsChange={(newSets) => updateSetLog(currentExerciseIndex, newSets)}
+          onSetComplete={handleSetComplete}
+        />
+      ) : (
+        <Card>
+           <CardHeader><CardTitle>¡Día completado!</CardTitle></CardHeader>
+           <CardContent className="text-center">
+             <p className="mb-4">Has completado todos los ejercicios para hoy.</p>
+             <Button size="lg" onClick={handleCompleteWorkout}>
+               <Flame className="mr-2" />
+               Finalizar y Guardar Entrenamiento
+             </Button>
+           </CardContent>
+        </Card>
+      )}
+
+      {allExercisesComplete && (
+         <div className="mt-6 text-center">
+            <Button size="lg" onClick={handleCompleteWorkout}>
+              <Flame className="mr-2" />
+              Completar Entrenamiento
+            </Button>
+          </div>
+      )}
     </div>
   );
 }
