@@ -6,23 +6,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-const MessageSchema = z.object({
-  role: z.enum(['user', 'model']),
-  content: z.string(),
-});
-
-export const ChatInputSchema = z.object({
-  history: z.array(MessageSchema).describe('The conversation history.'),
-  question: z.string().describe('The user\'s latest question.'),
-});
-export type ChatInput = z.infer<typeof ChatInputSchema>;
-
-export const ChatOutputSchema = z.object({
-  answer: z.string().describe('The AI-generated answer.'),
-});
-export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+import { z } from 'zod';
+import { ChatInputSchema, ChatOutputSchema, type ChatInput, type ChatOutput } from './types';
 
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {

@@ -35,3 +35,21 @@ export const WorkoutRoutineOutputSchema = z.object({
     .describe('A structured workout routine. Provided if isWeightTraining is false.'),
 });
 export type WorkoutRoutineOutput = z.infer<typeof WorkoutRoutineOutputSchema>;
+
+
+// Chatbot Schemas
+const MessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.string(),
+});
+
+export const ChatInputSchema = z.object({
+  history: z.array(MessageSchema).describe('The conversation history.'),
+  question: z.string().describe('The user\'s latest question.'),
+});
+export type ChatInput = z.infer<typeof ChatInputSchema>;
+
+export const ChatOutputSchema = z.object({
+  answer: z.string().describe('The AI-generated answer.'),
+});
+export type ChatOutput = z.infer<typeof ChatOutputSchema>;
