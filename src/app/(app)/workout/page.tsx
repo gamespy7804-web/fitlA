@@ -138,7 +138,7 @@ export default function WorkoutPage() {
       volume: totalVolume,
     };
 
-    const allCompletedSummaries = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
+    const allCompletedSummaries = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as any[];
     allCompletedSummaries.push(completedWorkoutSummary);
     localStorage.setItem('completedWorkouts', JSON.stringify(allCompletedSummaries));
 
@@ -195,12 +195,9 @@ export default function WorkoutPage() {
   return (
     <div className="space-y-6">
        <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">
-          {day.title}
-        </h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl text-center font-bold tracking-tight font-headline">
           Ejercicio {currentExerciseIndex + 1} de {exerciseLog.length}
-        </p>
+        </h1>
       </div>
 
       {!allExercisesComplete ? (
