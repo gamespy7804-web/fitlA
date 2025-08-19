@@ -176,8 +176,12 @@ export default function OnboardingPage() {
     try {
       const result = await generateWorkoutRoutine(values);
       console.log('Generated Routine:', result.structuredRoutine || result.routine);
-      toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
       // In a real app, you would save the routine to the user's state/DB
+      // For this demo, we'll store it in localStorage
+      localStorage.setItem('workoutRoutine', JSON.stringify(result));
+      localStorage.setItem('onboardingComplete', 'true');
+
+      toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
@@ -192,9 +196,9 @@ export default function OnboardingPage() {
     if (question.type === 'select') {
       let options: Record<string,string> = {};
       if (question.id === 'fitnessLevel') {
-        options = { principiante: 'beginner', intermedio: 'intermediate', avanzado: 'advanced' };
+        options = { Principiante: 'beginner', Intermedio: 'intermediate', Avanzado: 'advanced' };
       } else if (question.id === 'gender') {
-        options = { masculino: 'male', femenino: 'female', otro: 'other' };
+        options = { Masculino: 'male', Femenino: 'female', Otro: 'other' };
       }
 
       return (
@@ -233,10 +237,15 @@ export default function OnboardingPage() {
   const isClarificationStep = currentQuestionId === 'clarificationAnswers';
 
   const finalSteps = ['age', 'weight', 'gender', 'trainingDays', 'trainingDuration'];
+  // Calculate total steps: 3 initial questions + optional clarification question + final steps.
   const totalSteps = 3 + (clarificationQuestion ? 1 : 0) + finalSteps.length;
-  let completedSteps = currentQuestionIndex;
-  if(currentQuestionId === 'clarificationAnswers') {
-    completedSteps = questions.length - 1;
+  let completedSteps = 0;
+  if(isClarificationStep) {
+    completedSteps = 3;
+  } else if (currentQuestionIndex > 2) {
+    completedSteps = 3 + (clarificationQuestion ? 1 : 0) + (questions.findIndex(q => q.id === currentQuestionId) - questions.findIndex(q => q.id === 'age') +1)
+  } else {
+    completedSteps = currentQuestionIndex;
   }
 
 

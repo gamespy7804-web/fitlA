@@ -52,11 +52,15 @@ const formSchema = z.object({
   goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
   sport: z.string().min(3, 'El deporte debe tener al menos 3 caracteres.'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
+  trainingDays: z.coerce.number().min(1).max(7),
+  trainingDuration: z.coerce.number().min(15).max(240),
+  clarificationAnswers: z.string().optional(),
 });
 
 export function WorkoutGeneratorDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const { toast } = useToast();
 
@@ -66,15 +70,49 @@ export function WorkoutGeneratorDialog() {
       goals: '',
       sport: '',
       fitnessLevel: 'intermediate',
+      trainingDays: 3,
+      trainingDuration: 60,
+      clarificationAnswers: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setResult(null);
+
+    // If there's a clarification question, it means this is the second step.
+    if (clarificationQuestion) {
+      try {
+        const routine = await generateWorkoutRoutine(values);
+        setResult(routine);
+        // In a real app, save this new routine
+        localStorage.setItem('workoutRoutine', JSON.stringify(routine));
+        setClarificationQuestion(''); // Reset for next time
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: 'destructive',
+          title: 'Error al generar la rutina',
+          description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // First step: get clarification question
     try {
-      const routine = await generateWorkoutRoutine(values);
-      setResult(routine);
+      const { sport, goals, fitnessLevel } = values;
+      const initialResult = await generateWorkoutRoutine({ sport, goals, fitnessLevel });
+      if (initialResult.clarificationQuestion) {
+        setClarificationQuestion(initialResult.clarificationQuestion);
+      } else {
+        // No clarification needed, generate full routine
+        const routine = await generateWorkoutRoutine(values);
+        setResult(routine);
+        localStorage.setItem('workoutRoutine', JSON.stringify(routine));
+      }
     } catch (error) {
       console.error(error);
       toast({
@@ -92,6 +130,7 @@ export function WorkoutGeneratorDialog() {
     if (!open) {
       form.reset();
       setResult(null);
+      setClarificationQuestion('');
       setIsLoading(false);
     }
   };
@@ -110,80 +149,130 @@ export function WorkoutGeneratorDialog() {
             <Sparkles className="text-primary" /> Generador de Entrenamiento con IA
           </DialogTitle>
           <DialogDescription>
-            Describe tus metas para obtener una rutina de entrenamiento personalizada.
+            {clarificationQuestion 
+              ? 'Proporciona más detalles para afinar tu rutina.'
+              : 'Describe tus metas para obtener una rutina de entrenamiento personalizada.'}
           </DialogDescription>
         </DialogHeader>
-        {!result && (
+        {!result ? (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="goals"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tus Metas</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="ej., Perder peso, ganar músculo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sport"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Deporte Principal</FormLabel>
-                    <FormControl>
-                      <Input placeholder="ej., Fútbol, Baloncesto" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fitnessLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nivel de Condición Física</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              {clarificationQuestion ? (
+                <FormField
+                  control={form.control}
+                  name="clarificationAnswers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{clarificationQuestion}</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona tu nivel de condición física" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder="Tu respuesta..."
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="beginner">Principiante</SelectItem>
-                        <SelectItem value="intermediate">
-                          Intermedio
-                        </SelectItem>
-                        <SelectItem value="advanced">Avanzado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="goals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tus Metas</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="ej., Perder peso, ganar músculo"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="sport"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Deporte Principal</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ej., Fútbol, Baloncesto" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <FormField
+                      control={form.control}
+                      name="fitnessLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nivel de Condición Física</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu nivel" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="beginner">Principiante</SelectItem>
+                              <SelectItem value="intermediate">
+                                Intermedio
+                              </SelectItem>
+                              <SelectItem value="advanced">Avanzado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="trainingDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Días/Semana</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="trainingDuration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Min/Sesión</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </>
+              )}
               <DialogFooter>
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Generar Rutina
+                  {clarificationQuestion ? 'Generar Rutina Final' : 'Siguiente'}
                 </Button>
               </DialogFooter>
             </form>
           </Form>
-        )}
-        {result && (
+        ) : (
           <div className="space-y-4">
             <h3 className="font-semibold font-headline">
               Tu Nueva Rutina de Entrenamiento
