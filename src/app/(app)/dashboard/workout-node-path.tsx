@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
-import { Check, Dumbbell, Star, Lock } from 'lucide-react';
+import { Check, Dumbbell, Lock, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -87,7 +87,7 @@ export function WorkoutNodePath() {
         {/* Start Node */}
          <div className="relative z-10 flex flex-col items-center mb-10">
            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg ring-4 ring-background">
-             <Star className="w-10 h-10 text-primary-foreground" />
+             <Flag className="w-10 h-10 text-primary-foreground" />
            </div>
            <p className="mt-2 font-bold text-lg">Inicio</p>
          </div>
