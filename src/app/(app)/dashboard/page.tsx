@@ -1,6 +1,7 @@
 import { WorkoutGeneratorDialog } from './workout-generator-dialog';
 import { WorkoutNodePath } from './workout-node-path';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
+import { PerformanceFeedback } from './performance-feedback';
 
 export default function DashboardPage() {
   return (
@@ -10,9 +11,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight font-headline">
             Tu Camino al Éxito
           </h1>
-          <p className="text-muted-foreground">
-            Sigue tu plan de entrenamiento día a día.
-          </p>
+          <PerformanceFeedback />
         </div>
         <div className="flex gap-2">
             <AdaptiveProgressionDialog />
