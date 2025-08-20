@@ -116,12 +116,10 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               </Button>
           )}
           {exercise.originalExercise.youtubeQuery && (
-              <Button asChild variant="outline" className="text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-500">
-                  <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer">
-                      <Youtube className="mr-2" />
-                      Ver Técnica
-                  </a>
-              </Button>
+            <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-red-500 border border-red-500/50 hover:bg-red-500/10 hover:text-red-500 h-10 px-4 py-2">
+                <Youtube className="mr-2" />
+                Ver Técnica
+            </a>
           )}
         </div>
 
