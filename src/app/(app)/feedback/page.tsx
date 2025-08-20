@@ -1,6 +1,4 @@
 
-import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
 import { FeedbackTool } from "./feedback-tool";
 
 export default function FeedbackPage() {
@@ -14,9 +12,7 @@ export default function FeedbackPage() {
           Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA.
         </p>
       </div>
-      <Suspense fallback={<div className="flex h-64 w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-        <FeedbackTool />
-      </Suspense>
+      <FeedbackTool />
     </div>
   );
 }

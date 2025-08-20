@@ -255,7 +255,7 @@ function FeedbackToolContent() {
 
 export function FeedbackTool() {
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={<div className="flex h-64 w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
       <FeedbackToolContent />
     </Suspense>
   );
