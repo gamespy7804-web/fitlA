@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
 import { generateMultipleChoiceQuiz, type MultipleChoiceQuestion } from '@/ai/flows/multiple-choice-quiz-generator';
@@ -27,6 +27,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const [userAnswerIndex, setUserAnswerIndex] = useState<number | null>(null);
   const [sessionHistory, setSessionHistory] = useState<QuizHistory[]>([]);
   const { toast } = useToast();
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const startGame = async () => {
@@ -66,6 +67,14 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
     startGame();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (gameState === 'answered' && feedbackRef.current) {
+      setTimeout(() => {
+        feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [gameState]);
 
   const handleAnswer = (answerIndex: number) => {
     const currentQuestion = questions[currentQuestionIndex];
@@ -172,6 +181,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
 
           {gameState === 'answered' && (
             <motion.div
+              ref={feedbackRef}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="w-full max-w-prose mt-6"
