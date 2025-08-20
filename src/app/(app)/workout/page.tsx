@@ -25,7 +25,7 @@ function WorkoutPageContent() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const [isTiming, setIsTiming] = useState(isTiming);
+  const [isTiming, setIsTiming] = useState(false);
   const [restDuration, setRestDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
