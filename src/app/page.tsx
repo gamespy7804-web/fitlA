@@ -1,25 +1,29 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // localStorage is only available on the client
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (onboardingComplete === 'true') {
-      router.replace('/dashboard');
-    } else {
-      router.replace('/onboarding');
+    if (!loading) {
+      if (user) {
+        const onboardingComplete = localStorage.getItem('onboardingComplete');
+        if (onboardingComplete === 'true') {
+          router.replace('/dashboard');
+        } else {
+          router.replace('/onboarding');
+        }
+      } else {
+        router.replace('/login');
+      }
     }
-    // A small timeout to prevent flash of content, though router.replace should be fast
-    const timer = setTimeout(() => setLoading(false), 250); 
-    return () => clearTimeout(timer);
-  }, [router]);
+  }, [user, loading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">

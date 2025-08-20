@@ -1,7 +1,10 @@
+
 'use client';
 
 import { WorkoutNodePath } from './workout-node-path';
 import { PerformanceFeedback } from './performance-feedback';
+import { Zap } from 'lucide-react';
+import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 
 export default function DashboardPage() {
 
@@ -14,6 +17,7 @@ export default function DashboardPage() {
           </h1>
           <PerformanceFeedback />
         </div>
+        
       </div>
 
       <WorkoutNodePath />

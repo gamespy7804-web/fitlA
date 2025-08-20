@@ -1,10 +1,17 @@
+
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useAuth } from '@/hooks/use-auth';
+import { LogOut } from 'lucide-react';
 
 export default function SettingsPage() {
+  const { user, signOut } = useAuth();
+  
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
@@ -24,11 +31,11 @@ export default function SettingsPage() {
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre</Label>
-              <Input id="name" defaultValue="Alex Doe" />
+              <Input id="name" defaultValue={user?.displayName ?? ''} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico</Label>
-              <Input id="email" type="email" defaultValue="alex.doe@example.com" />
+              <Input id="email" type="email" defaultValue={user?.email ?? ''} readOnly disabled />
             </div>
           </div>
            <Button>Guardar Cambios</Button>
@@ -62,6 +69,19 @@ export default function SettingsPage() {
             </div>
             <Switch />
           </div>
+        </CardContent>
+      </Card>
+
+       <Card>
+        <CardHeader>
+          <CardTitle className="font-headline">Cuenta</CardTitle>
+          <CardDescription>Gestiona las acciones de tu cuenta.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+           <Button variant="destructive" onClick={signOut}>
+                <LogOut className="mr-2" />
+                Cerrar sesión
+            </Button>
         </CardContent>
       </Card>
     </div>
