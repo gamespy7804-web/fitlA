@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Bot, User, LogOut } from 'lucide-react';
+import { MessageSquare, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -64,7 +64,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" aria-label="Chatbot" onClick={openChatbot}>
-                      <Bot className="w-5 h-5" />
+                      <MessageSquare className="w-5 h-5" />
                   </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
