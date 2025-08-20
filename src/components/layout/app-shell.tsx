@@ -25,6 +25,8 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, signOut, loading } = useAuth();
+  const isGamePage = pathname === '/games';
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,6 +54,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   return (
     <TooltipProvider>
       <div className="flex flex-col h-screen">
+       {!isGamePage && (
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
              <span className="font-bold text-primary font-headline">TrainSmart AI</span>
@@ -95,7 +98,8 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
              </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        )}
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </TooltipProvider>
   );

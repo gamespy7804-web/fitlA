@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
       <AppShell openChatbot={() => setIsChatbotOpen(true)}>
-        <div className={cn("pb-24", isGamePage && "p-0 sm:p-0")}>{children}</div>
+        <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
         <BottomNavbar>
           <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
         </BottomNavbar>
