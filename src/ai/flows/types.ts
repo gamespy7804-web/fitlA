@@ -7,6 +7,7 @@ export const ExerciseDetailSchema = z.object({
   rest: z.string().describe('Rest time between sets.'),
   requiresFeedback: z.boolean().describe('Whether this exercise requires video feedback for form correction.'),
   requiresWeight: z.boolean().describe('Whether this exercise requires weight to be logged.'),
+  youtubeQuery: z.string().describe('A YouTube search query for a tutorial video of the exercise.'),
 });
 export type ExerciseDetail = z.infer<typeof ExerciseDetailSchema>;
 

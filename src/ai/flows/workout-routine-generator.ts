@@ -53,6 +53,7 @@ const prompt = ai.definePrompt({
   - Para CADA ejercicio, determina si se beneficiaría de un análisis de la técnica mediante vídeo para corregir la postura. Establece 'requiresFeedback' en true para ejercicios complejos o de alto riesgo como Sentadillas, Pesos Muertos, Press de Banca, Saltos al cajón, etc. Para ejercicios más simples como planchas o estiramientos, establécelo en false.
   - Para CADA ejercicio, determina si se debe registrar el peso. Establece 'requiresWeight' en true para ejercicios que normalmente implican levantamiento de pesas (p. ej., Sentadillas, Press de Banca, Peso Muerto) y en false para ejercicios de peso corporal (p. ej., Flexiones, Planchas, Estiramientos).
   - Para CADA ejercicio, el campo 'reps' DEBE contener un número de repeticiones (p. ej., "8-12") O una duración (p. ej., "30 seg"). NUNCA debe contener ambos.
+  - Para CADA ejercicio, genera una consulta de búsqueda de YouTube para un vídeo tutorial sobre cómo realizar el ejercicio correctamente. Por ejemplo, para "Sentadillas con barra", la consulta podría ser "cómo hacer sentadillas con barra técnica correcta". Guarda esta consulta en el campo 'youtubeQuery'.
   - Determina si el deporte se basa principalmente en el entrenamiento con pesas (por ejemplo, Halterofilia, Powerlifting, Fisicoculturismo, CrossFit).
     - Si ES un deporte de entrenamiento con pesas:
       - Establece 'isWeightTraining' en true.

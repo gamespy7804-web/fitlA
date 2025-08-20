@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Check, Repeat, Weight, Video, Timer } from 'lucide-react';
+import { Check, Repeat, Weight, Video, Timer, Youtube } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
+import { cn } from '@/lib/utils';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -47,22 +48,39 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
     return set.reps > 0;
   }
 
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.originalExercise.youtubeQuery)}`;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span className="flex-1 font-headline text-2xl">{exercise.name}</span>
-          <Badge variant="outline" className="mx-2">
-            {exercise.originalExercise.reps}
-          </Badge>
-          {exercise.originalExercise.requiresFeedback && (
-            <Button asChild size="sm" variant="ghost" className="text-primary hover:bg-primary/10">
-              <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank">
-                <Video className="mr-2" />
-                Analizar
-              </Link>
-            </Button>
-          )}
+        <CardTitle className="flex justify-between items-start gap-2">
+          <div className="flex-1 space-y-1">
+            <span className="font-headline text-2xl">{exercise.name}</span>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-sm">
+                {exercise.originalExercise.reps}
+              </Badge>
+              <Badge variant="secondary" className="text-sm">
+                Descanso: {exercise.originalExercise.rest}
+              </Badge>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {exercise.originalExercise.youtubeQuery && (
+              <Button asChild size="icon" variant="ghost" className="text-red-500 hover:bg-red-500/10">
+                <Link href={youtubeSearchUrl} target="_blank" aria-label="Watch on YouTube">
+                  <Youtube />
+                </Link>
+              </Button>
+            )}
+            {exercise.originalExercise.requiresFeedback && (
+              <Button asChild size="icon" variant="ghost" className="text-primary hover:bg-primary/10">
+                <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" aria-label="Analyze form">
+                  <Video />
+                </Link>
+              </Button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -98,6 +116,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
                   className="pl-9"
                   value={set.reps || ''}
                   onChange={(e) => handleSetFieldChange('reps', e.target.value)}
+                  readOnly={isTimedExercise}
                 />
               </div>
             </div>
