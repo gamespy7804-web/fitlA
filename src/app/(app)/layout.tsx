@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,17 +21,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
+    let currentTheme = 'theme-default';
     if (storedRoutine) {
       try {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
         if (parsedRoutine.sport) {
-          setThemeClass(getThemeForSport(parsedRoutine.sport));
+          currentTheme = getThemeForSport(parsedRoutine.sport);
         }
       } catch (e) {
-        console.error("Failed to parse workout routine for themeing");
-        setThemeClass('theme-default');
+        console.error("Failed to parse workout routine for theming");
       }
     }
+    setThemeClass(currentTheme);
   }, [pathname]); // Recalculate theme if path changes, e.g., after new routine.
 
   return (
