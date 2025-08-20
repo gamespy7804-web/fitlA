@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
+import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight, RotateCw } from 'lucide-react';
 import { generateTrivia, type TriviaQuestion } from '@/ai/flows/trivia-generator';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -27,48 +27,48 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   const [sessionHistory, setSessionHistory] = useState<TriviaHistory[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const startGame = async () => {
-        setGameState('loading');
-        setSessionHistory([]);
-        try {
-          const storedRoutine = localStorage.getItem('workoutRoutine');
-          if (!storedRoutine) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Crea una rutina primero para poder jugar.' });
-            onGameFinish();
-            return;
-          }
-          const parsedRoutine = JSON.parse(storedRoutine);
-          const sport = parsedRoutine.sport || 'general fitness';
-          
-          const triviaHistory = localStorage.getItem('triviaHistory');
-    
-          const triviaData = await generateTrivia({ sport, history: triviaHistory ?? undefined });
-          
-          if (triviaData.questions && triviaData.questions.length > 0) {
-            setQuestions(triviaData.questions);
-            setScore(0);
-            setCurrentQuestionIndex(0);
-            setUserAnswer(null);
-            setGameState('playing');
-          } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas de trivia.' });
-            onGameFinish();
-          }
-    
-        } catch (error) {
-          console.error(error);
-          toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
-          onGameFinish();
-        }
+  const startGame = useCallback(async () => {
+    setGameState('loading');
+    setSessionHistory([]);
+    try {
+      const storedRoutine = localStorage.getItem('workoutRoutine');
+      if (!storedRoutine) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Crea una rutina primero para poder jugar.' });
+        onGameFinish();
+        return;
+      }
+      const parsedRoutine = JSON.parse(storedRoutine);
+      const sport = parsedRoutine.sport || 'general fitness';
+      
+      const triviaHistory = localStorage.getItem('triviaHistory');
+
+      const triviaData = await generateTrivia({ sport, history: triviaHistory ?? undefined });
+      
+      if (triviaData.questions && triviaData.questions.length > 0) {
+        setQuestions(triviaData.questions);
+        setScore(0);
+        setCurrentQuestionIndex(0);
+        setUserAnswer(null);
+        setGameState('playing');
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas de trivia.' });
+        onGameFinish();
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
+      onGameFinish();
     }
+  }, [onGameFinish, toast]);
+
+  useEffect(() => {
     startGame();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startGame]);
 
   const handleAnswer = (answer: boolean) => {
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = answer === currentQuestion.isMyth;
+    const isCorrect = answer !== currentQuestion.isMyth;
     
     if (isCorrect) {
       setScore(score + 1);
@@ -124,7 +124,13 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
                 Tu puntuación final es:
             </p>
             <p className="text-6xl font-bold text-primary mb-6">{score} / {questions.length}</p>
-            <Button size="lg" onClick={onGameFinish}>Volver al Menú</Button>
+            <div className="flex items-center gap-4">
+              <Button size="lg" variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
+              <Button size="lg" onClick={startGame}>
+                <RotateCw className="mr-2" />
+                Jugar de Nuevo
+              </Button>
+            </div>
         </motion.div>
      )
   }
@@ -154,10 +160,10 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
               animate={{ opacity: 1, y: 0 }}
               className="w-full max-w-prose"
             >
-              <Card className={`p-4 ${!isAnswerCorrect ? 'border-green-500' : 'border-red-500'}`}>
+              <Card className={`p-4 ${isAnswerCorrect ? 'border-green-500' : 'border-red-500'}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  {!isAnswerCorrect ? <CheckCircle className="text-green-500" /> : <XCircle className="text-red-500" />}
-                  <h3 className="font-bold text-lg">{!isAnswerCorrect ? '¡Correcto!' : '¡Incorrecto!'}</h3>
+                  {isAnswerCorrect ? <CheckCircle className="text-green-500" /> : <XCircle className="text-red-500" />}
+                  <h3 className="font-bold text-lg">{isAnswerCorrect ? '¡Correcto!' : '¡Incorrecto!'}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
               </Card>
