@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 type Game = 'trivia' | 'quiz' | null;
 
 const games = [
-    { id: 'trivia', title: 'Trivia: ¿Mito o Realidad?', icon: Zap },
+    { id: 'trivia', title: 'Mito o Realidad', icon: Zap },
     { id: 'quiz', title: 'Preguntados', icon: Lightbulb },
 ]
 
