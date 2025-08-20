@@ -65,22 +65,13 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            {exercise.originalExercise.youtubeQuery && (
-              <Button asChild size="icon" variant="ghost" className="text-red-500 hover:bg-red-500/10">
-                <Link href={youtubeSearchUrl} target="_blank" aria-label="Watch on YouTube">
-                  <Youtube />
-                </Link>
-              </Button>
-            )}
-            {exercise.originalExercise.requiresFeedback && (
+           {exercise.originalExercise.requiresFeedback && (
               <Button asChild size="icon" variant="ghost" className="text-primary hover:bg-primary/10">
                 <Link href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" aria-label="Analyze form">
                   <Video />
                 </Link>
               </Button>
             )}
-          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -123,13 +114,24 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
           </div>
         </div>
 
-        {isTimedExercise && (
+        {isTimedExercise ? (
              <div className="mt-4 text-center">
                 <Button variant="outline" onClick={onStartTimer}>
                     <Timer className="mr-2" />
                     Iniciar Cronómetro
                 </Button>
             </div>
+        ) : (
+             exercise.originalExercise.youtubeQuery && (
+                <div className="mt-4 text-center">
+                    <Button asChild variant="outline" className="text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-500">
+                        <Link href={youtubeSearchUrl} target="_blank">
+                            <Youtube className="mr-2" />
+                            Ver Técnica
+                        </Link>
+                    </Button>
+                </div>
+             )
         )}
 
         <div className="mt-6 text-center">
