@@ -41,31 +41,30 @@ const prompt = ai.definePrompt({
     output: { schema: TriviaOutputSchema },
     prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia del tipo "Mito o Realidad" en español, enfocadas en el deporte: {{{sport}}}.
 
-    Tu objetivo es crear una experiencia de aprendizaje adaptativa. Analizarás el historial de respuestas del usuario para generar preguntas que se ajusten a su nivel de conocimiento.
+Tu objetivo es crear una experiencia de aprendizaje adaptativa. Analizarás el historial de respuestas del usuario para generar preguntas que se ajusten a su nivel de conocimiento.
 
-    {{#if history}}
-    **Historial de Respuestas del Usuario (para tu análisis):**
-    \`\`\`json
-    {{{history}}}
-    \`\`\`
-    **Instrucciones para la Progresión:**
-    1.  **NO REPITAS PREGUNTAS** del historial.
-    2.  **Analiza el historial:** Identifica los temas que el usuario domina (aciertos consistentes) y sus áreas débiles (errores).
-    3.  **Crea preguntas más avanzadas:** Para los temas que el usuario domina, introduce conceptos más complejos o matices. Por ejemplo, si sabe que la proteína es importante, pregúntale sobre la leucina o el "timing" de proteínas.
-    4.  **Refuerza las debilidades:** Si el usuario falla en preguntas sobre hidratación, genera una nueva pregunta sobre ese tema desde un ángulo diferente.
-    5.  **Introduce nuevos temas:** Asegúrate de incluir también temas que no hayan aparecido antes para ampliar su conocimiento.
-    {{else}}
-    **Instrucciones (Primera Partida):**
-    -   Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
-    {{/if}}
+{{#if history}}
+**Historial de Respuestas del Usuario (para tu análisis):**
+\`\`\`json
+{{{history}}}
+\`\`\`
+**Instrucciones para la Progresión (Basado en el Historial):**
+1.  **NO REPITAS PREGUNTAS** del historial.
+2.  **Analiza el historial:** Identifica los temas que el usuario domina (aciertos consistentes) y sus áreas débiles (errores).
+3.  **Crea preguntas más avanzadas:** Para los temas que el usuario domina, introduce conceptos más complejos o matices. Por ejemplo, si sabe que la proteína es importante, pregúntale sobre la leucina o el "timing" de proteínas.
+4.  **Refuerza las debilidades:** Si el usuario falla en preguntas sobre hidratación, genera una nueva pregunta sobre ese tema desde un ángulo diferente.
+5.  **Introduce nuevos temas:** Asegúrate de incluir también temas que no hayan aparecido antes para ampliar su conocimiento.
+{{else}}
+**Instrucciones (Sin Historial):**
+-   Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
+{{/if}}
 
+**Formato para cada pregunta:**
+1.  Crea una 'statement' (afirmación) que sea un mito común o un hecho interesante sobre entrenamiento, técnica o nutrición relacionado con ese deporte.
+2.  Establece 'isMyth' en 'true' si la afirmación es un mito, o en 'false' si es una realidad (un hecho).
+3.  Escribe una 'explanation' (explicación) clara y concisa (1-3 frases) que aclare por qué la afirmación es un mito o una realidad, proporcionando contexto útil.
 
-    **Formato para cada pregunta:**
-    1.  Crea una 'statement' (afirmación) que sea un mito común o un hecho interesante sobre entrenamiento, técnica o nutrición relacionado con ese deporte.
-    2.  Establece 'isMyth' en 'true' si la afirmación es un mito, o en 'false' si es una realidad (un hecho).
-    3.  Escribe una 'explanation' (explicación) clara y concisa (1-3 frases) que aclare por qué la afirmación es un mito o una realidad, proporcionando contexto útil.
-
-    Genera el array de preguntas.
+Genera el array de preguntas.
     `,
 });
 
@@ -80,6 +79,3 @@ const triviaFlow = ai.defineFlow(
         return output!;
     }
 );
-
-
-

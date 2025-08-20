@@ -42,32 +42,31 @@ const prompt = ai.definePrompt({
     output: { schema: MultipleChoiceQuizOutputSchema },
     prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia de opción múltiple en español, enfocadas en el deporte: {{{sport}}}.
 
-    Tu objetivo es crear una experiencia de aprendizaje adaptativa. Analizarás el historial de respuestas del usuario para generar preguntas que se ajusten a su nivel de conocimiento.
+Tu objetivo es crear una experiencia de aprendizaje adaptativa. Analizarás el historial de respuestas del usuario para generar preguntas que se ajusten a su nivel de conocimiento.
 
-    {{#if history}}
-    **Historial de Respuestas del Usuario (para tu análisis):**
-    \`\`\`json
-    {{{history}}}
-    \`\`\`
+{{#if history}}
+**Historial de Respuestas del Usuario (para tu análisis):**
+\`\`\`json
+{{{history}}}
+\`\`\`
+**Instrucciones para la Progresión (Basado en el Historial):**
+1.  **NO REPITAS PREGUNTAS** del historial.
+2.  **Analiza el historial:** Identifica los temas que el usuario domina (aciertos consistentes) y sus áreas débiles (errores).
+3.  **Crea preguntas más avanzadas:** Para los temas que el usuario domina, introduce conceptos más complejos o matices. Por ejemplo, si sabe sobre la importancia de la proteína, pregúntale sobre tipos de aminoácidos o el concepto de síntesis de proteína muscular.
+4.  **Refuerza las debilidades:** Si el usuario falla en preguntas sobre un músculo específico, genera una nueva pregunta sobre la función de ese músculo o un ejercicio para fortalecerlo.
+5.  **Introduce nuevos temas:** Asegúrate de incluir también temas que no hayan aparecido antes para ampliar su conocimiento.
+{{else}}
+**Instrucciones (Sin Historial):**
+- Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
+{{/if}}
 
-    **Instrucciones para la Progresión:**
-    1.  **NO REPITAS PREGUNTAS** del historial.
-    2.  **Analiza el historial:** Identifica los temas que el usuario domina (aciertos consistentes) y sus áreas débiles (errores).
-    3.  **Crea preguntas más avanzadas:** Para los temas que el usuario domina, introduce conceptos más complejos o matices. Por ejemplo, si sabe sobre la importancia de la proteína, pregúntale sobre tipos de aminoácidos o el concepto de síntesis de proteína muscular.
-    4.  **Refuerza las debilidades:** Si el usuario falla en preguntas sobre un músculo específico, genera una nueva pregunta sobre la función de ese músculo o un ejercicio para fortalecerlo.
-    5.  **Introduce nuevos temas:** Asegúrate de incluir también temas que no hayan aparecido antes para ampliar su conocimiento.
-    {{/if}}
+**Formato para cada pregunta:**
+1.  Formula una 'question' (pregunta) clara y directa.
+2.  Crea un array 'options' con 4 posibles respuestas. Una debe ser la correcta y las otras 3 deben ser "distractores" plausibles pero incorrectos.
+3.  Establece 'correctAnswerIndex' al índice (0-3) de la respuesta correcta en el array 'options'.
+4.  Escribe una 'explanation' (explicación) clara y concisa que justifique la respuesta correcta.
 
-    **Instrucciones (Si no hay historial):**
-    -   Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
-
-    **Formato para cada pregunta:**
-    1.  Formula una 'question' (pregunta) clara y directa.
-    2.  Crea un array 'options' con 4 posibles respuestas. Una debe ser la correcta y las otras 3 deben ser "distractores" plausibles pero incorrectos.
-    3.  Establece 'correctAnswerIndex' al índice (0-3) de la respuesta correcta en el array 'options'.
-    4.  Escribe una 'explanation' (explicación) clara y concisa que justifique la respuesta correcta.
-
-    Genera el array de preguntas.
+Genera el array de preguntas.
     `,
 });
 
