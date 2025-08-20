@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight, RotateCw } from 'lucide-react';
+import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight, RotateCw, ArrowRight } from 'lucide-react';
 import { generateMultipleChoiceQuiz, type MultipleChoiceQuestion } from '@/ai/flows/multiple-choice-quiz-generator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ type QuizHistory = {
     correctAnswerIndex: number;
     isCorrect: boolean;
 }
+type Difficulty = 'easy' | 'normal' | 'hard';
 
 export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void }) {
   const [gameState, setGameState] = useState<GameState>('loading');
@@ -26,11 +27,13 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const [score, setScore] = useState(0);
   const [userAnswerIndex, setUserAnswerIndex] = useState<number | null>(null);
   const [sessionHistory, setSessionHistory] = useState<QuizHistory[]>([]);
+  const [currentDifficulty, setCurrentDifficulty] = useState<Difficulty>('normal');
   const { toast } = useToast();
   const feedbackRef = useRef<HTMLDivElement>(null);
 
-  const startGame = useCallback(async () => {
+  const startGame = useCallback(async (difficulty: Difficulty = 'normal') => {
     setGameState('loading');
+    setCurrentDifficulty(difficulty);
     setSessionHistory([]);
     try {
       const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -44,7 +47,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
       
       const quizHistory = localStorage.getItem('quizHistory');
 
-      const quizData = await generateMultipleChoiceQuiz({ sport, history: quizHistory ?? undefined });
+      const quizData = await generateMultipleChoiceQuiz({ sport, history: quizHistory ?? undefined, difficulty });
       
       if (quizData.questions && quizData.questions.length > 0) {
         setQuestions(quizData.questions);
@@ -135,6 +138,8 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   }
 
   if (gameState === 'finished') {
+    const percentage = questions.length > 0 ? (score / questions.length) * 100 : 0;
+    const nextDifficulty = percentage >= 50 ? 'hard' : 'easy';
      return (
         <motion.div
             key="finished"
@@ -149,11 +154,14 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
             </p>
             <p className="text-6xl font-bold text-primary mb-6">{score} / {questions.length}</p>
             <div className="flex items-center gap-4">
-              <Button size="lg" variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
-              <Button size="lg" onClick={startGame}>
-                <RotateCw className="mr-2" />
-                Jugar de Nuevo
+              <Button variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
+              <Button size="icon" onClick={() => startGame(currentDifficulty)}>
+                <RotateCw />
               </Button>
+               <Button onClick={() => startGame(nextDifficulty)}>
+                 Siguiente Nivel: {nextDifficulty === 'hard' ? 'Más Difícil' : 'Más Fácil'}
+                 <ArrowRight className="ml-2" />
+               </Button>
             </div>
         </motion.div>
      )
