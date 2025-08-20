@@ -92,5 +92,6 @@
     --muted-foreground: 35 20% 40%;
     --border: 35 20% 75%;
     --ring: 15 80% 60%;
+    @apply bg-background text-foreground;
   }
 }
