@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
+import { Loader2, Trophy, CheckCircle, XCircle, ChevronRight, RotateCw } from 'lucide-react';
 import { generateMultipleChoiceQuiz, type MultipleChoiceQuestion } from '@/ai/flows/multiple-choice-quiz-generator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
@@ -29,44 +29,44 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const { toast } = useToast();
   const feedbackRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const startGame = async () => {
-        setGameState('loading');
-        setSessionHistory([]);
-        try {
-          const storedRoutine = localStorage.getItem('workoutRoutine');
-          if (!storedRoutine) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Crea una rutina primero para poder jugar.' });
-            onGameFinish();
-            return;
-          }
-          const parsedRoutine = JSON.parse(storedRoutine);
-          const sport = parsedRoutine.sport || 'general fitness';
-          
-          const quizHistory = localStorage.getItem('quizHistory');
-    
-          const quizData = await generateMultipleChoiceQuiz({ sport, history: quizHistory ?? undefined });
-          
-          if (quizData.questions && quizData.questions.length > 0) {
-            setQuestions(quizData.questions);
-            setScore(0);
-            setCurrentQuestionIndex(0);
-            setUserAnswerIndex(null);
-            setGameState('playing');
-          } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas.' });
-            onGameFinish();
-          }
-    
-        } catch (error) {
-          console.error(error);
-          toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
-          onGameFinish();
-        }
+  const startGame = useCallback(async () => {
+    setGameState('loading');
+    setSessionHistory([]);
+    try {
+      const storedRoutine = localStorage.getItem('workoutRoutine');
+      if (!storedRoutine) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Crea una rutina primero para poder jugar.' });
+        onGameFinish();
+        return;
+      }
+      const parsedRoutine = JSON.parse(storedRoutine);
+      const sport = parsedRoutine.sport || 'general fitness';
+      
+      const quizHistory = localStorage.getItem('quizHistory');
+
+      const quizData = await generateMultipleChoiceQuiz({ sport, history: quizHistory ?? undefined });
+      
+      if (quizData.questions && quizData.questions.length > 0) {
+        setQuestions(quizData.questions);
+        setScore(0);
+        setCurrentQuestionIndex(0);
+        setUserAnswerIndex(null);
+        setGameState('playing');
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas.' });
+        onGameFinish();
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
+      onGameFinish();
     }
+  }, [onGameFinish, toast]);
+
+  useEffect(() => {
     startGame();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startGame]);
 
   useEffect(() => {
     if (gameState === 'answered' && feedbackRef.current) {
@@ -148,7 +148,13 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
                 Tu puntuación final es:
             </p>
             <p className="text-6xl font-bold text-primary mb-6">{score} / {questions.length}</p>
-            <Button size="lg" onClick={onGameFinish}>Volver al Menú</Button>
+            <div className="flex items-center gap-4">
+              <Button size="lg" variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
+              <Button size="lg" onClick={startGame}>
+                <RotateCw className="mr-2" />
+                Jugar de Nuevo
+              </Button>
+            </div>
         </motion.div>
      )
   }
