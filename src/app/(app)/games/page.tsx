@@ -12,8 +12,8 @@ import { MultipleChoiceQuiz } from './multiple-choice-quiz';
 type Game = 'trivia' | 'quiz' | null;
 
 const games = [
-    { id: 'trivia', title: 'Trivia: ¿Mito o Realidad?', description: 'Las preguntas se adaptan a tu nivel. ¡Desafía tu conocimiento!', icon: Zap },
-    { id: 'quiz', title: 'Preguntados', description: 'Pon a prueba tu conocimiento con preguntas de opción múltiple.', icon: Lightbulb },
+    { id: 'trivia', title: 'Trivia: ¿Mito o Realidad?', icon: Zap },
+    { id: 'quiz', title: 'Preguntados', icon: Lightbulb },
 ]
 
 export default function GamesPage() {
@@ -49,7 +49,7 @@ export default function GamesPage() {
             Juegos de Fitness
           </h1>
           <p className="text-muted-foreground">
-            {activeGame ? 'Diviértete mientras aprendes.' : 'Pon a prueba tus conocimientos y aprende a entrenar de forma más inteligente.'}
+            {activeGame ? 'Diviértete mientras aprendes.' : 'Elige un juego para empezar.'}
           </p>
         </div>
       </div>
