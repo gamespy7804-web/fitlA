@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Zap, Lightbulb, Gamepad2, ArrowLeft } from 'lucide-react';
+import { Zap, Lightbulb, Gamepad2, ArrowLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TriviaGame } from './trivia-game';
 import { MultipleChoiceQuiz } from './multiple-choice-quiz';
@@ -13,7 +13,7 @@ type Game = 'trivia' | 'quiz' | null;
 
 const games = [
     { id: 'trivia', title: 'Trivia: ¿Mito o Realidad?', description: 'Las preguntas se adaptan a tu nivel. ¡Desafía tu conocimiento!', icon: Zap },
-    { id: 'quiz', title: 'Preguntados de Fitness', description: 'Pon a prueba tu conocimiento con preguntas de opción múltiple.', icon: Lightbulb },
+    { id: 'quiz', title: 'Preguntados', description: 'Pon a prueba tu conocimiento con preguntas de opción múltiple.', icon: Lightbulb },
 ]
 
 export default function GamesPage() {
@@ -82,22 +82,21 @@ export default function GamesPage() {
                   ¡Aprende y diviértete!
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4 md:grid-cols-2">
+              <CardContent className="max-w-md mx-auto w-full space-y-2">
                 {games.map((game) => (
-                    <Card key={game.id} className="hover:bg-muted/50 transition-colors">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 font-headline">
-                                <game.icon className="text-primary" />
-                                {game.title}
-                            </CardTitle>
-                            <CardDescription>{game.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button className="w-full" onClick={() => handleGameSelect(game.id as Game)}>
-                                Jugar Ahora
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <Button 
+                        key={game.id} 
+                        variant="outline" 
+                        className="w-full justify-start h-auto p-4 text-left"
+                        onClick={() => handleGameSelect(game.id as Game)}
+                    >
+                        <game.icon className="text-primary mr-4" />
+                        <div className="flex-1">
+                            <p className="font-semibold">{game.title}</p>
+                            <p className="text-xs text-muted-foreground text-wrap">{game.description}</p>
+                        </div>
+                        <ChevronRight className="ml-auto" />
+                    </Button>
                 ))}
               </CardContent>
             </motion.div>
