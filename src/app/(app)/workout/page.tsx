@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
@@ -24,7 +25,7 @@ function WorkoutPageContent() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const [isTiming, setIsTiming] = useState(false);
+  const [isTiming, setIsTiming] = useState(isTiming);
   const [restDuration, setRestDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -166,6 +167,9 @@ function WorkoutPageContent() {
         const pendingFeedback = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
         const newPending = [...new Set([...pendingFeedback, ...exercisesForFeedback])];
         localStorage.setItem('pendingFeedbackExercises', JSON.stringify(newPending));
+        
+        // Manually trigger a storage event to notify other components (like the navbar badge)
+        window.dispatchEvent(new Event('storage'));
         
         toast({
           title: '¡Buen trabajo!',
