@@ -56,10 +56,10 @@ const prompt = ai.definePrompt({
     3.  **Crea preguntas más avanzadas:** Para los temas que el usuario domina, introduce conceptos más complejos o matices. Por ejemplo, si sabe sobre la importancia de la proteína, pregúntale sobre tipos de aminoácidos o el concepto de síntesis de proteína muscular.
     4.  **Refuerza las debilidades:** Si el usuario falla en preguntas sobre un músculo específico, genera una nueva pregunta sobre la función de ese músculo o un ejercicio para fortalecerlo.
     5.  **Introduce nuevos temas:** Asegúrate de incluir también temas que no hayan aparecido antes para ampliar su conocimiento.
-    {{else}}
-    **Instrucciones (Primera Partida):**
-    -   Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
     {{/if}}
+
+    **Instrucciones (Si no hay historial):**
+    -   Genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base del conocimiento del usuario.
 
     **Formato para cada pregunta:**
     1.  Formula una 'question' (pregunta) clara y directa.
