@@ -59,13 +59,9 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               <Badge variant="outline" className="text-sm">
                 {exercise.originalExercise.reps}
               </Badge>
-              <Badge variant="secondary" className="text-sm">
-                Descanso: {exercise.originalExercise.rest}
-              </Badge>
             </div>
           </div>
            {exercise.originalExercise.requiresFeedback && (
-              // This is a standard a tag now to ensure it's treated as an external link
               <a href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 text-primary hover:bg-primary/10">
                   <Video />
               </a>
@@ -112,25 +108,22 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
           </div>
         </div>
 
-        {isTimedExercise ? (
-             <div className="mt-4 text-center">
-                <Button variant="outline" onClick={onStartTimer}>
-                    <Timer className="mr-2" />
-                    Iniciar Cronómetro
-                </Button>
-            </div>
-        ) : (
-             exercise.originalExercise.youtubeQuery && (
-                <div className="mt-4 text-center">
-                    <Button asChild variant="outline" className="text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-500">
-                        <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer">
-                            <Youtube className="mr-2" />
-                            Ver Técnica
-                        </a>
-                    </Button>
-                </div>
-             )
-        )}
+        <div className="mt-4 text-center flex flex-wrap justify-center gap-4">
+          {isTimedExercise && (
+              <Button variant="outline" onClick={onStartTimer}>
+                  <Timer className="mr-2" />
+                  Iniciar Cronómetro
+              </Button>
+          )}
+          {exercise.originalExercise.youtubeQuery && (
+              <Button asChild variant="outline" className="text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-500">
+                  <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer">
+                      <Youtube className="mr-2" />
+                      Ver Técnica
+                  </a>
+              </Button>
+          )}
+        </div>
 
         <div className="mt-6 text-center">
             <Button size="lg" onClick={handleCompleteClick} disabled={!isSetDataEntered()} className="bg-accent text-accent-foreground hover:bg-accent/90">
