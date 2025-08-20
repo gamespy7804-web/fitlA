@@ -13,6 +13,8 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
+import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -24,17 +26,25 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   const router = useRouter();
   const { user, signOut, loading } = useAuth();
 
+  useEffect(() => {
+    if (!loading && !user) {
+        router.replace('/login');
+    }
+  }, [user, loading, router]);
+
 
   if (loading) {
-      return null; // Or a loading spinner, handled by AuthProvider
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
   }
 
-  if (!user && !pathname.includes('/login') && !pathname.includes('/onboarding')) {
-      // This is a safeguard, but AuthProvider should handle redirection
-      router.push('/login');
+  if (!user) {
       return null;
   }
-
+  
   if (pathname === '/onboarding' || pathname === '/login') {
     return <>{children}</>;
   }

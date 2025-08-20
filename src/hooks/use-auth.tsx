@@ -10,7 +10,7 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 interface AuthContextType {
@@ -26,30 +26,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-      if (user) {
-        const onboardingComplete = localStorage.getItem('onboardingComplete');
-        if (onboardingComplete === 'true') {
-           router.push('/dashboard');
-        } else {
-            router.push('/onboarding');
-        }
-      } else {
-        router.push('/login');
-      }
     });
-
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
+      // Let the onAuthStateChanged listener handle redirection
     } catch (error) {
       console.error('Error signing in with Google', error);
     }
@@ -58,6 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);
     }
