@@ -46,7 +46,7 @@ export default function GamesPage() {
         )}
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Juegos de Fitness
+            {activeGame ? games.find(g => g.id === activeGame)?.title : 'Juegos de Fitness'}
           </h1>
           <p className="text-muted-foreground">
             {activeGame ? 'Diviértete mientras aprendes.' : 'Elige un juego para empezar.'}

@@ -80,4 +80,17 @@
   body {
     @apply bg-background text-foreground;
   }
+  .game-theme {
+    --background: 35 78% 97%; /* Light Beige */
+    --foreground: 35 20% 20%; /* Dark Brown */
+    --card: 35 78% 90%;
+    --card-foreground: 35 20% 20%;
+    --primary: 15 80% 60%; /* Vibrant Orange */
+    --primary-foreground: 15 80% 10%;
+    --secondary: 35 60% 85%;
+    --secondary-foreground: 35 20% 20%;
+    --muted-foreground: 35 20% 40%;
+    --border: 35 20% 75%;
+    --ring: 15 80% 60%;
+  }
 }
