@@ -87,15 +87,14 @@ export default function GamesPage() {
                     <Button 
                         key={game.id} 
                         variant="outline" 
-                        className="w-full justify-start h-auto p-4 text-left"
+                        className="w-full justify-between h-auto p-4 text-left"
                         onClick={() => handleGameSelect(game.id as Game)}
                     >
-                        <game.icon className="text-primary mr-4" />
-                        <div className="flex-1">
+                        <div className="flex items-center gap-4">
+                            <game.icon className="text-primary" />
                             <p className="font-semibold">{game.title}</p>
-                            <p className="text-xs text-muted-foreground text-wrap">{game.description}</p>
                         </div>
-                        <ChevronRight className="ml-auto" />
+                        <ChevronRight />
                     </Button>
                 ))}
               </CardContent>
