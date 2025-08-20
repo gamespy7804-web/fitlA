@@ -48,7 +48,6 @@ const prompt = ai.definePrompt({
     \`\`\`json
     {{{history}}}
     \`\`\`
-
     **Instrucciones para la Progresión:**
     1.  **NO REPITAS PREGUNTAS** del historial.
     2.  **Analiza el historial:** Identifica los temas que el usuario domina (aciertos consistentes) y sus áreas débiles (errores).
@@ -81,5 +80,6 @@ const triviaFlow = ai.defineFlow(
         return output!;
     }
 );
+
 
 
