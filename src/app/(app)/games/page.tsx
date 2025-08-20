@@ -11,6 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 type GameState = 'idle' | 'loading' | 'playing' | 'answered' | 'finished';
+type TriviaHistory = {
+    statement: string;
+    isMyth: boolean;
+    userAnswer: boolean;
+    isCorrect: boolean;
+}
 
 export default function GamesPage() {
   const [gameState, setGameState] = useState<GameState>('idle');
@@ -18,10 +24,12 @@ export default function GamesPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [userAnswer, setUserAnswer] = useState<boolean | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<TriviaHistory[]>([]);
   const { toast } = useToast();
 
   const handleStartGame = async () => {
     setGameState('loading');
+    setSessionHistory([]); // Reset history for the new session
     try {
       const storedRoutine = localStorage.getItem('workoutRoutine');
       if (!storedRoutine) {
@@ -32,12 +40,21 @@ export default function GamesPage() {
       const parsedRoutine = JSON.parse(storedRoutine);
       const sport = parsedRoutine.sport || 'general fitness';
       
-      const triviaData = await generateTrivia({ sport });
-      setQuestions(triviaData.questions);
-      setScore(0);
-      setCurrentQuestionIndex(0);
-      setUserAnswer(null);
-      setGameState('playing');
+      const triviaHistory = localStorage.getItem('triviaHistory');
+
+      const triviaData = await generateTrivia({ sport, history: triviaHistory ?? undefined });
+      
+      if (triviaData.questions && triviaData.questions.length > 0) {
+        setQuestions(triviaData.questions);
+        setScore(0);
+        setCurrentQuestionIndex(0);
+        setUserAnswer(null);
+        setGameState('playing');
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas de trivia.' });
+        setGameState('idle');
+      }
+
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
@@ -46,11 +63,22 @@ export default function GamesPage() {
   };
 
   const handleAnswer = (answer: boolean) => {
-    setUserAnswer(answer);
-    const isCorrect = answer === questions[currentQuestionIndex].isMyth;
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = answer === currentQuestion.isMyth;
+    
     if (isCorrect) {
       setScore(score + 1);
     }
+    
+    // Add to this session's history
+    setSessionHistory(prev => [...prev, {
+        statement: currentQuestion.statement,
+        isMyth: currentQuestion.isMyth,
+        userAnswer: answer,
+        isCorrect: isCorrect,
+    }]);
+
+    setUserAnswer(answer);
     setGameState('answered');
   };
 
@@ -60,12 +88,17 @@ export default function GamesPage() {
       setUserAnswer(null);
       setGameState('playing');
     } else {
+      // Game finished, save session history to permanent storage
+      const fullHistory = JSON.parse(localStorage.getItem('triviaHistory') || '[]') as TriviaHistory[];
+      const updatedHistory = [...fullHistory, ...sessionHistory];
+      localStorage.setItem('triviaHistory', JSON.stringify(updatedHistory));
       setGameState('finished');
     }
   };
 
   const currentQuestion = questions[currentQuestionIndex];
-  const isAnswerCorrect = userAnswer !== null && userAnswer === currentQuestion?.isMyth;
+  const isAnswerCorrect = userAnswer !== null && currentQuestion !== null && userAnswer !== currentQuestion.isMyth;
+
 
   return (
     <div className="space-y-6">
@@ -90,10 +123,10 @@ export default function GamesPage() {
               <CardHeader>
                 <CardTitle className="font-headline flex items-center justify-center gap-2">
                   <Zap className="text-primary"/>
-                  Trivia: ¿Mito o Realidad?
+                  Trivia Adaptativa: ¿Mito o Realidad?
                 </CardTitle>
                 <CardDescription>
-                  Desafía tu conocimiento sobre fitness y nutrición.
+                  Las preguntas se adaptan a tu nivel. ¡Desafía tu conocimiento!
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -135,15 +168,15 @@ export default function GamesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="w-full max-w-prose"
                 >
-                  <Card className={`p-4 ${isAnswerCorrect ? 'border-green-500' : 'border-red-500'}`}>
+                  <Card className={`p-4 ${!isAnswerCorrect ? 'border-green-500' : 'border-red-500'}`}>
                     <div className="flex items-center gap-2 mb-2">
-                      {isAnswerCorrect ? <CheckCircle className="text-green-500" /> : <XCircle className="text-red-500" />}
-                      <h3 className="font-bold text-lg">{isAnswerCorrect ? '¡Correcto!' : '¡Incorrecto!'}</h3>
+                      {!isAnswerCorrect ? <CheckCircle className="text-green-500" /> : <XCircle className="text-red-500" />}
+                      <h3 className="font-bold text-lg">{!isAnswerCorrect ? '¡Correcto!' : '¡Incorrecto!'}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
                   </Card>
                   <Button onClick={handleNextQuestion} className="mt-4">
-                    Siguiente <ChevronRight className="ml-2" />
+                    {currentQuestionIndex < questions.length - 1 ? 'Siguiente' : 'Ver Resultados'} <ChevronRight className="ml-2" />
                   </Button>
                 </motion.div>
               )}
