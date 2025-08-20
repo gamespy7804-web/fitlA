@@ -37,10 +37,9 @@ export async function generateTrivia(input: TriviaInput): Promise<TriviaOutput> 
 
 const prompt = ai.definePrompt({
     name: 'triviaPrompt',
-    input: { schema: TriviaInputSchema },
+    input: { schema: z.object({ sport: z.string(), historyText: z.string() }) },
     output: { schema: TriviaOutputSchema },
-    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia del tipo "Mito o Realidad" en español, enfocadas en el deporte: {{{sport}}}. Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si el campo 'history' está vacío o no se proporciona, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Si se proporciona 'history', analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Para cada pregunta, proporciona un 'statement', un booleano 'isMyth' y una 'explanation' concisa (1-3 frases).
-{{#if history}}Historial de respuestas del usuario para tu análisis: \`\`\`json{{{history}}}\`\`\`{{/if}}
+    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia del tipo "Mito o Realidad" en español, enfocadas en el deporte: {{{sport}}}. Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si se proporciona un historial de respuestas, analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Si el historial está vacío, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Para cada pregunta, proporciona un 'statement', un booleano 'isMyth' y una 'explanation' concisa (1-3 frases). {{{historyText}}}
 Genera el array de preguntas.`,
 });
 
@@ -51,7 +50,15 @@ const triviaFlow = ai.defineFlow(
         outputSchema: TriviaOutputSchema,
     },
     async (input) => {
-        const { output } = await prompt(input);
+        let historyText = "";
+        if (input.history) {
+            historyText = `\nHistorial de respuestas del usuario para tu análisis: \`\`\`json\n${input.history}\n\`\`\``;
+        }
+
+        const { output } = await prompt({
+            sport: input.sport,
+            historyText: historyText,
+        });
         return output!;
     }
 );

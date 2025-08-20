@@ -38,10 +38,9 @@ export async function generateMultipleChoiceQuiz(input: MultipleChoiceQuizInput)
 
 const prompt = ai.definePrompt({
     name: 'multipleChoiceQuizPrompt',
-    input: { schema: MultipleChoiceQuizInputSchema },
+    input: { schema: z.object({ sport: z.string(), historyText: z.string() }) },
     output: { schema: MultipleChoiceQuizOutputSchema },
-    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia de opción múltiple en español, enfocadas en el deporte: {{{sport}}}. Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si el campo 'history' está vacío o no se proporciona, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Si se proporciona 'history', analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Para cada pregunta, proporciona una 'question', un array 'options' de 4 respuestas, el 'correctAnswerIndex' (0-3) y una 'explanation' concisa de la respuesta correcta.
-{{#if history}}Historial de respuestas del usuario para tu análisis: \`\`\`json{{{history}}}\`\`\`{{/if}}
+    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia de opción múltiple en español, enfocadas en el deporte: {{{sport}}}. Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si se proporciona un historial de respuestas, analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Si el historial está vacío, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Para cada pregunta, proporciona una 'question', un array 'options' de 4 respuestas, el 'correctAnswerIndex' (0-3) y una 'explanation' concisa de la respuesta correcta. {{{historyText}}}
 Genera el array de preguntas.`,
 });
 
@@ -52,7 +51,15 @@ const multipleChoiceQuizFlow = ai.defineFlow(
         outputSchema: MultipleChoiceQuizOutputSchema,
     },
     async (input) => {
-        const { output } = await prompt(input);
+        let historyText = "";
+        if (input.history) {
+            historyText = `\nHistorial de respuestas del usuario para tu análisis: \`\`\`json\n${input.history}\n\`\`\``;
+        }
+
+        const { output } = await prompt({
+            sport: input.sport,
+            historyText: historyText,
+        });
         return output!;
     }
 );
