@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { WorkoutGeneratorDialog } from './dashboard/workout-generator-dialog';
@@ -11,7 +11,9 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { startMusic, stopMusic } from '@/hooks/use-sound';
+import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
+import { initializeAudio } from '@/hooks/use-music';
+
 
 // A simple component to manage music state based on localStorage
 function MusicManager() {
@@ -31,6 +33,7 @@ function MusicManager() {
     window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      stopMusic(); // Stop music on component unmount
     };
   }, []);
 
@@ -44,6 +47,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [themeClass, setThemeClass] = useState('theme-default');
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
+  const audioInitialized = useRef(false);
+
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -60,10 +65,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     setThemeClass(currentTheme);
   }, [pathname]); // Recalculate theme if path changes, e.g., after new routine.
+  
+  const handleFirstInteraction = () => {
+    if (!audioInitialized.current) {
+      initializeAudio();
+      audioInitialized.current = true;
+    }
+  };
 
   return (
     <AuthProvider>
-        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)} onClick={handleFirstInteraction}>
           <AppShell openChatbot={() => setIsChatbotOpen(true)}>
             <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
             <BottomNavbar>

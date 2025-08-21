@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { LogOut, Music } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
-import { startMusic, stopMusic } from '@/hooks/use-sound';
+import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
 
 
 export default function SettingsPage() {

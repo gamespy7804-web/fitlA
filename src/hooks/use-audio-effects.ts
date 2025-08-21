@@ -2,101 +2,14 @@
 'use client';
 
 import { useCallback } from 'react';
+import { getAudioContext, loadMusicBuffer, startMusicPlayback, stopMusicPlayback } from './use-music';
 
 type SoundType = 'success' | 'error' | 'click' | 'swoosh';
 
-let audioContext: AudioContext | null = null;
-let musicSource: AudioBufferSourceNode | null = null;
-let musicGainNode: GainNode | null = null;
-let isMusicPlaying = false;
-let musicBuffer: AudioBuffer | null = null;
-
-const initAudioContext = () => {
-  if (typeof window !== 'undefined' && !audioContext) {
-    try {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {
-      console.error("AudioContext not supported", e);
-    }
-  }
-  return audioContext;
-};
-
-const loadMusic = async (context: AudioContext): Promise<AudioBuffer | null> => {
-    if (musicBuffer) return musicBuffer;
-
-    try {
-        const response = await fetch('/sounds/music-1.mp3');
-        if (!response.ok) {
-            console.error(`Error loading music file: ${response.statusText}`);
-            return null;
-        }
-
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('audio/mpeg')) {
-             console.error("Error: El archivo de música no es un archivo de audio válido. Asegúrate de que 'public/sounds/music-1.mp3' existe y no está dañado.");
-             return null;
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        const decodedData = await context.decodeAudioData(arrayBuffer);
-        musicBuffer = decodedData;
-        return musicBuffer;
-    } catch (error) {
-        console.error('Error loading or decoding music file:', error);
-        return null;
-    }
-};
-
-const playMusicInternal = async () => {
-    const context = initAudioContext();
-    if (!context) return;
-
-    if (context.state === 'suspended') {
-        await context.resume();
-    }
-
-    if (isMusicPlaying) return;
-    
-    const buffer = await loadMusic(context);
-    if (!buffer) return;
-
-    musicSource = context.createBufferSource();
-    musicSource.buffer = buffer;
-    musicSource.loop = true;
-
-    musicGainNode = context.createGain();
-    musicGainNode.gain.setValueAtTime(0, context.currentTime);
-    musicGainNode.gain.linearRampToValueAtTime(0.1, context.currentTime + 1); // Fade in
-
-    musicSource.connect(musicGainNode);
-    musicGainNode.connect(context.destination);
-    
-    musicSource.start();
-    isMusicPlaying = true;
-};
-
-export const startMusic = () => {
-  playMusicInternal();
-};
-
-export const stopMusic = () => {
-  if (musicGainNode && musicSource && isMusicPlaying) {
-    musicGainNode.gain.linearRampToValueAtTime(0, audioContext!.currentTime + 0.5);
-    musicSource.stop(audioContext!.currentTime + 0.5);
-    musicSource = null;
-    musicGainNode = null;
-    isMusicPlaying = false;
-  }
-};
-
 const useAudioEffects = () => {
   const playSound = useCallback((type: SoundType) => {
-    const context = initAudioContext();
-    if (!context) return;
-    if (context.state === 'suspended') {
-      context.resume();
-    }
+    const context = getAudioContext();
+    if (!context || context.state === 'suspended') return;
 
     try {
       switch (type) {
@@ -146,7 +59,6 @@ const useAudioEffects = () => {
           break;
         }
          case 'swoosh': {
-          if(!context) return;
           const bufferSize = context.sampleRate * 0.2; // 0.2 second swoosh
           const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
           const output = buffer.getChannelData(0);
@@ -174,5 +86,23 @@ const useAudioEffects = () => {
 
   return playSound;
 };
+
+// Functions to be called from other parts of the app
+export const startMusic = async () => {
+  const context = getAudioContext();
+  if (!context || context.state === 'suspended') {
+      console.warn("AudioContext not ready or suspended. Music will not play.");
+      return;
+  }
+  const buffer = await loadMusicBuffer();
+  if (buffer) {
+    startMusicPlayback(buffer);
+  }
+};
+
+export const stopMusic = () => {
+  stopMusicPlayback();
+};
+
 
 export default useAudioEffects;
