@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import useSound from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type QuizHistory = {
@@ -30,6 +31,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const [currentDifficulty, setCurrentDifficulty] = useState<Difficulty>('normal');
   const { toast } = useToast();
   const feedbackRef = useRef<HTMLDivElement>(null);
+  const playSound = useSound();
 
   const startGame = useCallback(async (difficulty: Difficulty = 'normal') => {
     setGameState('loading');
@@ -55,6 +57,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
         setCurrentQuestionIndex(0);
         setUserAnswerIndex(null);
         setGameState('playing');
+        playSound('swoosh');
       } else {
         toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas.' });
         onGameFinish();
@@ -65,7 +68,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
       onGameFinish();
     }
-  }, [onGameFinish, toast]);
+  }, [onGameFinish, toast, playSound]);
 
   useEffect(() => {
     startGame();
@@ -85,6 +88,9 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
     
     if (isCorrect) {
       setScore(score + 1);
+      playSound('success');
+    } else {
+      playSound('error');
     }
     
     setSessionHistory(prev => [...prev, {
@@ -99,6 +105,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   };
 
   const handleNextQuestion = () => {
+    playSound('swoosh');
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setUserAnswerIndex(null);
@@ -155,10 +162,10 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
             <p className="text-6xl font-bold text-primary mb-6">{score} / {questions.length}</p>
             <div className="flex items-center gap-4">
               <Button variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
-              <Button size="icon" onClick={() => startGame(currentDifficulty)}>
+              <Button size="icon" onClick={() => { playSound('click'); startGame(currentDifficulty); }}>
                 <RotateCw />
               </Button>
-               <Button onClick={() => startGame(nextDifficulty)}>
+               <Button onClick={() => { playSound('click'); startGame(nextDifficulty); }}>
                  Siguiente Nivel: {nextDifficulty === 'hard' ? 'Más Difícil' : 'Más Fácil'}
                  <ArrowRight className="ml-2" />
                </Button>

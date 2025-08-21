@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
+import useSound from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type TriviaHistory = {
@@ -26,6 +27,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   const [userAnswer, setUserAnswer] = useState<boolean | null>(null);
   const [sessionHistory, setSessionHistory] = useState<TriviaHistory[]>([]);
   const { toast } = useToast();
+  const playSound = useSound();
 
   const startGame = useCallback(async () => {
     setGameState('loading');
@@ -50,6 +52,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
         setCurrentQuestionIndex(0);
         setUserAnswer(null);
         setGameState('playing');
+        playSound('swoosh');
       } else {
         toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar nuevas preguntas de trivia.' });
         onGameFinish();
@@ -60,7 +63,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
       onGameFinish();
     }
-  }, [onGameFinish, toast]);
+  }, [onGameFinish, toast, playSound]);
 
   useEffect(() => {
     startGame();
@@ -72,6 +75,9 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
     
     if (isCorrect) {
       setScore(score + 1);
+      playSound('success');
+    } else {
+      playSound('error');
     }
     
     setSessionHistory(prev => [...prev, {
@@ -86,6 +92,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   };
 
   const handleNextQuestion = () => {
+    playSound('swoosh');
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setUserAnswer(null);
@@ -125,8 +132,8 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
             </p>
             <p className="text-6xl font-bold text-primary mb-6">{score} / {questions.length}</p>
             <div className="flex items-center gap-4">
-              <Button size="lg" variant="outline" onClick={onGameFinish}>Volver al Menú</Button>
-              <Button size="lg" onClick={startGame}>
+              <Button size="lg" variant="outline" onClick={() => { playSound('click'); onGameFinish(); }}>Volver al Menú</Button>
+              <Button size="lg" onClick={() => { playSound('click'); startGame(); }}>
                 <RotateCw className="mr-2" />
                 Jugar de Nuevo
               </Button>
