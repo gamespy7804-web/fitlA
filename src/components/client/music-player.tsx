@@ -22,20 +22,25 @@ export function MusicPlayer() {
 
     if (enabled && track !== 'none' && musicFileMap[track]) {
       const newSrc = musicFileMap[track];
-      // Check if the source needs to be updated
+      
+      // Only change src if it's different to prevent re-loading the same track
       if (!audio.src.endsWith(newSrc)) {
         audio.src = newSrc;
       }
+      
       audio.volume = volume / 100;
       audio.loop = true;
-      // Attempt to play. This might fail due to autoplay policies.
-      audio.play().then(() => {
-        setIsPlaying(true);
-      }).catch(error => {
-        // Playback was prevented. We'll wait for user interaction.
-        setIsPlaying(false);
-        console.warn("Audio play prevented by browser policy. Waiting for user interaction.");
-      });
+      
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsPlaying(true);
+        }).catch(error => {
+          // Autoplay was prevented. We'll wait for user interaction.
+          setIsPlaying(false);
+          console.warn("Audio play prevented by browser policy. Waiting for user interaction to resume.");
+        });
+      }
     } else {
       audio.pause();
       setIsPlaying(false);
@@ -46,26 +51,39 @@ export function MusicPlayer() {
     updateMusicState();
 
     window.addEventListener('music-settings-changed', updateMusicState);
-
+    
     // This effect tries to resume playback upon user interaction.
     const resumePlayback = () => {
-      const settings = JSON.parse(localStorage.getItem('musicSettings') || '{}');
-      if (audioRef.current && audioRef.current.paused && settings.enabled && settings.track !== 'none') {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch(e => {
-            // Still couldn't play, maybe another reason.
-        });
-      }
+        const audio = audioRef.current;
+        const settings = JSON.parse(localStorage.getItem('musicSettings') || '{}');
+        
+        if (audio && audio.paused && settings.enabled && settings.track !== 'none') {
+            audio.play().then(() => {
+                setIsPlaying(true);
+                // Once playback is successful, we can remove the listeners
+                document.removeEventListener('click', resumePlayback);
+                document.removeEventListener('keydown', resumePlayback);
+                document.removeEventListener('touchstart', resumePlayback);
+            }).catch(e => {
+                // Still couldn't play, keep listening for the next interaction.
+            });
+        } else if (audio && !audio.paused) {
+             // If it's already playing, we don't need the listeners anymore.
+             document.removeEventListener('click', resumePlayback);
+             document.removeEventListener('keydown', resumePlayback);
+             document.removeEventListener('touchstart', resumePlayback);
+        }
     };
     
-    document.addEventListener('click', resumePlayback, { once: true });
-    document.addEventListener('keydown', resumePlayback, { once: true });
+    document.addEventListener('click', resumePlayback);
+    document.addEventListener('keydown', resumePlayback);
+    document.addEventListener('touchstart', resumePlayback);
 
     return () => {
       window.removeEventListener('music-settings-changed', updateMusicState);
       document.removeEventListener('click', resumePlayback);
       document.removeEventListener('keydown', resumePlayback);
+      document.removeEventListener('touchstart', resumePlayback);
     };
   }, [updateMusicState]);
 
