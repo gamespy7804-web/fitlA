@@ -19,6 +19,7 @@ let currentMusicType: MusicType | null = null;
 let loopTimeout: NodeJS.Timeout | null = null;
 let isInitialized = false;
 let isEnabled = false;
+let musicVolume = 0.5; // Default volume (50%)
 
 const FADE_TIME = 2; // seconds for crossfade
 
@@ -33,6 +34,10 @@ export const initializeAudio = () => {
         isInitialized = true;
         // Check initial state from localStorage
         isEnabled = localStorage.getItem('musicEnabled') === 'true';
+        const storedVolume = localStorage.getItem('musicVolume');
+        if (storedVolume) {
+            musicVolume = parseFloat(storedVolume);
+        }
     } catch (e) {
         console.error("AudioContext is not supported by this browser.", e);
     }
@@ -72,22 +77,22 @@ const useAudioEffects = () => {
       let oscType: OscillatorType = 'sine';
       let freq = 440;
       let duration = 0.1;
-      let gainVal = 0.1;
+      let gainVal = 0.15; // Increased default volume
 
       switch (type) {
         case 'success':
           freq = 600;
           duration = 0.5;
-          gainVal = 0.2;
+          gainVal = 0.25; // Increased volume
           break;
         case 'error':
           oscType = 'square';
           freq = 150;
           duration = 0.3;
-          gainVal = 0.2;
+          gainVal = 0.25; // Increased volume
           break;
         case 'click':
-          // Use default values
+          gainVal = 0.15; // Increased volume
           break;
         case 'startWorkout': {
           const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
@@ -102,7 +107,7 @@ const useAudioEffects = () => {
 
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(noteFreq, startTime + i * noteDuration);
-            gain.gain.setValueAtTime(0.2, startTime + i * noteDuration);
+            gain.gain.setValueAtTime(0.3, startTime + i * noteDuration); // Increased volume
             gain.gain.exponentialRampToValueAtTime(0.0001, startTime + (i + 1) * noteDuration);
 
             osc.start(startTime + i * noteDuration);
@@ -120,7 +125,7 @@ const useAudioEffects = () => {
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
           const gain = audioContext.createGain();
-          gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime); // Increased volume
           source.connect(gain);
           gain.connect(audioContext.destination);
           source.start();
@@ -170,7 +175,7 @@ const playTrack = async (type: MusicType, startTime = 0) => {
 
     // Fade in the new track
     nextGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    nextGain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + FADE_TIME);
+    nextGain.gain.linearRampToValueAtTime(musicVolume * 0.2, audioContext.currentTime + FADE_TIME); // Increased default music volume
     nextSource.start(audioContext.currentTime, startTime);
 
     // Fade out the old track
@@ -239,6 +244,15 @@ export const toggleMusic = (shouldBeEnabled: boolean) => {
         stopMusic();
     }
 }
+
+export const setMusicVolume = (volume: number) => {
+  musicVolume = Math.max(0, Math.min(1, volume)); // Clamp between 0 and 1
+  localStorage.setItem('musicVolume', musicVolume.toString());
+  if (currentGain && audioContext) {
+    // We multiply by 0.2 to keep the max volume from being too loud
+    currentGain.gain.linearRampToValueAtTime(musicVolume * 0.2, audioContext.currentTime + 0.1);
+  }
+};
 
 
 export default useAudioEffects;

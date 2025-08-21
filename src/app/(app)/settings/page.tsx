@@ -6,24 +6,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music } from 'lucide-react';
+import { LogOut, Music, Volume2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
-import { toggleMusic } from '@/hooks/use-audio-effects';
+import { toggleMusic, setMusicVolume } from '@/hooks/use-audio-effects';
 
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [musicVolume, setMusicVolumeState] = useState(50);
+
 
   useEffect(() => {
     const storedPreference = localStorage.getItem('musicEnabled') === 'true';
     setIsMusicEnabled(storedPreference);
+
+    const storedVolume = localStorage.getItem('musicVolume');
+    if (storedVolume) {
+      setMusicVolumeState(parseFloat(storedVolume) * 100);
+    } else {
+      setMusicVolumeState(50); // Default volume
+    }
   }, []);
 
   const handleMusicToggle = (enabled: boolean) => {
     setIsMusicEnabled(enabled);
     toggleMusic(enabled);
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setMusicVolumeState(newVolume);
+    setMusicVolume(newVolume / 100);
   };
 
 
@@ -62,7 +78,7 @@ export default function SettingsPage() {
           <CardTitle className="font-headline">Sonido</CardTitle>
           <CardDescription>Gestiona las preferencias de sonido de la aplicación.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
            <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="flex items-center space-x-3">
                 <Music className="h-5 w-5 text-primary" />
@@ -76,6 +92,22 @@ export default function SettingsPage() {
                 onCheckedChange={handleMusicToggle}
                 aria-label="Activar o desactivar la música de fondo"
               />
+            </div>
+            <div className="space-y-3 rounded-lg border p-4">
+               <div className="flex items-center space-x-3">
+                 <Volume2 className="h-5 w-5 text-primary" />
+                 <Label htmlFor="music-volume" className="font-medium">
+                   Volumen de la Música
+                 </Label>
+               </div>
+               <Slider
+                 id="music-volume"
+                 defaultValue={[musicVolume]}
+                 max={100}
+                 step={1}
+                 onValueChange={handleVolumeChange}
+                 disabled={!isMusicEnabled}
+               />
             </div>
         </CardContent>
       </Card>
