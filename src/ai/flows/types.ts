@@ -1,9 +1,10 @@
+
 import { z } from 'zod';
 
 export const ExerciseDetailSchema = z.object({
   name: z.string().describe('Name of the exercise.'),
   sets: z.string().describe('Number of sets.'),
-  reps: z.string().describe('Number of repetitions (e.g., "8-12") or a duration in seconds (e.g., "30 seg").'),
+  reps: z.string().describe('Number of repetitions (e.g., "8-12") or a duration in seconds (e.g., "30 sec").'),
   rest: z.string().describe('Rest time between sets.'),
   requiresFeedback: z.boolean().describe('Whether this exercise requires video feedback for form correction.'),
   requiresWeight: z.boolean().describe('Whether this exercise requires weight to be logged.'),
@@ -47,6 +48,7 @@ const MessageSchema = z.object({
 export const ChatInputSchema = z.object({
   history: z.array(MessageSchema).describe('The conversation history.'),
   question: z.string().describe('The user\'s latest question.'),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
 });
 export type ChatInput = z.infer<typeof ChatInputSchema>;
 

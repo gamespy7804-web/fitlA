@@ -6,28 +6,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music, Volume2, ShieldAlert } from 'lucide-react';
+import { LogOut, Music, Volume2, ShieldAlert, Languages } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
-import { toggleMusic, setMusicVolume } from '@/hooks/use-audio-effects';
-
+import { toggleMusic, setMusicVolume, setSfxVolume } from '@/hooks/use-audio-effects';
+import { useI18n, type Locale } from '@/i18n/client';
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
+  const { t, setLocale, locale } = useI18n();
+
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [musicVolume, setMusicVolumeState] = useState(50);
+  const [sfxVolume, setSfxVolumeState] = useState(50);
 
 
   useEffect(() => {
     const storedPreference = localStorage.getItem('musicEnabled') === 'true';
     setIsMusicEnabled(storedPreference);
 
-    const storedVolume = localStorage.getItem('musicVolume');
-    if (storedVolume) {
-      setMusicVolumeState(parseFloat(storedVolume) * 100);
+    const storedMusicVolume = localStorage.getItem('musicVolume');
+    if (storedMusicVolume) {
+      setMusicVolumeState(parseFloat(storedMusicVolume) * 100);
     } else {
       setMusicVolumeState(50); // Default volume
+    }
+    
+    const storedSfxVolume = localStorage.getItem('sfxVolume');
+    if (storedSfxVolume) {
+        setSfxVolumeState(parseFloat(storedSfxVolume) * 100);
+    } else {
+        setSfxVolumeState(50); // Default volume
     }
   }, []);
 
@@ -36,10 +46,16 @@ export default function SettingsPage() {
     toggleMusic(enabled);
   };
 
-  const handleVolumeChange = (value: number[]) => {
+  const handleMusicVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setMusicVolumeState(newVolume);
     setMusicVolume(newVolume / 100);
+  };
+  
+  const handleSfxVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setSfxVolumeState(newVolume);
+    setSfxVolume(newVolume / 100);
   };
 
 
@@ -47,95 +63,127 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Configuración
+          {t('settings.title')}
         </h1>
         <p className="text-muted-foreground">
-          Gestiona tu cuenta y las preferencias de la aplicación.
+          {t('settings.description')}
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Perfil</CardTitle>
-          <CardDescription>Actualiza tu información personal.</CardDescription>
+          <CardTitle className="font-headline">{t('settings.profile.title')}</CardTitle>
+          <CardDescription>{t('settings.profile.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
+              <Label htmlFor="name">{t('settings.profile.name')}</Label>
               <Input id="name" defaultValue={user?.displayName ?? ''} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
+              <Label htmlFor="email">{t('settings.profile.email')}</Label>
               <Input id="email" type="email" defaultValue={user?.email ?? ''} readOnly disabled />
             </div>
           </div>
-           <Button>Guardar Cambios</Button>
+           <Button>{t('settings.profile.save')}</Button>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Sonido</CardTitle>
-          <CardDescription>Gestiona las preferencias de sonido de la aplicación.</CardDescription>
+          <CardTitle className="font-headline">{t('settings.sound.title')}</CardTitle>
+          <CardDescription>{t('settings.sound.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
            <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="flex items-center space-x-3">
                 <Music className="h-5 w-5 text-primary" />
                 <Label htmlFor="music-switch" className="font-medium">
-                  Música de Fondo
+                  {t('settings.sound.backgroundMusic')}
                 </Label>
               </div>
               <Switch
                 id="music-switch"
                 checked={isMusicEnabled}
                 onCheckedChange={handleMusicToggle}
-                aria-label="Activar o desactivar la música de fondo"
+                aria-label={t('settings.sound.toggleMusic')}
               />
             </div>
-            <div className="space-y-3 rounded-lg border p-4">
-               <div className="flex items-center space-x-3">
-                 <Volume2 className="h-5 w-5 text-primary" />
-                 <Label htmlFor="music-volume" className="font-medium">
-                   Volumen de la Música
-                 </Label>
-               </div>
-               <Slider
-                 id="music-volume"
-                 defaultValue={[musicVolume]}
-                 max={100}
-                 step={1}
-                 onValueChange={handleVolumeChange}
-                 disabled={!isMusicEnabled}
-               />
+            <div className="grid md:grid-cols-2 gap-4 rounded-lg border p-4">
+               <div className="space-y-3">
+                 <div className="flex items-center space-x-3">
+                   <Volume2 className="h-5 w-5 text-primary" />
+                   <Label htmlFor="music-volume" className="font-medium">
+                     {t('settings.sound.musicVolume')}
+                   </Label>
+                 </div>
+                 <Slider
+                   id="music-volume"
+                   defaultValue={[musicVolume]}
+                   max={100}
+                   step={1}
+                   onValueChange={handleMusicVolumeChange}
+                   disabled={!isMusicEnabled}
+                 />
+              </div>
+               <div className="space-y-3">
+                 <div className="flex items-center space-x-3">
+                   <Volume2 className="h-5 w-5 text-primary" />
+                   <Label htmlFor="sfx-volume" className="font-medium">
+                     {t('settings.sound.sfxVolume')}
+                   </Label>
+                 </div>
+                 <Slider
+                   id="sfx-volume"
+                   defaultValue={[sfxVolume]}
+                   max={100}
+                   step={1}
+                   onValueChange={handleSfxVolumeChange}
+                 />
+              </div>
             </div>
         </CardContent>
+      </Card>
+      
+      <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">{t('settings.language.title')}</CardTitle>
+            <CardDescription>{t('settings.language.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className='flex items-center gap-2 rounded-lg border p-4'>
+              <Languages className="h-5 w-5 text-primary" />
+              <Label className="font-medium mr-auto">{t('settings.language.select')}</Label>
+              <div className="flex items-center gap-2">
+                  <Button variant={locale === 'es' ? 'default' : 'outline'} onClick={() => setLocale('es')}>Español</Button>
+                  <Button variant={locale === 'en' ? 'default' : 'outline'} onClick={() => setLocale('en')}>English</Button>
+              </div>
+          </CardContent>
       </Card>
 
        <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Cuenta</CardTitle>
-          <CardDescription>Gestiona las acciones de tu cuenta.</CardDescription>
+          <CardTitle className="font-headline">{t('settings.account.title')}</CardTitle>
+          <CardDescription>{t('settings.account.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
            <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-border p-4'>
              <div>
-                <h3 className="font-medium">Cerrar Sesión</h3>
-                <p className="text-sm text-muted-foreground">Finaliza tu sesión actual en este dispositivo.</p>
+                <h3 className="font-medium">{t('settings.account.signOut.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('settings.account.signOut.description')}</p>
              </div>
              <Button variant="outline" onClick={signOut} className="mt-2 md:mt-0 md:ml-4">
                 <LogOut className="mr-2" />
-                Cerrar sesión
+                {t('settings.account.signOut.button')}
              </Button>
            </div>
             <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-destructive/50 p-4'>
              <div>
-                <h3 className="font-medium text-destructive">Eliminar Cuenta</h3>
-                <p className="text-sm text-muted-foreground">Esta acción es permanente y no se puede deshacer.</p>
+                <h3 className="font-medium text-destructive">{t('settings.account.delete.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('settings.account.delete.description')}</p>
              </div>
              <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
                 <ShieldAlert className="mr-2" />
-                Eliminar mi cuenta
+                {t('settings.account.delete.button')}
              </Button>
            </div>
         </CardContent>

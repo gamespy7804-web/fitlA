@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -22,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useI18n } from '@/i18n/client';
 
 type Message = {
   id: string;
@@ -36,6 +38,7 @@ interface ChatbotSheetProps {
 }
 
 export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotSheetProps) {
+  const { t, locale } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +67,7 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
       const response = await chat({
         history: chatHistory,
         question: input,
+        language: locale,
       });
 
       const modelMessage: Message = {
@@ -78,7 +82,7 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        content: 'Lo siento, he tenido un problema. Por favor, inténtalo de nuevo.',
+        content: t('chatbot.error'),
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -97,17 +101,17 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
       <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle className="font-headline flex items-center gap-2">
-            <Bot className="text-primary" /> Asistente de IA
+            <Bot className="text-primary" /> {t('chatbot.title')}
           </SheetTitle>
           <SheetDescription>
-            Hazme cualquier pregunta sobre tu entrenamiento o nutrición.
+            {t('chatbot.description')}
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="flex-1 my-4 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.length === 0 && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
-                    <p>¡Hola! Soy tu asistente de fitness. ¿En qué puedo ayudarte hoy?</p>
+                    <p>{t('chatbot.greeting')}</p>
                 </div>
             )}
             {messages.map((message) => (
@@ -169,7 +173,7 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
               <DropdownMenuContent side="top">
                 <DropdownMenuItem onClick={onOpenGenerator}>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  <span>Generar Nueva Rutina</span>
+                  <span>{t('chatbot.actions.generateNewRoutine')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -177,13 +181,13 @@ export function ChatbotSheet({ open, onOpenChange, onOpenGenerator }: ChatbotShe
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
+                placeholder={t('chatbot.inputPlaceholder')}
                 disabled={isLoading}
                 className="flex-1"
             />
             <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
                 <Send className="w-4 h-4" />
-                <span className="sr-only">Enviar</span>
+                <span className="sr-only">{t('chatbot.send')}</span>
             </Button>
             </div>
         </SheetFooter>

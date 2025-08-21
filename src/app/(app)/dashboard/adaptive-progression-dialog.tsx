@@ -37,6 +37,7 @@ import { Loader2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useI18n } from '@/i18n/client';
 
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
@@ -52,6 +53,7 @@ const formSchema = z.object({
 });
 
 export function AdaptiveProgressionDialog({ children, className }: { children?: React.ReactNode, className?: string }) {
+  const { t, locale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [canProgress, setCanProgress] = useState(false);
@@ -121,7 +123,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
 
       if (!originalRoutineJSON || !detailedLogsJSON || !originalRoutine?.structuredRoutine) {
-        toast({ variant: 'destructive', title: 'Datos insuficientes', description: 'No se encontraron datos de la rutina o registros detallados.' });
+        toast({ variant: 'destructive', title: t('adaptiveProgression.errors.insufficientData.title'), description: t('adaptiveProgression.errors.insufficientData.description') });
         setIsLoading(false);
         return;
       }
@@ -136,6 +138,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         trainingDays: values.trainingDays,
         trainingDuration: values.trainingDuration,
         userFeedback: values.userFeedback,
+        language: locale,
       });
 
       localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
@@ -143,8 +146,8 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       localStorage.setItem('detailedWorkoutLogs', '[]');
 
       toast({
-        title: '¡Nueva Rutina Generada!',
-        description: 'Tu plan de entrenamiento ha sido actualizado. ¡A por ello!',
+        title: t('adaptiveProgression.success.title'),
+        description: t('adaptiveProgression.success.description'),
       });
       setIsOpen(false);
       window.location.reload();
@@ -153,8 +156,8 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Error al generar la progresión',
-        description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
+        title: t('adaptiveProgression.errors.generationFailed.title'),
+        description: t('adaptiveProgression.errors.generationFailed.description'),
       });
     } finally {
       setIsLoading(false);
@@ -174,17 +177,17 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       <DialogTrigger asChild>
         <Button disabled={!canProgress} className={cn("w-full", className)}>
             {children || <>
-            <span>Generar Nueva Rutina</span>
+            <span>{t('adaptiveProgression.generateNewRoutine')}</span>
             </>}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-headline flex items-center gap-2">
-            <Zap className="text-primary" /> Generar Progresión de IA
+            <Zap className="text-primary" /> {t('adaptiveProgression.title')}
           </DialogTitle>
           <DialogDescription>
-            Evalúa tu último ciclo y ajusta tus preferencias para generar el siguiente.
+            {t('adaptiveProgression.description')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -194,7 +197,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
               name="selfReportedFitness"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>¿Cómo te sentiste en el último ciclo?</FormLabel>
+                  <FormLabel>{t('adaptiveProgression.howDidYouFeel')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -202,9 +205,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="easy">Demasiado fácil</SelectItem>
-                      <SelectItem value="just-right">Justo</SelectItem>
-                      <SelectItem value="hard">Demasiado difícil</SelectItem>
+                      <SelectItem value="easy">{t('adaptiveProgression.fitnessLevels.easy')}</SelectItem>
+                      <SelectItem value="just-right">{t('adaptiveProgression.fitnessLevels.just-right')}</SelectItem>
+                      <SelectItem value="hard">{t('adaptiveProgression.fitnessLevels.hard')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -217,10 +220,10 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
               name="userFeedback"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>¿Algún comentario o cambio que te gustaría hacer?</FormLabel>
+                  <FormLabel>{t('adaptiveProgression.feedbackLabel')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="ej., Me gustaría enfocarme más en el pecho, sentí que los días de pierna fueron muy largos..."
+                      placeholder={t('adaptiveProgression.feedbackPlaceholder')}
                       className="resize-none"
                       {...field}
                     />
@@ -231,16 +234,16 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
             />
 
             <div className="space-y-2 pt-2">
-                <p className="text-sm font-medium">Ajustes para la próxima semana (Opcional)</p>
+                <p className="text-sm font-medium">{t('adaptiveProgression.nextWeekSettings')}</p>
                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="trainingDays"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Días/Semana</FormLabel>
+                          <FormLabel>{t('adaptiveProgression.daysPerWeek')}</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="ej. 3" {...field} value={field.value ?? ''} />
+                            <Input type="number" placeholder={t('adaptiveProgression.daysPlaceholder')} {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -251,9 +254,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                       name="trainingDuration"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Min/Sesión</FormLabel>
+                          <FormLabel>{t('adaptiveProgression.minPerSession')}</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="ej. 60" {...field} value={field.value ?? ''} />
+                            <Input type="number" placeholder={t('adaptiveProgression.durationPlaceholder')} {...field} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -264,7 +267,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
             <DialogFooter>
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Generar Nueva Rutina
+                {t('adaptiveProgression.generateNewRoutine')}
               </Button>
             </DialogFooter>
           </form>

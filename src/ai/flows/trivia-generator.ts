@@ -14,7 +14,8 @@ import { z } from 'genkit';
 
 const TriviaInputSchema = z.object({
   sport: z.string().describe('The sport to generate trivia questions about. Should be broad, e.g., "powerlifting", "running", "general fitness".'),
-  history: z.string().optional().describe("A JSON string of previously answered questions and whether the user was correct. Used to generate more advanced or targeted questions.")
+  history: z.string().optional().describe("A JSON string of previously answered questions and whether the user was correct. Used to generate more advanced or targeted questions."),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
 export type TriviaInput = z.infer<typeof TriviaInputSchema>;
 
@@ -37,10 +38,12 @@ export async function generateTrivia(input: TriviaInput): Promise<TriviaOutput> 
 
 const prompt = ai.definePrompt({
     name: 'triviaPrompt',
-    input: { schema: z.object({ sport: z.string(), historyText: z.string() }) },
+    input: { schema: z.object({ sport: z.string(), historyText: z.string(), language: z.string() }) },
     output: { schema: TriviaOutputSchema },
-    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia del tipo "Mito o Realidad" en español, enfocadas en el deporte: {{{sport}}}. Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si se proporciona un historial de respuestas, analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Si el historial está vacío, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Para cada pregunta, proporciona un 'statement', un booleano 'isMyth' y una 'explanation' concisa (1-3 frases). {{{historyText}}}
-Genera el array de preguntas.`,
+    prompt: `You are an expert fitness and sports nutrition tutor. Your task is to generate a series of 5-10 "Myth or Fact" trivia questions, focused on the sport: {{{sport}}}.
+Your response MUST be in the user's selected language: {{{language}}}.
+Your goal is to create an adaptive learning experience. If a response history is provided, analyze the user's previous answers to adjust the difficulty and topics of new questions, without repeating questions from the history. If the history is empty, generate a mix of beginner to intermediate questions to establish a baseline. For each question, provide a 'statement', a boolean 'isMyth', and a concise 'explanation' (1-3 sentences). {{{historyText}}}
+Generate the array of questions.`,
 });
 
 const triviaFlow = ai.defineFlow(
@@ -52,12 +55,13 @@ const triviaFlow = ai.defineFlow(
     async (input) => {
         let historyText = "";
         if (input.history) {
-            historyText = `\nHistorial de respuestas del usuario para tu análisis: \`\`\`json\n${input.history}\n\`\`\``;
+            historyText = `\nUser's answer history for your analysis: \`\`\`json\n${input.history}\n\`\`\``;
         }
 
         const { output } = await prompt({
             sport: input.sport,
             historyText: historyText,
+            language: input.language
         });
         return output!;
     }

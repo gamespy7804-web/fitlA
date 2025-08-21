@@ -16,8 +16,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Loader2, Sparkles, Video, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useI18n } from '@/i18n/client';
 
 function FeedbackToolContent() {
+  const { t, locale } = useI18n();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -72,8 +74,8 @@ function FeedbackToolContent() {
         setHasCameraPermission(false);
         toast({
           variant: 'destructive',
-          title: 'Acceso a la cámara denegado',
-          description: 'Por favor, activa los permisos de la cámara en tu navegador.',
+          title: t('feedbackTool.cameraDenied.title'),
+          description: t('feedbackTool.cameraDenied.description'),
         });
       }
     };
@@ -89,7 +91,7 @@ function FeedbackToolContent() {
             videoRef.current.srcObject = null;
         }
     }
-  }, [toast]);
+  }, [toast, t]);
 
   const handleStartRecording = () => {
     if (videoRef.current?.srcObject) {
@@ -130,7 +132,7 @@ function FeedbackToolContent() {
 
   const handleAnalyze = async (videoDataUri: string) => {
     if (!selectedExercise) {
-        toast({ variant: 'destructive', title: 'Selecciona un ejercicio primero' });
+        toast({ variant: 'destructive', title: t('feedbackTool.selectExerciseError') });
         return;
     }
     setIsLoading(true);
@@ -139,6 +141,7 @@ function FeedbackToolContent() {
       const result: RealTimeFeedbackOutput = await realTimeFeedback({
         videoDataUri,
         exerciseType: selectedExercise,
+        language: locale,
       });
       setFeedback(result.feedback);
 
@@ -161,8 +164,8 @@ function FeedbackToolContent() {
       console.error('Error providing feedback:', error);
       toast({
         variant: 'destructive',
-        title: 'Análisis Fallido',
-        description: 'No se pudo analizar el video. Por favor, inténtalo de nuevo.',
+        title: t('feedbackTool.analysisFailed.title'),
+        description: t('feedbackTool.analysisFailed.description'),
       });
     } finally {
       setIsLoading(false);
@@ -173,8 +176,8 @@ function FeedbackToolContent() {
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Cámara en Vivo</CardTitle>
-          <CardDescription>Colócate de manera que todo tu cuerpo sea visible.</CardDescription>
+          <CardTitle className="font-headline">{t('feedbackTool.cameraCard.title')}</CardTitle>
+          <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
@@ -182,7 +185,7 @@ function FeedbackToolContent() {
             {hasCameraPermission === false && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white p-4">
                   <Camera className="h-12 w-12 mb-2" />
-                  <p className="font-semibold text-center">Permiso de cámara necesario</p>
+                  <p className="font-semibold text-center">{t('feedbackTool.cameraPermissionNeeded')}</p>
                 </div>
              )}
             {isRecording && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-red-500 animate-pulse" />}
@@ -190,7 +193,7 @@ function FeedbackToolContent() {
           <div className="mt-4 flex gap-4">
             <Select onValueChange={setSelectedExercise} value={selectedExercise} disabled={exercisesForFeedback.length === 0 || isLoading || isRecording}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar ejercicio" />
+                <SelectValue placeholder={t('feedbackTool.selectExercisePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {exercisesForFeedback.length > 0 ? (
@@ -198,7 +201,7 @@ function FeedbackToolContent() {
                         <SelectItem key={ex} value={ex}>{ex}</SelectItem>
                     ))
                 ) : (
-                    <SelectItem value="none" disabled>No hay ejercicios pendientes</SelectItem>
+                    <SelectItem value="none" disabled>{t('feedbackTool.noPendingExercises')}</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -208,16 +211,14 @@ function FeedbackToolContent() {
               ) : (
                 <Video className="mr-2" />
               )}
-              {isRecording ? 'Detener' : 'Grabar'}
+              {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
             </Button>
           </div>
            {hasCameraPermission === false && (
             <Alert variant="destructive" className="mt-4">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Error de Cámara</AlertTitle>
-              <AlertDescription>
-                No se pudo acceder a la cámara. Por favor, revisa los permisos en tu navegador y asegúrate de que no esté siendo usada por otra aplicación.
-              </AlertDescription>
+              <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
+              <AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription>
             </Alert>
            )}
         </CardContent>
@@ -226,15 +227,15 @@ function FeedbackToolContent() {
         <CardHeader>
           <CardTitle className="font-headline flex items-center gap-2">
             <Sparkles className="text-primary" />
-            Feedback de IA
+            {t('feedbackTool.feedbackCard.title')}
           </CardTitle>
-          <CardDescription>Análisis instantáneo de tu forma.</CardDescription>
+          <CardDescription>{t('feedbackTool.feedbackCard.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm min-h-48">
           {isLoading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Analizando tu forma...</span>
+              <span>{t('feedbackTool.feedbackCard.loading')}</span>
             </div>
           )}
           {feedback && (
@@ -243,8 +244,8 @@ function FeedbackToolContent() {
           {!isLoading && !feedback && (
             <p className="text-muted-foreground">
               {exercisesForFeedback.length > 0 
-                ? "Selecciona un ejercicio de la lista y graba un video para obtener feedback sobre tu técnica."
-                : "¡Felicitaciones! No tienes ejercicios pendientes de análisis de forma."}
+                ? t('feedbackTool.feedbackCard.prompt')
+                : t('feedbackTool.feedbackCard.allDone')}
             </p>
           )}
         </CardContent>

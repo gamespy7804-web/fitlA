@@ -1,0 +1,405 @@
+
+{
+  "translation": {
+    "nav": {
+      "home": "Home",
+      "log": "Log",
+      "games": "Games",
+      "profile": "Profile",
+      "actions": {
+        "generate": "Generate New Workout",
+        "feedback": "Form Analysis"
+      }
+    },
+    "login": {
+      "title": "Welcome to TrainSmart AI",
+      "description": "Sign in to continue your fitness journey.",
+      "button": "Sign in with Google"
+    },
+    "welcome": {
+      "title": "Welcome to TrainSmart AI",
+      "subtitle": "Your fitness adventure is about to begin.",
+      "button": "Start Adventure"
+    },
+    "appShell": {
+      "askAi": "Ask AI",
+      "signOut": "Sign Out"
+    },
+    "chatbot": {
+      "title": "AI Assistant",
+      "description": "Ask me any questions about your workout or nutrition.",
+      "greeting": "Hello! I'm your fitness assistant. How can I help you today?",
+      "error": "I'm sorry, I've run into a problem. Please try again.",
+      "inputPlaceholder": "Type your message...",
+      "send": "Send",
+      "actions": {
+        "generateNewRoutine": "Generate New Routine"
+      }
+    },
+    "dashboard": {
+      "title": "Your Path to Success"
+    },
+    "performanceFeedback": {
+      "noWorkouts": "Complete some workouts to receive an AI analysis of your performance.",
+      "error": "Could not load AI analysis at this time.",
+      "loading": "Analyzing your performance..."
+    },
+    "workoutNodePath": {
+      "noPlan": {
+        "title": "No active training plan",
+        "description": "Use the generator to create a new routine."
+      },
+      "day": "DAY",
+      "tooltip": {
+        "locked": "Complete previous days",
+        "completed": "Completed",
+        "active": "Let's train!"
+      },
+      "generateNextWeek": "Generate Next Week"
+    },
+    "adaptiveProgression": {
+      "generateNewRoutine": "Generate New Routine",
+      "title": "AI Progression Generator",
+      "description": "Evaluate your last cycle and adjust your preferences to generate the next one.",
+      "howDidYouFeel": "How did you feel in the last cycle?",
+      "fitnessLevels": {
+        "easy": "Too easy",
+        "just-right": "Just right",
+        "hard": "Too hard"
+      },
+      "feedbackLabel": "Any feedback or changes you'd like to make?",
+      "feedbackPlaceholder": "e.g., I'd like to focus more on chest, leg days felt too long...",
+      "nextWeekSettings": "Settings for next week (Optional)",
+      "daysPerWeek": "Days/Week",
+      "daysPlaceholder": "e.g., 3",
+      "minPerSession": "Min/Session",
+      "durationPlaceholder": "e.g., 60",
+      "errors": {
+        "insufficientData": {
+          "title": "Insufficient Data",
+          "description": "Routine data or detailed logs were not found."
+        },
+        "generationFailed": {
+          "title": "Error generating progression",
+          "description": "An unexpected error occurred. Please try again."
+        }
+      },
+      "success": {
+        "title": "New Routine Generated!",
+        "description": "Your training plan has been updated. Go for it!"
+      }
+    },
+    "workoutGenerator": {
+      "title": "AI Workout Generator",
+      "descriptionInitial": "Describe your goals to get a personalized training routine.",
+      "descriptionClarification": "Provide more details to fine-tune your routine.",
+      "form": {
+        "goals": {
+          "label": "Your Goals",
+          "placeholder": "e.g., Lose weight, gain muscle"
+        },
+        "sport": {
+          "label": "Main Sport",
+          "placeholder": "e.g., Soccer, Basketball"
+        },
+        "fitnessLevel": {
+          "label": "Fitness Level",
+          "placeholder": "Select your level",
+          "options": {
+            "beginner": "Beginner",
+            "intermediate": "Intermediate",
+            "advanced": "Advanced"
+          }
+        },
+        "trainingDays": {
+          "label": "Days/Week"
+        },
+        "trainingDuration": {
+          "label": "Min/Session"
+        },
+        "clarificationPlaceholder": "Your answer...",
+        "buttons": {
+          "next": "Next",
+          "final": "Generate Final Routine"
+        },
+        "validations": {
+          "goals": { "min": "Goals must be at least 3 characters." },
+          "sport": { "min": "Sport must be at least 3 characters." },
+          "fitnessLevel": { "required": "Please select a fitness level." },
+          "trainingDays": { "required": "Required", "invalid": "Invalid number", "min": "At least 1 day", "max": "Maximum 7 days" },
+          "trainingDuration": { "required": "Required", "invalid": "Invalid number", "min": "At least 15 minutes", "max": "Maximum 240 minutes" }
+        }
+      },
+      "errors": {
+        "generationFailed": {
+          "title": "Error Generating Routine",
+          "description": "An unexpected error occurred. Please try again."
+        }
+      },
+      "result": {
+        "title": "Your New Workout Routine",
+        "day": "Day",
+        "table": {
+          "exercise": "Exercise",
+          "sets": "Sets",
+          "repsTime": "Reps/Time",
+          "rest": "Rest"
+        },
+        "buttons": {
+          "closeAndReload": "Close and Reload"
+        }
+      }
+    },
+    "log": {
+      "title": "Training Log",
+      "description": "Review your past workouts and track your long-term progress.",
+      "shareProgress": "Share My Progress",
+      "na": "N/A",
+      "history": {
+        "title": "Workout History",
+        "table": {
+          "date": "Date",
+          "workout": "Workout",
+          "duration": "Duration",
+          "volume": "Total Volume"
+        },
+        "empty": {
+          "line1": "You haven't logged any workouts yet.",
+          "line2": "Complete a session to see it here."
+        }
+      }
+    },
+    "progressChart": {
+      "title": "Progress Summary",
+      "description": "Total training volume and duration per month.",
+      "descriptionEmpty": "Complete workouts to see your progress here.",
+      "noData": "No progress data to show yet.",
+      "volumeLabel": "Training Volume (kg)",
+      "durationLabel": "Duration (min)"
+    },
+    "feedbackPage": {
+      "title": "Real-Time Feedback",
+      "description": "Use your camera to get AI feedback on your exercise technique."
+    },
+    "feedbackTool": {
+      "cameraCard": {
+        "title": "Live Camera",
+        "description": "Position yourself so your whole body is visible."
+      },
+      "cameraPermissionNeeded": "Camera permission required",
+      "selectExercisePlaceholder": "Select exercise",
+      "noPendingExercises": "No pending exercises",
+      "buttons": {
+        "record": "Record",
+        "stop": "Stop"
+      },
+      "cameraError": {
+        "title": "Camera Error",
+        "description": "Could not access the camera. Please check permissions in your browser and ensure it's not being used by another app."
+      },
+      "cameraDenied": {
+        "title": "Camera Access Denied",
+        "description": "Please enable camera permissions in your browser."
+      },
+      "selectExerciseError": "Please select an exercise first",
+      "analysisFailed": {
+        "title": "Analysis Failed",
+        "description": "Could not analyze the video. Please try again."
+      },
+      "feedbackCard": {
+        "title": "AI Feedback",
+        "description": "Instant analysis of your form.",
+        "loading": "Analyzing your form...",
+        "prompt": "Select an exercise from the list and record a video to get feedback on your technique.",
+        "allDone": "Congratulations! You have no pending exercises for form analysis."
+      }
+    },
+    "gamesPage": {
+      "title": "Game Zone",
+      "description": "Learn and have fun!",
+      "trivia": {
+        "title": "Myth or Fact"
+      },
+      "quiz": {
+        "title": "Quiz"
+      }
+    },
+    "games": {
+      "loading": "Generating your quiz...",
+      "question": "Question",
+      "of": "of",
+      "correct": "Correct!",
+      "incorrect": "Incorrect!",
+      "next": "Next",
+      "viewResults": "View Results",
+      "myth": "Myth",
+      "fact": "Fact",
+      "difficulty": {
+        "easy": "Easier",
+        "hard": "Harder"
+      },
+      "finished": {
+        "title": "Game Over!",
+        "score": "Your final score is:",
+        "backToMenu": "Back to Menu",
+        "playAgain": "Play Again",
+        "nextLevel": "Next Level"
+      },
+      "errors": {
+        "title": "Error",
+        "noRoutine": "Create a routine first to be able to play.",
+        "noQuestions": "Could not generate new questions.",
+        "generationFailed": "Could not generate questions. Please try again."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account and application preferences.",
+      "profile": {
+        "title": "Profile",
+        "description": "Update your personal information.",
+        "name": "Name",
+        "email": "Email",
+        "save": "Save Changes"
+      },
+      "sound": {
+        "title": "Sound",
+        "description": "Manage the application's sound preferences.",
+        "backgroundMusic": "Background Music",
+        "toggleMusic": "Toggle background music on or off",
+        "musicVolume": "Music Volume",
+        "sfxVolume": "Sound Effects Volume"
+      },
+      "language": {
+        "title": "Language",
+        "description": "Choose the application language.",
+        "select": "Select Language"
+      },
+      "account": {
+        "title": "Account",
+        "description": "Manage your account actions.",
+        "signOut": {
+          "title": "Sign Out",
+          "description": "End your current session on this device.",
+          "button": "Sign Out"
+        },
+        "delete": {
+          "title": "Delete Account",
+          "description": "This action is permanent and cannot be undone.",
+          "button": "Delete my account"
+        }
+      }
+    },
+    "onboarding": {
+      "title": "Welcome to TrainSmart AI",
+      "description": "Let's personalize your fitness journey.",
+      "aiThinking": "AI is thinking...",
+      "questions": {
+        "sport": { "label": "Main Sport", "placeholder": "e.g., Soccer, Weightlifting" },
+        "goals": { "label": "Your Goals", "placeholder": "e.g., Increase vertical jump, run a 5k" },
+        "fitnessLevel": { 
+          "label": "Fitness Level",
+          "options": {
+            "beginner": "Beginner",
+            "intermediate": "Intermediate",
+            "advanced": "Advanced"
+          }
+        },
+        "age": { "label": "Age" },
+        "weight": { "label": "Weight (kg)" },
+        "gender": {
+          "label": "Gender",
+          "options": {
+            "male": "Male",
+            "female": "Female",
+            "other": "Other"
+          }
+        },
+        "trainingDays": { "label": "Training days per week" },
+        "trainingDuration": { "label": "Time per session (minutes)" },
+        "clarification": { "label": "Your Answer", "placeholder": "e.g., I can do 10 push-ups..." }
+      },
+      "buttons": {
+        "back": "Back",
+        "next": "Next",
+        "generate": "Generate My Plan"
+      },
+      "errors": {
+        "clarification": {
+          "title": "Error",
+          "description": "Could not get clarification question."
+        },
+        "generation": {
+          "title": "Error",
+          "description": "Could not generate the workout routine."
+        }
+      },
+      "success": {
+        "title": "Workout Routine Generated!",
+        "description": "Redirecting you to the dashboard."
+      },
+      "validation": {
+        "sport": { "min": "Sport must be at least 3 characters." },
+        "goals": { "min": "Goals must be at least 3 characters." },
+        "age": { "min": "You must be at least 10 years old", "max": "You must be 100 years old or younger" },
+        "weight": { "min": "Must be at least 30kg", "max": "Must be 200kg or less" },
+        "trainingDays": { "min": "At least 1 day", "max": "Maximum 7 days" },
+        "trainingDuration": { "min": "At least 15 minutes", "max": "Maximum 240 minutes" }
+      }
+    },
+    "workoutPage": {
+      "exercise": "Exercise",
+      "of": "of",
+      "dayComplete": "Day completed!",
+      "allExercisesComplete": "You have completed all exercises for today.",
+      "finishAndSave": "Finish and Save Workout",
+      "errors": {
+        "routineNotFound": "Routine not found",
+        "routineLoadError": "Error loading routine",
+        "loadError": {
+          "title": "Load Error",
+          "description": "Could not load the day's workout."
+        }
+      },
+      "toast": {
+        "goodJob": "Good job!",
+        "pendingFeedback": "You have pending exercises for analysis. Go to the feedback tool to record them.",
+        "workoutComplete": "Workout Completed!",
+        "workoutSaved": "{{title}} has been saved. Redirecting..."
+      }
+    },
+    "restTimer": {
+      "title": "Rest",
+      "skip": "Skip Rest"
+    },
+    "stopwatch": {
+      "title": "Stopwatch",
+      "start": "Start",
+      "pause": "Pause"
+    },
+    "workoutExerciseCard": {
+      "set": "Set",
+      "weightLabel": "Weight",
+      "weightPlaceholder": "Weight (kg)",
+      "repsLabel": "Reps",
+      "repsPlaceholder": "Reps",
+      "secondsLabel": "Seconds",
+      "secondsPlaceholder": "Seconds",
+      "startTimer": "Start Timer",
+      "viewTechnique": "View Technique",
+      "readyToRest": "Ready to Rest",
+      "finishExercise": "Finish Exercise",
+      "feedbackTooltip": "Mark to get AI feedback on your technique",
+      "feedbackQueue": {
+        "added": {
+          "title": "Exercise Added to Queue",
+          "description": "{{name}} has been added to the pending list for form analysis."
+        },
+        "alreadyAdded": {
+          "title": "Exercise Already in Queue",
+          "description": "{{name}} is already in the list to be analyzed."
+        }
+      }
+    }
+  }
+}

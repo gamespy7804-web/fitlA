@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -23,7 +24,8 @@ const WorkoutRoutineInputSchema = z.object({
   gender: z.string().optional().describe("The user's gender."),
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  clarificationAnswers: z.string().optional().describe("The user's answers to the clarification questions.")
+  clarificationAnswers: z.string().optional().describe("The user's answers to the clarification questions."),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
 
@@ -35,46 +37,47 @@ const prompt = ai.definePrompt({
   name: 'workoutRoutinePrompt',
   input: {schema: WorkoutRoutineInputSchema},
   output: {schema: WorkoutRoutineOutputSchema},
-  prompt: `Eres un experto entrenador deportivo, especializado en generar rutinas de entrenamiento personalizadas. Tus respuestas deben ser en español.
+  prompt: `You are an expert sports trainer, specializing in generating personalized training routines.
+Your responses MUST be in the user's selected language: {{language}}.
 
-  **Paso 1: Evaluar la idoneidad de la información**
-  - Examina el deporte, los objetivos y el nivel de condición física del usuario.
-  - Si tienes suficiente información para crear un plan detallado (es decir, si se proporcionan 'clarificationAnswers'), pasa al Paso 2.
-  - Si NO tienes suficiente información, DEBES hacer una única pregunta aclaratoria específica para comprender mejor su nivel de condición física actual en el contexto de su deporte. Por ejemplo:
-    - Para 'Fútbol': "¿Qué distancia puedes correr actualmente en 20 minutos?"
-    - Para 'Calistenia': "¿Cuántas flexiones y dominadas consecutivas puedes hacer?"
-    - Para 'Natación': "¿Cuál es tu mejor tiempo en 100 metros estilo libre?"
-  - Devuelve ÚNICAMENTE esta pregunta en el campo 'clarificationQuestion' y nada más.
+**Step 1: Evaluate Information Adequacy**
+- Examine the user's sport, goals, and fitness level.
+- If you have enough information to create a detailed plan (i.e., if 'clarificationAnswers' are provided), proceed to Step 2.
+- If you DO NOT have enough information, you MUST ask a single, specific clarifying question to better understand their current fitness level in the context of their sport. For example:
+  - For 'Soccer': "What distance can you currently run in 20 minutes?"
+  - For 'Calisthenics': "How many consecutive push-ups and pull-ups can you do?"
+  - For 'Swimming': "What is your best time for a 100-meter freestyle?"
+- Return ONLY this question in the 'clarificationQuestion' field and nothing else.
 
-  **Paso 2: Generar un plan de entrenamiento**
-  - Si has recibido respuestas en el campo 'clarificationAnswers', genera un plan de entrenamiento detallado y estructurado.
-  - El plan DEBE cumplir estrictamente con los 'trainingDays' y 'trainingDuration' proporcionados. La suma de las duraciones de los ejercicios más los tiempos de descanso de cada día debe aproximarse a la 'trainingDuration'.
-  - Ten en cuenta todos los parámetros del usuario: deporte, objetivos, nivel de condición física, edad, peso, sexo y sus respuestas a las preguntas aclaratorias.
-  - Para CADA ejercicio, determina si se beneficiaría de un análisis de la técnica mediante vídeo para corregir la postura. Establece 'requiresFeedback' en true **solamente** para ejercicios complejos, de alto riesgo de lesión o cuya técnica sea fundamental para el progreso, como Sentadillas, Pesos Muertos, Press de Banca, Saltos al cajón, etc. Para ejercicios más simples, de aislamiento o estiramientos (como planchas, curl de bíceps, estiramientos), establécelo en false.
-  - Para CADA ejercicio, determina si se debe registrar el peso. Establece 'requiresWeight' en true para ejercicios que normalmente implican levantamiento de pesas (p. ej., Sentadillas, Press de Banca, Peso Muerto) y en false para ejercicios de peso corporal (p. ej., Flexiones, Planchas, Estiramientos).
-  - Para CADA ejercicio, el campo 'reps' DEBE contener un número de repeticiones (p. ej., "8-12") O una duración (p. ej., "30 seg"). NUNCA debe contener ambos.
-  - Para CADA ejercicio, genera una consulta de búsqueda de YouTube para un vídeo tutorial sobre cómo realizar el ejercicio correctamente. Por ejemplo, para "Sentadillas con barra", la consulta podría ser "cómo hacer sentadillas con barra técnica correcta". Guarda esta consulta en el campo 'youtubeQuery'.
-  - Determina si el deporte se basa principalmente en el entrenamiento con pesas (por ejemplo, Halterofilia, Powerlifting, Fisicoculturismo, CrossFit).
-    - Si ES un deporte de entrenamiento con pesas:
-      - Establece 'isWeightTraining' en true.
-      - Genera una rutina de ejercicios descriptiva simple como una cadena de texto.
-      - Devuélvela en el campo 'routine'.
-    - Si NO es un deporte de entrenamiento con pesas:
-      - Establece 'isWeightTraining' en false.
-      - Genera un plan de entrenamiento detallado y estructurado para el número de días especificado en 'trainingDays'.
-      - Para cada día, proporciona un título, una duración total y una lista de ejercicios con series, repeticiones (o duración), tiempo de descanso y el indicador 'requiresFeedback'.
-      - Devuelve esto en el campo 'structuredRoutine'.
+**Step 2: Generate Training Plan**
+- If you have received answers in the 'clarificationAnswers' field, generate a detailed and structured training plan.
+- The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'. The sum of exercise durations plus rest times for each day should approximate the 'trainingDuration'.
+- Consider all user parameters: sport, goals, fitness level, age, weight, gender, and their answers to clarifying questions.
+- For EACH exercise, determine if it would benefit from video technique analysis for form correction. Set 'requiresFeedback' to true **only** for complex, high-injury-risk, or technique-critical exercises, such as Squats, Deadlifts, Bench Press, Box Jumps, etc. For simpler, isolation, or stretching exercises (like planks, bicep curls, stretches), set it to false.
+- For EACH exercise, determine if weight should be logged. Set 'requiresWeight' to true for exercises that typically involve weightlifting (e.g., Squats, Bench Press, Deadlift) and false for bodyweight exercises (e.g., Push-ups, Planks, Stretches).
+- For EACH exercise, the 'reps' field MUST contain a number of repetitions (e.g., "8-12") OR a duration (e.g., "30 sec"). It should NEVER contain both.
+- For EACH exercise, generate a YouTube search query for a tutorial video on how to perform the exercise correctly. For example, for "Barbell Squats", the query could be "how to do barbell squats correct technique". Save this query in the 'youtubeQuery' field.
+- Determine if the sport is primarily based on weight training (e.g., Weightlifting, Powerlifting, Bodybuilding, CrossFit).
+  - If IT IS a weight training sport:
+    - Set 'isWeightTraining' to true.
+    - Generate a simple descriptive workout routine as a single text string.
+    - Return it in the 'routine' field.
+  - If IT IS NOT a weight training sport:
+    - Set 'isWeightTraining' to false.
+    - Generate a detailed, structured training plan for the number of days specified in 'trainingDays'.
+    - For each day, provide a title, a total duration, and a list of exercises with sets, reps (or duration), rest time, and the 'requiresFeedback' indicator.
+    - Return this in the 'structuredRoutine' field.
 
-  **Información del usuario:**
-  - Deporte: {{{sport}}}
-  - Metas: {{{goals}}}
-  - Nivel de condición física declarado: {{{fitnessLevel}}}
-  {{#if age}}- Edad: {{{age}}}{{/if}}
-  {{#if weight}}- Peso: {{{weight}}} kg{{/if}}
-  {{#if gender}}- Género: {{{gender}}}{{/if}}
-  {{#if trainingDays}}- Días de entrenamiento por semana: {{{trainingDays}}}{{/if}}
-  {{#if trainingDuration}}- Duración del entrenamiento por sesión: {{{trainingDuration}}} minutos{{/if}}
-  {{#if clarificationAnswers}}- Detalles de la condición física: {{{clarificationAnswers}}}{{/if}}
+**User Information:**
+- Sport: {{{sport}}}
+- Goals: {{{goals}}}
+- Stated Fitness Level: {{{fitnessLevel}}}
+{{#if age}}- Age: {{{age}}}{{/if}}
+{{#if weight}}- Weight: {{{weight}}} kg{{/if}}
+{{#if gender}}- Gender: {{{gender}}}{{/if}}
+{{#if trainingDays}}- Training days per week: {{{trainingDays}}}{{/if}}
+{{#if trainingDuration}}- Training duration per session: {{{trainingDuration}}} minutes{{/if}}
+{{#if clarificationAnswers}}- Fitness Details: {{{clarificationAnswers}}}{{/if}}
   `,
 });
 

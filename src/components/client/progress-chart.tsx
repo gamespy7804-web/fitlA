@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
@@ -16,7 +17,8 @@ import {
 } from '@/components/ui/chart';
 import { useEffect, useState, useCallback } from 'react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
+import { useI18n } from '@/i18n/client';
 
 type CompletedWorkout = { 
   date: string; 
@@ -24,18 +26,21 @@ type CompletedWorkout = {
   volume: number; 
 };
 
-const chartConfig = {
-  volume: {
-    label: 'Volumen de Entrenamiento (kg)',
-    color: 'hsl(var(--primary))',
-  },
-  duration: {
-    label: 'Duración (min)',
-    color: 'hsl(var(--accent))',
-  },
-} satisfies ChartConfig;
-
 export function ProgressChart() {
+  const { t, locale } = useI18n();
+  const dateLocale = locale === 'es' ? es : enUS;
+
+  const chartConfig = {
+    volume: {
+      label: t('progressChart.volumeLabel'),
+      color: 'hsl(var(--primary))',
+    },
+    duration: {
+      label: t('progressChart.durationLabel'),
+      color: 'hsl(var(--accent))',
+    },
+  } satisfies ChartConfig;
+  
   const [chartData, setChartData] = useState<any[]>([]);
 
   const loadChartData = useCallback(() => {
@@ -58,20 +63,18 @@ export function ProgressChart() {
       .sort((a, b) => a.month.localeCompare(b.month))
       .map(d => ({
         ...d,
-        month: format(new Date(`${d.month}-01`), "MMMM", { locale: es }),
+        month: format(new Date(`${d.month}-01`), "MMMM", { locale: dateLocale }),
       }));
       
     setChartData(sortedData);
-  }, []);
+  }, [dateLocale]);
 
   useEffect(() => {
     loadChartData();
 
-    // Add event listeners to update data when it changes
     window.addEventListener('storage', loadChartData);
     window.addEventListener('focus', loadChartData);
-
-    // Cleanup listeners
+    
     return () => {
         window.removeEventListener('storage', loadChartData);
         window.removeEventListener('focus', loadChartData);
@@ -81,11 +84,11 @@ export function ProgressChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='font-headline'>Resumen de Progreso</CardTitle>
+        <CardTitle className='font-headline'>{t('progressChart.title')}</CardTitle>
         <CardDescription>
           {chartData.length > 0 
-            ? 'Volumen y duración total de entrenamiento por mes.'
-            : 'Completa entrenamientos para ver tu progreso aquí.'}
+            ? t('progressChart.description')
+            : t('progressChart.descriptionEmpty')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -119,7 +122,7 @@ export function ProgressChart() {
           </ChartContainer>
         ) : (
            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <p>No hay datos de progreso para mostrar todavía.</p>
+              <p>{t('progressChart.noData')}</p>
            </div>
         )}
       </CardContent>

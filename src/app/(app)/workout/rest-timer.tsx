@@ -1,8 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useI18n } from '@/i18n/client';
 
 interface RestTimerProps {
   duration: number; // in seconds
@@ -11,6 +13,7 @@ interface RestTimerProps {
 
 export function RestTimer({ duration, onComplete }: RestTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
+  const { t } = useI18n();
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -41,7 +44,7 @@ export function RestTimer({ duration, onComplete }: RestTimerProps) {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="text-center"
       >
-        <p className="text-2xl font-headline text-muted-foreground mb-4">Descanso</p>
+        <p className="text-2xl font-headline text-muted-foreground mb-4">{t('restTimer.title')}</p>
         <div className="relative w-64 h-64">
            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
              <circle className="stroke-current text-border" strokeWidth="5" cx="50" cy="50" r="45" fill="transparent" />
@@ -68,7 +71,7 @@ export function RestTimer({ duration, onComplete }: RestTimerProps) {
           onClick={onComplete}
           className="mt-8 text-muted-foreground"
         >
-          Saltar Descanso
+          {t('restTimer.skip')}
         </Button>
       </motion.div>
     </div>

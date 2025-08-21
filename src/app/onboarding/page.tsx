@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -34,43 +35,32 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/i18n/client';
 
 const emptyStringToUndefined = z.literal('').transform(() => undefined);
 
-const onboardingSchema = z.object({
-  sport: z.string().min(3, 'El deporte debe tener al menos 3 caracteres.'),
-  goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
+const createOnboardingSchema = (t: (key: string, ...args: any[]) => string) => z.object({
+  sport: z.string().min(3, t('onboarding.validation.sport.min')),
+  goals: z.string().min(3, t('onboarding.validation.goals.min')),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   age: z.preprocess(
     (val) => (val === '' ? undefined : val),
-    z.coerce.number().min(10, 'Debes tener al menos 10 años').max(100, 'Debes tener 100 años o menos').optional()
+    z.coerce.number().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')).optional()
   ),
   weight: z.preprocess(
     (val) => (val === '' ? undefined : val),
-    z.coerce.number().min(30, 'Debe ser al menos 30kg').max(200, 'Debe ser 200kg o menos').optional()
+    z.coerce.number().min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')).optional()
   ),
   gender: z.enum(['male', 'female', 'other']),
-  trainingDays: z.coerce.number().min(1, 'Al menos 1 día').max(7, 'Máximo 7 días'),
-  trainingDuration: z.coerce.number().min(15, 'Al menos 15 minutos').max(240, 'Máximo 240 minutos'),
+  trainingDays: z.coerce.number().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+  trainingDuration: z.coerce.number().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
   clarificationAnswers: z.string().optional(),
 });
 
-type OnboardingData = z.infer<typeof onboardingSchema>;
-
-const questions = [
-  { id: 'sport', label: 'Deporte Principal', placeholder: 'ej., Fútbol, Halterofilia', type: 'text' },
-  { id: 'goals', label: 'Tus Metas', placeholder: 'ej., Aumentar salto vertical, correr 5k', type: 'text' },
-  { id: 'fitnessLevel', label: 'Nivel de Condición Física', options: ['principiante', 'intermedio', 'avanzado'], type: 'select' },
-  { id: 'age', label: 'Edad', placeholder: '25', type: 'number' },
-  { id: 'weight', label: 'Peso (kg)', placeholder: '70', type: 'number' },
-  { id: 'gender', label: 'Género', options: ['masculino', 'femenino', 'otro'], type: 'select' },
-  { id: 'trainingDays', label: 'Días de entrenamiento por semana', placeholder: '4', type: 'number' },
-  { id: 'trainingDuration', label: 'Tiempo por sesión (minutos)', placeholder: '60', type: 'number' },
-  { id: 'clarificationAnswers', label: '', placeholder: 'ej., Puedo hacer 10 flexiones...', type: 'text' },
-] as const;
-
+type OnboardingData = z.infer<ReturnType<typeof createOnboardingSchema>>;
 
 export default function OnboardingPage() {
+  const { t, locale } = useI18n();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
@@ -78,8 +68,20 @@ export default function OnboardingPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const questions = [
+    { id: 'sport', label: t('onboarding.questions.sport.label'), placeholder: t('onboarding.questions.sport.placeholder'), type: 'text' },
+    { id: 'goals', label: t('onboarding.questions.goals.label'), placeholder: t('onboarding.questions.goals.placeholder'), type: 'text' },
+    { id: 'fitnessLevel', label: t('onboarding.questions.fitnessLevel.label'), options: { beginner: t('onboarding.questions.fitnessLevel.options.beginner'), intermediate: t('onboarding.questions.fitnessLevel.options.intermediate'), advanced: t('onboarding.questions.fitnessLevel.options.advanced') }, type: 'select' },
+    { id: 'age', label: t('onboarding.questions.age.label'), placeholder: '25', type: 'number' },
+    { id: 'weight', label: t('onboarding.questions.weight.label'), placeholder: '70', type: 'number' },
+    { id: 'gender', label: t('onboarding.questions.gender.label'), options: { male: t('onboarding.questions.gender.options.male'), female: t('onboarding.questions.gender.options.female'), other: t('onboarding.questions.gender.options.other') }, type: 'select' },
+    { id: 'trainingDays', label: t('onboarding.questions.trainingDays.label'), placeholder: '4', type: 'number' },
+    { id: 'trainingDuration', label: t('onboarding.questions.trainingDuration.label'), placeholder: '60', type: 'number' },
+    { id: 'clarificationAnswers', label: '', placeholder: t('onboarding.questions.clarification.placeholder'), type: 'text' },
+  ] as const;
+
   const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
+    resolver: zodResolver(createOnboardingSchema(t)),
     defaultValues: {
       sport: '',
       goals: '',
@@ -102,24 +104,23 @@ export default function OnboardingPage() {
 
     setDirection(1);
     
+    const apiValues = { ...form.getValues(), language: locale };
+
     // After fitnessLevel, call API to get clarification question
     if (currentQuestionId === 'fitnessLevel') {
       setIsLoading(true);
       try {
-        const { sport, goals, fitnessLevel } = form.getValues();
-        const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel });
+        const { sport, goals, fitnessLevel } = apiValues;
+        const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
         if (result.clarificationQuestion) {
           setClarificationQuestion(result.clarificationQuestion);
-           // The API call is done, now we can move on to the clarification step
            setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
         } else {
-          // No clarification question needed, so move to age
           setCurrentQuestionIndex(currentQuestionIndex + 1);
         }
       } catch (error) {
         console.error(error);
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener la pregunta de clarificación.' });
-        // if AI fails, still go to next question
+        toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } finally {
         setIsLoading(false);
@@ -128,25 +129,23 @@ export default function OnboardingPage() {
     }
     
     if (currentQuestionId === 'trainingDuration') {
-       // if we have a clarification question, go to it, otherwise submit
        if (clarificationQuestion) {
          setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
        } else {
-         handleSubmitForm(form.getValues());
+         handleSubmitForm(apiValues);
        }
        return;
     }
 
 
     if (currentQuestionId === 'clarificationAnswers') {
-      handleSubmitForm(form.getValues());
+      handleSubmitForm(apiValues);
       return;
     }
     
     if (currentQuestionIndex < questions.length - 1) {
        if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
-         // This case might not be hit anymore, but as a safeguard
-         handleSubmitForm(form.getValues());
+         handleSubmitForm(apiValues);
        } else {
          setCurrentQuestionIndex(currentQuestionIndex + 1);
        }
@@ -159,7 +158,6 @@ export default function OnboardingPage() {
       if (currentQuestionId === 'clarificationAnswers') {
         setCurrentQuestionIndex(questions.findIndex(q => q.id === 'trainingDuration'))
       } else if (currentQuestionId === 'age' && clarificationQuestion) {
-        // If we came from clarification question, go back to fitness level
         setCurrentQuestionIndex(questions.findIndex(q => q.id === 'fitnessLevel'))
       }
       else {
@@ -171,18 +169,15 @@ export default function OnboardingPage() {
   const handleSubmitForm = async (values: OnboardingData) => {
     setIsLoading(true);
     try {
-      const result = await generateWorkoutRoutine(values);
-      console.log('Generated Routine:', result.structuredRoutine || result.routine);
-      // In a real app, you would save the routine to the user's state/DB
-      // For this demo, we'll store it in localStorage
+      const result = await generateWorkoutRoutine({...values, language: locale});
       localStorage.setItem('workoutRoutine', JSON.stringify(result));
       localStorage.setItem('onboardingComplete', 'true');
 
-      toast({ title: '¡Rutina de Entrenamiento Generada!', description: "Te estamos redirigiendo al panel de control." });
+      toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo generar la rutina de entrenamiento.' });
+      toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
     } finally {
       setIsLoading(false);
     }
@@ -191,12 +186,7 @@ export default function OnboardingPage() {
   const renderInput = (field: any) => {
     const question = questions[currentQuestionIndex];
     if (question.type === 'select') {
-      let options: Record<string,string> = {};
-      if (question.id === 'fitnessLevel') {
-        options = { Principiante: 'beginner', Intermedio: 'intermediate', Avanzado: 'advanced' };
-      } else if (question.id === 'gender') {
-        options = { Masculino: 'male', Femenino: 'female', Otro: 'other' };
-      }
+      const options = question.options;
 
       return (
         <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -204,7 +194,7 @@ export default function OnboardingPage() {
             <SelectTrigger><SelectValue /></SelectTrigger>
           </FormControl>
           <SelectContent>
-            {Object.entries(options).map(([label, value]) => (
+            {Object.entries(options).map(([value, label]) => (
               <SelectItem key={value} value={value} className="capitalize">{label}</SelectItem>
             ))}
           </SelectContent>
@@ -234,7 +224,6 @@ export default function OnboardingPage() {
   const isClarificationStep = currentQuestionId === 'clarificationAnswers';
 
   const finalSteps = ['age', 'weight', 'gender', 'trainingDays', 'trainingDuration'];
-  // Calculate total steps: 3 initial questions + optional clarification question + final steps.
   const totalSteps = 3 + (clarificationQuestion ? 1 : 0) + finalSteps.length;
   let completedSteps = 0;
   if(isClarificationStep) {
@@ -250,9 +239,9 @@ export default function OnboardingPage() {
     <div className="container mx-auto flex min-h-screen items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl text-center">Bienvenido a TrainSmart AI</CardTitle>
+          <CardTitle className="font-headline text-2xl text-center">{t('onboarding.title')}</CardTitle>
           <CardDescription className="text-center">
-            Vamos a personalizar tu viaje de fitness.
+            {t('onboarding.description')}
           </CardDescription>
           <div className="flex justify-center gap-2 pt-4">
              {Array.from({ length: totalSteps }).map((_, index) => (
@@ -281,14 +270,14 @@ export default function OnboardingPage() {
                          <div>
                            <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                               <Bot className="text-primary size-8 shrink-0 mt-1" />
-                              <p className="text-secondary-foreground">{clarificationQuestion || 'La IA está pensando...'}</p>
+                              <p className="text-secondary-foreground">{clarificationQuestion || t('onboarding.aiThinking')}</p>
                            </div>
                            <FormField
                               control={form.control}
                               name="clarificationAnswers"
                               render={({ field }) => (
                                 <FormItem className="mt-4">
-                                  <FormLabel>Tu Respuesta</FormLabel>
+                                  <FormLabel>{t('onboarding.questions.clarification.label')}</FormLabel>
                                   <FormControl>{renderInput(field)}</FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -311,16 +300,16 @@ export default function OnboardingPage() {
                       
                       <div className="flex justify-between items-center pt-4">
                           <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0 || isLoading}>
-                            <ChevronLeft /> Atrás
+                            <ChevronLeft /> {t('onboarding.buttons.back')}
                           </Button>
                           
                           {(isClarificationStep || (currentQuestionId === 'trainingDuration' && !clarificationQuestion)) ? (
                              <Button type="submit" disabled={isLoading}>
-                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> Generar Mi Plan</>}
+                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> {t('onboarding.buttons.generate')}</>}
                              </Button>
                           ) : (
                             <Button type="submit" disabled={isLoading}>
-                              {isLoading ? <Loader2 className="animate-spin" /> : 'Siguiente' }
+                              {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next') }
                               <ChevronRight />
                            </Button>
                           )}

@@ -11,6 +11,7 @@ import type { ExerciseLog, SetLog } from './page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import useAudioEffects from '@/hooks/use-audio-effects';
+import { useI18n } from '@/i18n/client';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -22,6 +23,7 @@ interface WorkoutExerciseCardProps {
 }
 
 export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSetComplete, onStartTimer }: WorkoutExerciseCardProps) {
+  const { t } = useI18n();
   const { toast } = useToast();
   const playSound = useAudioEffects();
 
@@ -61,14 +63,14 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
         // Manually trigger a storage event to notify other components (like the navbar badge)
         window.dispatchEvent(new Event('storage'));
         toast({
-            title: 'Ejercicio Añadido a la Cola',
-            description: `${exercise.name} se ha añadido a la lista de pendientes para análisis de forma.`,
+            title: t('workoutExerciseCard.feedbackQueue.added.title'),
+            description: t('workoutExerciseCard.feedbackQueue.added.description', { name: exercise.name }),
         });
     } else {
          toast({
             variant: 'default',
-            title: 'Ejercicio ya en la cola',
-            description: `${exercise.name} ya está en la lista para ser analizado.`,
+            title: t('workoutExerciseCard.feedbackQueue.alreadyAdded.title'),
+            description: t('workoutExerciseCard.feedbackQueue.alreadyAdded.description', { name: exercise.name }),
         });
     }
   }
@@ -96,7 +98,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Marcar para obtener feedback de IA sobre tu técnica</p>
+                        <p>{t('workoutExerciseCard.feedbackTooltip')}</p>
                     </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -106,18 +108,18 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
       <CardContent className="space-y-4">
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="w-10 text-center font-bold text-primary">
-            Serie {setIndex + 1}
+            {t('workoutExerciseCard.set')} {setIndex + 1}
           </div>
           <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4">
             {exercise.originalExercise.requiresWeight ? (
               <div>
-                <Label htmlFor={`weight-${setIndex}`} className="sr-only">Peso</Label>
+                <Label htmlFor={`weight-${setIndex}`} className="sr-only">{t('workoutExerciseCard.weightLabel')}</Label>
                 <div className="relative">
                   <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id={`weight-${setIndex}`}
                     type="number"
-                    placeholder="Peso (kg)"
+                    placeholder={t('workoutExerciseCard.weightPlaceholder')}
                     className="pl-9"
                     value={set.weight || ''}
                     onChange={(e) => handleSetFieldChange('weight', e.target.value)}
@@ -126,13 +128,13 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               </div>
             ) : <div />}
             <div>
-              <Label htmlFor={`reps-${setIndex}`} className="sr-only">Reps</Label>
+              <Label htmlFor={`reps-${setIndex}`} className="sr-only">{isTimedExercise ? t('workoutExerciseCard.secondsLabel') : t('workoutExerciseCard.repsLabel')}</Label>
               <div className="relative">
                 <Repeat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id={`reps-${setIndex}`}
                   type="number"
-                  placeholder={isTimedExercise ? 'Segundos' : 'Reps'}
+                  placeholder={isTimedExercise ? t('workoutExerciseCard.secondsPlaceholder') : t('workoutExerciseCard.repsPlaceholder')}
                   className="pl-9"
                   value={set.reps || ''}
                   onChange={(e) => handleSetFieldChange('reps', e.target.value)}
@@ -147,13 +149,13 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
           {isTimedExercise && (
               <Button variant="outline" onClick={onStartTimer}>
                   <Timer className="mr-2" />
-                  Iniciar Cronómetro
+                  {t('workoutExerciseCard.startTimer')}
               </Button>
           )}
           {exercise.originalExercise.youtubeQuery && (
             <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-red-500 border border-red-500/50 hover:bg-red-500/10 hover:text-red-500 h-10 px-4 py-2">
                 <Youtube className="mr-2" />
-                Ver Técnica
+                {t('workoutExerciseCard.viewTechnique')}
             </a>
           )}
         </div>
@@ -161,7 +163,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
         <div className="mt-6 text-center">
             <Button size="lg" onClick={handleCompleteClick} disabled={!isSetDataEntered()} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Check className="mr-2"/>
-                {isLastSet ? "Finalizar Ejercicio" : "Listo para Descansar"}
+                {isLastSet ? t('workoutExerciseCard.finishExercise') : t('workoutExerciseCard.readyToRest')}
             </Button>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ProgressChart } from '@/components/client/progress-chart';
@@ -13,8 +14,9 @@ import {
 } from '@/components/ui/table';
 import { Share2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS } from 'date-fns/locale';
 import { useEffect, useState, useCallback } from 'react';
+import { useI18n } from '@/i18n/client';
 
 type LogEntry = {
   date: string;
@@ -24,7 +26,9 @@ type LogEntry = {
 };
 
 export default function LogPage() {
+  const { t, locale } = useI18n();
   const [logData, setLogData] = useState<LogEntry[]>([]);
+  const dateLocale = locale === 'es' ? es : enUS;
   
   const loadLogData = useCallback(() => {
     const completed = JSON.parse(
@@ -34,11 +38,11 @@ export default function LogPage() {
     const formattedData = completed.map((item) => ({
       ...item,
       duration: `${item.duration} min`,
-      volume: item.volume > 0 ? `${item.volume.toLocaleString()} kg` : 'N/A',
+      volume: item.volume > 0 ? `${item.volume.toLocaleString()} kg` : t('log.na'),
     })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     setLogData(formattedData);
-  }, []);
+  }, [t]);
 
 
   useEffect(() => {
@@ -60,31 +64,31 @@ export default function LogPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">
-            Registro de Entrenamiento
+            {t('log.title')}
           </h1>
           <p className="text-muted-foreground">
-            Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.
+            {t('log.description')}
           </p>
         </div>
         <Button variant="secondary" disabled={logData.length === 0}>
           <Share2 className="mr-2" />
-          Compartir Mi Progreso
+          {t('log.shareProgress')}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Historial de Entrenamiento</CardTitle>
+          <CardTitle className="font-headline">{t('log.history.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           {logData.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Entrenamiento</TableHead>
-                  <TableHead>Duración</TableHead>
-                  <TableHead>Volumen Total</TableHead>
+                  <TableHead>{t('log.history.table.date')}</TableHead>
+                  <TableHead>{t('log.history.table.workout')}</TableHead>
+                  <TableHead>{t('log.history.table.duration')}</TableHead>
+                  <TableHead>{t('log.history.table.volume')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,7 +96,7 @@ export default function LogPage() {
                   <TableRow key={`${log.date}-${index}`}>
                     <TableCell className="font-medium">
                       {format(new Date(log.date), "d 'de' MMMM, yyyy", {
-                        locale: es,
+                        locale: dateLocale,
                       })}
                     </TableCell>
                     <TableCell>{log.workout}</TableCell>
@@ -104,8 +108,8 @@ export default function LogPage() {
             </Table>
           ) : (
             <div className="text-center text-muted-foreground py-12">
-              <p>Aún no has registrado ningún entrenamiento.</p>
-              <p className="text-sm">Completa una sesión para verla aquí.</p>
+              <p>{t('log.history.empty.line1')}</p>
+              <p className="text-sm">{t('log.history.empty.line2')}</p>
             </div>
           )}
         </CardContent>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -45,6 +46,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useI18n } from '@/i18n/client';
 
 const formSchema = z.object({
   goals: z.string().min(3, 'Los objetivos deben tener al menos 3 caracteres.'),
@@ -62,6 +64,7 @@ interface WorkoutGeneratorDialogProps {
 }
 
 export function WorkoutGeneratorDialog({ children, open, onOpenChange }: WorkoutGeneratorDialogProps) {
+  const { t, locale } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
@@ -78,25 +81,48 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       clarificationAnswers: '',
     },
   });
+  
+  const getValidationMessages = (path: 'goals' | 'sport' | 'fitnessLevel' | 'trainingDays' | 'trainingDuration') => {
+      return {
+        required_error: t(`workoutGenerator.form.validations.${path}.required`),
+        invalid_type_error: t(`workoutGenerator.form.validations.${path}.invalid`),
+      };
+  };
+
+ const localizedFormSchema = z.object({
+  goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
+  sport: z.string().min(3, t('workoutGenerator.form.validations.sport.min')),
+  fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], getValidationMessages('fitnessLevel')),
+  trainingDays: z.coerce.number(getValidationMessages('trainingDays')).min(1, t('workoutGenerator.form.validations.trainingDays.min')).max(7, t('workoutGenerator.form.validations.trainingDays.max')),
+  trainingDuration: z.coerce.number(getValidationMessages('trainingDuration')).min(15, t('workoutGenerator.form.validations.trainingDuration.min')).max(240, t('workoutGenerator.form.validations.trainingDuration.max')),
+  clarificationAnswers: z.string().optional(),
+ });
+
+ form.resolver = zodResolver(localizedFormSchema);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setResult(null);
 
+    const apiValues = {
+        ...values,
+        language: locale,
+    };
+
     // If there's a clarification question, it means this is the second step.
     if (clarificationQuestion) {
       try {
-        const routine = await generateWorkoutRoutine(values);
+        const routine = await generateWorkoutRoutine(apiValues);
         setResult(routine);
-        // In a real app, save this new routine
         localStorage.setItem('workoutRoutine', JSON.stringify(routine));
         setClarificationQuestion(''); // Reset for next time
       } catch (error) {
         console.error(error);
         toast({
           variant: 'destructive',
-          title: 'Error al generar la rutina',
-          description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
+          title: t('workoutGenerator.errors.generationFailed.title'),
+          description: t('workoutGenerator.errors.generationFailed.description'),
         });
       } finally {
         setIsLoading(false);
@@ -104,15 +130,14 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       return;
     }
 
-    // First step: get clarification question
+    // First step: get clarification question or full routine
     try {
       const { sport, goals, fitnessLevel } = values;
-      const initialResult = await generateWorkoutRoutine({ sport, goals, fitnessLevel });
+      const initialResult = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
       if (initialResult.clarificationQuestion) {
         setClarificationQuestion(initialResult.clarificationQuestion);
       } else {
-        // No clarification needed, generate full routine
-        const routine = await generateWorkoutRoutine(values);
+        const routine = await generateWorkoutRoutine(apiValues);
         setResult(routine);
         localStorage.setItem('workoutRoutine', JSON.stringify(routine));
       }
@@ -120,8 +145,8 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Error al generar la rutina',
-        description: 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
+        title: t('workoutGenerator.errors.generationFailed.title'),
+        description: t('workoutGenerator.errors.generationFailed.description'),
       });
     } finally {
       setIsLoading(false);
@@ -149,12 +174,12 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-headline flex items-center gap-2">
-            <Sparkles className="text-primary" /> Generador de Entrenamiento con IA
+            <Sparkles className="text-primary" /> {t('workoutGenerator.title')}
           </DialogTitle>
           <DialogDescription>
             {clarificationQuestion 
-              ? 'Proporciona más detalles para afinar tu rutina.'
-              : 'Describe tus metas para obtener una rutina de entrenamiento personalizada.'}
+              ? t('workoutGenerator.descriptionClarification')
+              : t('workoutGenerator.descriptionInitial')}
           </DialogDescription>
         </DialogHeader>
         {!result ? (
@@ -169,7 +194,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                       <FormLabel>{clarificationQuestion}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Tu respuesta..."
+                          placeholder={t('workoutGenerator.form.clarificationPlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -184,10 +209,10 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                     name="goals"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tus Metas</FormLabel>
+                        <FormLabel>{t('workoutGenerator.form.goals.label')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="ej., Perder peso, ganar músculo"
+                            placeholder={t('workoutGenerator.form.goals.placeholder')}
                             {...field}
                           />
                         </FormControl>
@@ -200,9 +225,9 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                     name="sport"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Deporte Principal</FormLabel>
+                        <FormLabel>{t('workoutGenerator.form.sport.label')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="ej., Fútbol, Baloncesto" {...field} />
+                          <Input placeholder={t('workoutGenerator.form.sport.placeholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -214,22 +239,20 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                       name="fitnessLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nivel de Condición Física</FormLabel>
+                          <FormLabel>{t('workoutGenerator.form.fitnessLevel.label')}</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecciona tu nivel" />
+                                <SelectValue placeholder={t('workoutGenerator.form.fitnessLevel.placeholder')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="beginner">Principiante</SelectItem>
-                              <SelectItem value="intermediate">
-                                Intermedio
-                              </SelectItem>
-                              <SelectItem value="advanced">Avanzado</SelectItem>
+                              <SelectItem value="beginner">{t('workoutGenerator.form.fitnessLevel.options.beginner')}</SelectItem>
+                              <SelectItem value="intermediate">{t('workoutGenerator.form.fitnessLevel.options.intermediate')}</SelectItem>
+                              <SelectItem value="advanced">{t('workoutGenerator.form.fitnessLevel.options.advanced')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -241,7 +264,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                       name="trainingDays"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Días/Semana</FormLabel>
+                          <FormLabel>{t('workoutGenerator.form.trainingDays.label')}</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
@@ -254,7 +277,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                       name="trainingDuration"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Min/Sesión</FormLabel>
+                          <FormLabel>{t('workoutGenerator.form.trainingDuration.label')}</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} />
                           </FormControl>
@@ -270,7 +293,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {clarificationQuestion ? 'Generar Rutina Final' : 'Siguiente'}
+                  {clarificationQuestion ? t('workoutGenerator.form.buttons.final') : t('workoutGenerator.form.buttons.next')}
                 </Button>
               </DialogFooter>
             </form>
@@ -278,7 +301,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
         ) : (
           <div className="space-y-4">
             <h3 className="font-semibold font-headline">
-              Tu Nueva Rutina de Entrenamiento
+              {t('workoutGenerator.result.title')}
             </h3>
             <ScrollArea className="h-96">
               {result.isWeightTraining === false && result.structuredRoutine ? (
@@ -287,7 +310,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                     <AccordionItem value={`item-${index}`} key={day.day}>
                       <AccordionTrigger>
                         <div className="flex items-center gap-4">
-                          <Badge className="text-lg px-3 py-1">Día {day.day}</Badge>
+                          <Badge className="text-lg px-3 py-1">{t('workoutGenerator.result.day')} {day.day}</Badge>
                           <span className="text-xl font-semibold font-headline">{day.title}</span>
                         </div>
                       </AccordionTrigger>
@@ -295,10 +318,10 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Ejercicio</TableHead>
-                              <TableHead>Series</TableHead>
-                              <TableHead>Reps/Tiempo</TableHead>
-                              <TableHead>Descanso</TableHead>
+                              <TableHead>{t('workoutGenerator.result.table.exercise')}</TableHead>
+                              <TableHead>{t('workoutGenerator.result.table.sets')}</TableHead>
+                              <TableHead>{t('workoutGenerator.result.table.repsTime')}</TableHead>
+                              <TableHead>{t('workoutGenerator.result.table.rest')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -324,7 +347,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
             </ScrollArea>
             <DialogFooter>
               <Button onClick={handleDialogClose}>
-                Cerrar y Recargar
+                {t('workoutGenerator.result.buttons.closeAndReload')}
               </Button>
             </DialogFooter>
           </div>

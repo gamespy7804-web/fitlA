@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for providing real-time feedback on exercise technique using AI.
@@ -14,6 +15,7 @@ const RealTimeFeedbackInputSchema = z.object({
     .describe(
       'A video of the user performing an exercise, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'    ),
   exerciseType: z.string().describe('The type of exercise being performed.'),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
 export type RealTimeFeedbackInput = z.infer<typeof RealTimeFeedbackInputSchema>;
 
@@ -30,11 +32,12 @@ const prompt = ai.definePrompt({
   name: 'realTimeFeedbackPrompt',
   input: {schema: RealTimeFeedbackInputSchema},
   output: {schema: RealTimeFeedbackOutputSchema},
-  prompt: `Eres un entrenador de fitness con IA que proporciona información en tiempo real sobre la forma de hacer ejercicio. Tu respuesta debe ser en español.
+  prompt: `You are an AI fitness coach providing real-time feedback on exercise form.
+Your response MUST be in the user's selected language: {{language}}.
 
-  Analiza el vídeo del usuario realizando el ejercicio {{{exerciseType}}} y dale tu opinión para mejorar su forma y reducir el riesgo de lesiones.
+Analyze the user's video performing the {{{exerciseType}}} exercise and provide feedback to improve their form and reduce injury risk.
 
-  Vídeo: {{media url=videoDataUri}}`,
+Video: {{media url=videoDataUri}}`,
 });
 
 const realTimeFeedbackFlow = ai.defineFlow(

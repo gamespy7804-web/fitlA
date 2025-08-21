@@ -3,7 +3,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for analyzing user performance based on workout logs.
  *
- * - performanceAnalystGenerator - A function that provides an analysis of strengths, weaknesses, and training methodology.
+ * - performanceAnalystGenerator - A function that provides an analysis of strengths, weaknesses, and a training methodology.
  */
 
 import { ai } from '@/ai/genkit';
@@ -15,6 +15,7 @@ const PerformanceAnalystInputSchema = z.object({
     .describe(
       'A JSON string of an array of completed workout logs. Each log contains the exercises, sets, reps, and weight completed by the user.'
     ),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
 export type PerformanceAnalystInput = z.infer<typeof PerformanceAnalystInputSchema>;
 
@@ -31,19 +32,20 @@ const prompt = ai.definePrompt({
     name: 'performanceAnalystPrompt',
     input: { schema: PerformanceAnalystInputSchema },
     output: { schema: PerformanceAnalystOutputSchema },
-    prompt: `Eres un analista de rendimiento deportivo de IA. Tu tarea es analizar los datos de entrenamiento de un usuario y proporcionarle un resumen conciso y directo (1-2 frases) sobre sus fortalezas, debilidades y el método que utilizarás para su próxima rutina. DEBES dirigirte al usuario directamente en segunda persona (tú/tus).
+    prompt: `You are an AI sports performance analyst. Your task is to analyze a user's training data and provide a concise, direct summary (1-2 sentences) of their strengths, weaknesses, and the method you will use for their next routine. You MUST address the user directly in the second person (you/your).
+Your response MUST be in the user's selected language: {{language}}.
 
-- Analiza los datos de entrenamiento registrados para identificar patrones. ¿Estás progresando más rápido en ciertos levantamientos? ¿Te estás quedando atrás en otros?
-- Identifica una fortaleza clave (p. ej., "Muestras un excelente progreso en tu fuerza de empuje").
-- Identifica una debilidad clave (p. ej., "Tu volumen de la parte inferior del cuerpo es un área de mejora").
-- Describe brevemente el enfoque para la próxima rutina (p. ej., "Nos centraremos en aumentar tu volumen de piernas mientras mantenemos tu fuerza de la parte superior del cuerpo.").
+- Analyze the logged training data to identify patterns. Are they progressing faster on certain lifts? Are they lagging on others?
+- Identify one key strength (e.g., "You show excellent progress in your pushing strength").
+- Identify one key weakness (e.g., "Your lower body volume is an area for improvement").
+- Briefly describe the approach for the next routine (e.g., "We will focus on increasing your leg volume while maintaining your upper body strength.").
 
-**Tus Datos de Entrenamiento Registrados:**
+**Your Logged Training Data:**
 \`\`\`json
 {{{trainingData}}}
 \`\`\`
 
-Genera un análisis conciso en el campo 'analysis' dirigido directamente al usuario.
+Generate a concise analysis in the 'analysis' field addressed directly to the user.
     `,
 });
 

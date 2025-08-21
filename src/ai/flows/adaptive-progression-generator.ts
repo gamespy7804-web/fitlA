@@ -10,6 +10,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { WorkoutRoutineOutputSchema } from './types';
 import type { WorkoutRoutineOutput } from './types';
+import { i18n } from '@/i18n/server';
 
 const AdaptiveProgressionInputSchema = z.object({
   trainingData: z
@@ -29,6 +30,7 @@ const AdaptiveProgressionInputSchema = z.object({
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train for the new cycle."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes for the new cycle."),
   userFeedback: z.string().optional().describe("Free-text feedback from the user about the last cycle and what they'd like to change."),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
 export type AdaptiveProgressionInput = z.infer<typeof AdaptiveProgressionInputSchema>;
 
@@ -41,45 +43,46 @@ const prompt = ai.definePrompt({
   name: 'adaptiveProgressionPrompt',
   input: {schema: AdaptiveProgressionInputSchema},
   output: {schema: WorkoutRoutineOutputSchema},
-  prompt: `Eres un entrenador deportivo experto en IA, especializado en crear progresiones de entrenamiento semanales. Tu respuesta debe ser en español.
+  prompt: `You are an expert AI sports trainer, specializing in creating weekly training progressions.
+Your response MUST be in the user's selected language: {{language}}.
 
-  Tu tarea es analizar los datos de entrenamiento del ciclo anterior de un usuario, su adherencia, su nivel de condición física auto-reportado y, lo más importante, sus comentarios directos para generar un NUEVO plan de entrenamiento progresivo para la próxima semana.
+Your task is to analyze a user's previous training cycle data, their adherence, self-reported fitness level, and most importantly, their direct feedback to generate a NEW progressive training plan for the upcoming week.
 
-  **Feedback del Usuario (Máxima Prioridad):**
-  {{#if userFeedback}}
-  - El usuario ha proporcionado los siguientes comentarios, que DEBEN ser la guía principal para tus ajustes: "{{{userFeedback}}}"
-  - Prioriza estos comentarios sobre las reglas generales de abajo si hay un conflicto. Por ejemplo, si el usuario dice que fue "fácil" pero pide "menos volumen", debes reducir el volumen.
-  {{/if}}
+**User Feedback (Highest Priority):**
+{{#if userFeedback}}
+- The user has provided the following feedback, which MUST be the primary guide for your adjustments: "{{{userFeedback}}}"
+- Prioritize this feedback over the general rules below if there is a conflict. For example, if the user says it was "easy" but asks for "less volume", you must reduce the volume.
+{{/if}}
 
-  Utiliza la rutina original como base y ajústala para la progresión. Los principios clave son la sobrecarga progresiva y la recuperación.
+Use the original routine as a baseline and adjust it for progression. The key principles are progressive overload and recovery.
 
-  - Si la adherencia es baja (< 75%), el plan fue probablemente demasiado exigente. Considera reducir el volumen (menos series o ejercicios) o la intensidad.
-  - Si el usuario reportó que el ciclo fue "fácil" y la adherencia es alta (> 90%), aumenta la intensidad significativamente. Incrementa el peso, las repeticiones, o introduce variaciones de ejercicio más difíciles.
-  - Si el usuario reportó que fue "demasiado difícil", reduce la intensidad. Disminuye el peso, las repeticiones, o simplifica los ejercicios.
-  - Si el usuario reportó que fue "justo" y la adherencia es alta, aplica una sobrecarga progresiva moderada. Aumenta ligeramente las repeticiones o el peso en los ejercicios clave.
-  - Analiza el rendimiento real (datos de entrenamiento) para hacer ajustes precisos. Si el usuario superó consistentemente las repeticiones objetivo, aumenta el peso o las repeticiones para ese ejercicio. Si no alcanzó el objetivo, mantén o reduce ligeramente la dificultad.
+- If adherence is low (< 75%), the plan was likely too demanding. Consider reducing volume (fewer sets or exercises) or intensity.
+- If the user reported the cycle was "easy" and adherence is high (> 90%), increase the intensity significantly. Increment weight, reps, or introduce more difficult exercise variations.
+- If the user reported it was "too hard", reduce the intensity. Decrease weight, reps, or simplify the exercises.
+- If the user reported it was "just right" and adherence is high, apply moderate progressive overload. Slightly increase reps or weight on key exercises.
+- Analyze the actual performance (training data) to make precise adjustments. If the user consistently exceeded target reps, increase the weight or reps for that exercise. If they fell short, maintain or slightly reduce the difficulty.
 
-  **Nuevas Preferencias (Opcional):**
-  {{#if trainingDays}}- **Nuevos Días de Entrenamiento por Semana:** {{{trainingDays}}}. Si se proporciona este valor, el NUEVO plan debe tener este número exacto de días de entrenamiento. Si no, mantén el número de días del plan original.{{/if}}
-  {{#if trainingDuration}}- **Nueva Duración del Entrenamiento por Sesión:** {{{trainingDuration}}} minutos. Si se proporciona este valor, la duración de cada sesión en el NUEVO plan debe aproximarse a este número. Si no, mantén una duración similar a la del plan original.{{/if}}
+**New Preferences (Optional):**
+{{#if trainingDays}}- **New Training Days per Week:** {{{trainingDays}}}. If this value is provided, the NEW plan must have this exact number of training days. If not, maintain the number of days from the original plan.{{/if}}
+{{#if trainingDuration}}- **New Training Duration per Session:** {{{trainingDuration}}} minutes. If this value is provided, the duration of each session in the NEW plan should approximate this number. If not, maintain a similar duration as the original plan.{{/if}}
 
-  El nuevo plan que generes DEBE seguir la misma estructura que el original en términos de indicadores 'requiresFeedback' y 'requiresWeight' para ejercicios similares. Si se agregan nuevos ejercicios, determina estos indicadores de manera apropiada.
+The new plan you generate MUST follow the same structure as the original in terms of 'requiresFeedback' and 'requiresWeight' indicators for similar exercises. If new exercises are added, determine these indicators appropriately.
 
-  **Rutina Original (para referencia estructural):**
-  \`\`\`json
-  {{{originalRoutine}}}
-  \`\`\`
+**Original Routine (for structural reference):**
+\`\`\`json
+{{{originalRoutine}}}
+\`\`\`
 
-  **Datos del Ciclo Anterior:**
-  - Adherencia: {{{adherence}}}
-  - Nivel de Condición Física Reportado: {{{selfReportedFitness}}}
-  - Datos de Entrenamiento Registrados:
-  \`\`\`json
-  {{{trainingData}}}
-  \`\`\`
+**Previous Cycle Data:**
+- Adherence: {{{adherence}}}
+- Reported Fitness Level: {{{selfReportedFitness}}}
+- Logged Training Data:
+\`\`\`json
+{{{trainingData}}}
+\`\`\`
   
-  Genera la nueva rutina en el formato 'structuredRoutine'.
-  `,
+Generate the new routine in the 'structuredRoutine' format.
+`,
 });
 
 const adaptiveProgressionFlow = ai.defineFlow(
@@ -89,7 +92,11 @@ const adaptiveProgressionFlow = ai.defineFlow(
     outputSchema: WorkoutRoutineOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const { t } = await i18n(input.language as any);
+    const {output} = await prompt({
+      ...input,
+      selfReportedFitness: t(`adaptiveProgression.fitnessLevels.${input.selfReportedFitness}` as any)
+    });
     return output!;
   }
 );

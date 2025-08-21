@@ -1,15 +1,20 @@
 
+'use client';
+
 import { FeedbackTool } from "./feedback-tool";
+import { useI18n } from "@/i18n/client";
 
 export default function FeedbackPage() {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-6">
        <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Feedback en Tiempo Real
+          {t('feedbackPage.title')}
         </h1>
         <p className="text-muted-foreground">
-          Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA.
+          {t('feedbackPage.description')}
         </p>
       </div>
       <FeedbackTool />

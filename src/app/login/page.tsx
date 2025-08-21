@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
+import { useI18n } from '@/i18n/client';
 
 const GoogleIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -18,6 +19,7 @@ const GoogleIcon = (props: any) => (
 
 export default function LoginPage() {
   const { signInWithGoogle, user } = useAuth();
+  const { t } = useI18n();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -26,13 +28,13 @@ export default function LoginPage() {
             <div className="mx-auto mb-4">
                 <Logo className="h-16 w-16 text-primary" />
             </div>
-          <CardTitle className="font-headline text-2xl">Bienvenido a TrainSmart AI</CardTitle>
-          <CardDescription>Inicia sesión para continuar con tu viaje de fitness.</CardDescription>
+          <CardTitle className="font-headline text-2xl">{t('login.title')}</CardTitle>
+          <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button className="w-full" onClick={signInWithGoogle}>
             <GoogleIcon className="mr-2" />
-            Iniciar sesión con Google
+            {t('login.button')}
           </Button>
         </CardContent>
       </Card>

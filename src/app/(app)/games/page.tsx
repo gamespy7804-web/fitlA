@@ -10,22 +10,21 @@ import { TriviaGame } from './trivia-game';
 import { MultipleChoiceQuiz } from './multiple-choice-quiz';
 import { cn } from '@/lib/utils';
 import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
+import { useI18n } from '@/i18n/client';
 
 type Game = 'trivia' | 'quiz' | null;
 
-const games = [
-    { id: 'trivia', title: 'Mito o Realidad', icon: Zap },
-    { id: 'quiz', title: 'Preguntados', icon: Lightbulb },
-]
-
 export default function GamesPage() {
+  const { t } = useI18n();
   const [activeGame, setActiveGame] = useState<Game>(null);
 
-  useEffect(() => {
-    // When entering the games page, switch to game music
-    startMusic('game');
+  const games = [
+    { id: 'trivia', title: t('gamesPage.trivia.title'), icon: Zap },
+    { id: 'quiz', title: t('gamesPage.quiz.title'), icon: Lightbulb },
+  ]
 
-    // When leaving the games page, switch back to main music
+  useEffect(() => {
+    startMusic('game');
     return () => {
       startMusic('main');
     }
@@ -37,7 +36,7 @@ export default function GamesPage() {
   
   const handleGoBackToMenu = () => {
     setActiveGame(null);
-    startMusic('game'); // Ensure game music continues if they just finish a game but stay on the page
+    startMusic('game'); 
   }
 
 
@@ -84,10 +83,10 @@ export default function GamesPage() {
                    <CardHeader className="text-center">
                       <CardTitle className="font-headline flex items-center justify-center gap-2 text-3xl">
                       <Gamepad2 className="text-primary h-8 w-8"/>
-                      Zona de Juegos
+                      {t('gamesPage.title')}
                       </CardTitle>
                       <CardDescription>
-                      ¡Aprende y diviértete!
+                      {t('gamesPage.description')}
                       </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">

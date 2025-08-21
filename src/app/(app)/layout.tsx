@@ -13,6 +13,7 @@ import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { initializeAudio, startMusic } from '@/hooks/use-audio-effects';
 import { WelcomeOverlay } from './welcome-overlay';
+import { I18nProvider } from '@/i18n/client';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -64,6 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthProvider>
+      <I18nProvider>
         <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
           <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
           <AppShell openChatbot={() => setIsChatbotOpen(true)}>
@@ -81,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             }} 
           />
         </div>
+      </I18nProvider>
     </AuthProvider>
   );
 }

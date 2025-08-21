@@ -15,19 +15,21 @@ import React, { useEffect, useState } from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
 import { Badge } from '../ui/badge';
 import useAudioEffects from '@/hooks/use-audio-effects';
-
-const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Inicio' },
-  { href: '/log', icon: BarChart2, label: 'Registro' },
-  { href: null, icon: Plus, label: 'Actions' }, // Placeholder for the action button
-  { href: '/games', icon: Gamepad2, label: 'Juegos' },
-  { href: '/settings', icon: User, label: 'Perfil' },
-];
+import { useI18n } from '@/i18n/client';
 
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n();
   const pathname = usePathname();
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
   const playSound = useAudioEffects();
+
+  const navItems = [
+    { href: '/dashboard', icon: Home, label: t('nav.home') },
+    { href: '/log', icon: BarChart2, label: t('nav.log') },
+    { href: null, icon: Plus, label: 'Actions' }, // Placeholder for the action button
+    { href: '/games', icon: Gamepad2, label: t('nav.games') },
+    { href: '/settings', icon: User, label: t('nav.profile') },
+  ];
 
   useEffect(() => {
     const updateCount = () => {
@@ -60,7 +62,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                          <WorkoutGeneratorDialog>
                             <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted' onClick={() => playSound('swoosh')}>
                                 <Sparkles />
-                                <span>Generar Nuevo Entrenamiento</span>
+                                <span>{t('nav.actions.generate')}</span>
                             </button>
                         </WorkoutGeneratorDialog>
                       </DropdownMenuItem>
@@ -68,7 +70,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                           <Link href="/feedback" onClick={() => playSound('swoosh')} className="w-full flex items-center justify-between gap-2 text-left p-2 rounded-md hover:bg-muted">
                             <div className='flex items-center gap-2'>
                                 <Scan />
-                                <span>Análisis de Forma</span>
+                                <span>{t('nav.actions.feedback')}</span>
                             </div>
                             {pendingFeedbackCount > 0 && (
                                 <Badge variant="destructive" className='h-6 w-6 flex items-center justify-center p-0'>{pendingFeedbackCount}</Badge>

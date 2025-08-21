@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useI18n } from '@/i18n/client';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   const router = useRouter();
   const { user, signOut, loading } = useAuth();
   const isGamePage = pathname === '/games';
+  const { t } = useI18n();
 
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
                   </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                  <p>Pregúntale a la IA</p>
+                  <p>{t('appShell.askAi')}</p>
               </TooltipContent>
             </Tooltip>
              <DropdownMenu>
@@ -92,7 +94,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
                  <DropdownMenuSeparator />
                  <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Cerrar sesión</span>
+                    <span>{t('appShell.signOut')}</span>
                  </DropdownMenuItem>
               </DropdownMenuContent>
              </DropdownMenu>

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for a conversational chatbot.
@@ -20,7 +21,7 @@ const chatbotFlow = ai.defineFlow(
     inputSchema: ChatInputSchema,
     outputSchema: ChatOutputSchema,
   },
-  async ({ history, question }) => {
+  async ({ history, question, language }) => {
     const { text } = await ai.generate({
       model: 'googleai/gemini-2.0-flash',
       prompt: `${history.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
@@ -31,7 +32,7 @@ user: ${question}`,
       system: `You are TrainSmart AI, a friendly and knowledgeable fitness assistant.
 Your role is to help users of the TrainSmart AI application with their fitness journey.
 Answer questions about fitness, nutrition, workout plans, and how to use the app's features.
-Keep your answers concise, helpful, and encouraging. Your responses should be in Spanish.`,
+Keep your answers concise, helpful, and encouraging. Your response MUST be in the user's selected language: ${language}.`,
     });
 
     return { answer: text };

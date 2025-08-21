@@ -1,0 +1,405 @@
+
+{
+  "translation": {
+    "nav": {
+      "home": "Inicio",
+      "log": "Registro",
+      "games": "Juegos",
+      "profile": "Perfil",
+      "actions": {
+        "generate": "Generar Nuevo Entrenamiento",
+        "feedback": "Análisis de Forma"
+      }
+    },
+    "login": {
+      "title": "Bienvenido a TrainSmart AI",
+      "description": "Inicia sesión para continuar con tu viaje de fitness.",
+      "button": "Iniciar sesión con Google"
+    },
+    "welcome": {
+      "title": "Bienvenido a TrainSmart AI",
+      "subtitle": "Tu aventura de fitness está a punto de comenzar.",
+      "button": "Comenzar Aventura"
+    },
+    "appShell": {
+      "askAi": "Pregúntale a la IA",
+      "signOut": "Cerrar sesión"
+    },
+    "chatbot": {
+      "title": "Asistente de IA",
+      "description": "Hazme cualquier pregunta sobre tu entrenamiento o nutrición.",
+      "greeting": "¡Hola! Soy tu asistente de fitness. ¿En qué puedo ayudarte hoy?",
+      "error": "Lo siento, he tenido un problema. Por favor, inténtalo de nuevo.",
+      "inputPlaceholder": "Escribe tu mensaje...",
+      "send": "Enviar",
+      "actions": {
+        "generateNewRoutine": "Generar Nueva Rutina"
+      }
+    },
+    "dashboard": {
+      "title": "Tu Camino al Éxito"
+    },
+    "performanceFeedback": {
+      "noWorkouts": "Completa algunos entrenamientos para recibir un análisis de IA de tu rendimiento.",
+      "error": "No se pudo cargar el análisis de IA en este momento.",
+      "loading": "Analizando tu rendimiento..."
+    },
+    "workoutNodePath": {
+      "noPlan": {
+        "title": "No hay un plan de entrenamiento activo",
+        "description": "Usa el generador para crear una nueva rutina."
+      },
+      "day": "DÍA",
+      "tooltip": {
+        "locked": "Completa los días anteriores",
+        "completed": "Completado",
+        "active": "¡A entrenar!"
+      },
+      "generateNextWeek": "Generar Próxima Semana"
+    },
+    "adaptiveProgression": {
+      "generateNewRoutine": "Generar Nueva Rutina",
+      "title": "Generador de Progresión con IA",
+      "description": "Evalúa tu último ciclo y ajusta tus preferencias para generar el siguiente.",
+      "howDidYouFeel": "¿Cómo te sentiste en el último ciclo?",
+      "fitnessLevels": {
+        "easy": "Demasiado fácil",
+        "just-right": "Justo",
+        "hard": "Demasiado difícil"
+      },
+      "feedbackLabel": "¿Algún comentario o cambio que te gustaría hacer?",
+      "feedbackPlaceholder": "ej., Me gustaría enfocarme más en el pecho, sentí que los días de pierna fueron muy largos...",
+      "nextWeekSettings": "Ajustes para la próxima semana (Opcional)",
+      "daysPerWeek": "Días/Semana",
+      "daysPlaceholder": "ej. 3",
+      "minPerSession": "Min/Sesión",
+      "durationPlaceholder": "ej. 60",
+      "errors": {
+        "insufficientData": {
+          "title": "Datos insuficientes",
+          "description": "No se encontraron datos de la rutina o registros detallados."
+        },
+        "generationFailed": {
+          "title": "Error al generar la progresión",
+          "description": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+        }
+      },
+      "success": {
+        "title": "¡Nueva Rutina Generada!",
+        "description": "Tu plan de entrenamiento ha sido actualizado. ¡A por ello!"
+      }
+    },
+    "workoutGenerator": {
+      "title": "Generador de Entrenamiento con IA",
+      "descriptionInitial": "Describe tus metas para obtener una rutina de entrenamiento personalizada.",
+      "descriptionClarification": "Proporciona más detalles para afinar tu rutina.",
+      "form": {
+        "goals": {
+          "label": "Tus Metas",
+          "placeholder": "ej., Perder peso, ganar músculo"
+        },
+        "sport": {
+          "label": "Deporte Principal",
+          "placeholder": "ej., Fútbol, Baloncesto"
+        },
+        "fitnessLevel": {
+          "label": "Nivel de Condición Física",
+          "placeholder": "Selecciona tu nivel",
+          "options": {
+            "beginner": "Principiante",
+            "intermediate": "Intermedio",
+            "advanced": "Avanzado"
+          }
+        },
+        "trainingDays": {
+          "label": "Días/Semana"
+        },
+        "trainingDuration": {
+          "label": "Min/Sesión"
+        },
+        "clarificationPlaceholder": "Tu respuesta...",
+        "buttons": {
+          "next": "Siguiente",
+          "final": "Generar Rutina Final"
+        },
+        "validations": {
+          "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
+          "sport": { "min": "El deporte debe tener al menos 3 caracteres." },
+          "fitnessLevel": { "required": "Por favor, selecciona tu nivel." },
+          "trainingDays": { "required": "Requerido", "invalid": "Número inválido", "min": "Al menos 1 día", "max": "Máximo 7 días" },
+          "trainingDuration": { "required": "Requerido", "invalid": "Número inválido", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" }
+        }
+      },
+      "errors": {
+        "generationFailed": {
+          "title": "Error al Generar Rutina",
+          "description": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+        }
+      },
+      "result": {
+        "title": "Tu Nueva Rutina de Entrenamiento",
+        "day": "Día",
+        "table": {
+          "exercise": "Ejercicio",
+          "sets": "Series",
+          "repsTime": "Reps/Tiempo",
+          "rest": "Descanso"
+        },
+        "buttons": {
+          "closeAndReload": "Cerrar y Recargar"
+        }
+      }
+    },
+    "log": {
+      "title": "Registro de Entrenamiento",
+      "description": "Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.",
+      "shareProgress": "Compartir Mi Progreso",
+      "na": "N/A",
+      "history": {
+        "title": "Historial de Entrenamiento",
+        "table": {
+          "date": "Fecha",
+          "workout": "Entrenamiento",
+          "duration": "Duración",
+          "volume": "Volumen Total"
+        },
+        "empty": {
+          "line1": "Aún no has registrado ningún entrenamiento.",
+          "line2": "Completa una sesión para verla aquí."
+        }
+      }
+    },
+    "progressChart": {
+      "title": "Resumen de Progreso",
+      "description": "Volumen y duración total de entrenamiento por mes.",
+      "descriptionEmpty": "Completa entrenamientos para ver tu progreso aquí.",
+      "noData": "No hay datos de progreso para mostrar todavía.",
+      "volumeLabel": "Volumen de Entrenamiento (kg)",
+      "durationLabel": "Duración (min)"
+    },
+    "feedbackPage": {
+      "title": "Feedback en Tiempo Real",
+      "description": "Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA."
+    },
+    "feedbackTool": {
+      "cameraCard": {
+        "title": "Cámara en Vivo",
+        "description": "Colócate de manera que todo tu cuerpo sea visible."
+      },
+      "cameraPermissionNeeded": "Permiso de cámara necesario",
+      "selectExercisePlaceholder": "Seleccionar ejercicio",
+      "noPendingExercises": "No hay ejercicios pendientes",
+      "buttons": {
+        "record": "Grabar",
+        "stop": "Detener"
+      },
+      "cameraError": {
+        "title": "Error de Cámara",
+        "description": "No se pudo acceder a la cámara. Por favor, revisa los permisos en tu navegador y asegúrate de que no esté siendo usada por otra aplicación."
+      },
+      "cameraDenied": {
+        "title": "Acceso a la cámara denegado",
+        "description": "Por favor, activa los permisos de la cámara en tu navegador."
+      },
+      "selectExerciseError": "Selecciona un ejercicio primero",
+      "analysisFailed": {
+        "title": "Análisis Fallido",
+        "description": "No se pudo analizar el video. Por favor, inténtalo de nuevo."
+      },
+      "feedbackCard": {
+        "title": "Feedback de IA",
+        "description": "Análisis instantáneo de tu forma.",
+        "loading": "Analizando tu forma...",
+        "prompt": "Selecciona un ejercicio de la lista y graba un video para obtener feedback sobre tu técnica.",
+        "allDone": "¡Felicitaciones! No tienes ejercicios pendientes de análisis de forma."
+      }
+    },
+    "gamesPage": {
+      "title": "Zona de Juegos",
+      "description": "¡Aprende y diviértete!",
+      "trivia": {
+        "title": "Mito o Realidad"
+      },
+      "quiz": {
+        "title": "Preguntados"
+      }
+    },
+    "games": {
+      "loading": "Generando tu quiz...",
+      "question": "Pregunta",
+      "of": "de",
+      "correct": "¡Correcto!",
+      "incorrect": "¡Incorrecto!",
+      "next": "Siguiente",
+      "viewResults": "Ver Resultados",
+      "myth": "Mito",
+      "fact": "Realidad",
+      "difficulty": {
+        "easy": "Más Fácil",
+        "hard": "Más Difícil"
+      },
+      "finished": {
+        "title": "¡Juego Terminado!",
+        "score": "Tu puntuación final es:",
+        "backToMenu": "Volver al Menú",
+        "playAgain": "Jugar de Nuevo",
+        "nextLevel": "Siguiente Nivel"
+      },
+      "errors": {
+        "title": "Error",
+        "noRoutine": "Crea una rutina primero para poder jugar.",
+        "noQuestions": "No se pudieron generar nuevas preguntas.",
+        "generationFailed": "No se pudieron generar las preguntas. Inténtalo de nuevo."
+      }
+    },
+    "settings": {
+      "title": "Configuración",
+      "description": "Gestiona tu cuenta y las preferencias de la aplicación.",
+      "profile": {
+        "title": "Perfil",
+        "description": "Actualiza tu información personal.",
+        "name": "Nombre",
+        "email": "Correo Electrónico",
+        "save": "Guardar Cambios"
+      },
+      "sound": {
+        "title": "Sonido",
+        "description": "Gestiona las preferencias de sonido de la aplicación.",
+        "backgroundMusic": "Música de Fondo",
+        "toggleMusic": "Activar o desactivar la música de fondo",
+        "musicVolume": "Volumen de la Música",
+        "sfxVolume": "Volumen de Efectos"
+      },
+      "language": {
+        "title": "Idioma",
+        "description": "Elige el idioma de la aplicación.",
+        "select": "Seleccionar Idioma"
+      },
+      "account": {
+        "title": "Cuenta",
+        "description": "Gestiona las acciones de tu cuenta.",
+        "signOut": {
+          "title": "Cerrar Sesión",
+          "description": "Finaliza tu sesión actual en este dispositivo.",
+          "button": "Cerrar sesión"
+        },
+        "delete": {
+          "title": "Eliminar Cuenta",
+          "description": "Esta acción es permanente y no se puede deshacer.",
+          "button": "Eliminar mi cuenta"
+        }
+      }
+    },
+    "onboarding": {
+      "title": "Bienvenido a TrainSmart AI",
+      "description": "Vamos a personalizar tu viaje de fitness.",
+      "aiThinking": "La IA está pensando...",
+      "questions": {
+        "sport": { "label": "Deporte Principal", "placeholder": "ej., Fútbol, Halterofilia" },
+        "goals": { "label": "Tus Metas", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
+        "fitnessLevel": { 
+          "label": "Nivel de Condición Física",
+          "options": {
+            "beginner": "Principiante",
+            "intermediate": "Intermedio",
+            "advanced": "Avanzado"
+          }
+        },
+        "age": { "label": "Edad" },
+        "weight": { "label": "Peso (kg)" },
+        "gender": {
+          "label": "Género",
+          "options": {
+            "male": "Masculino",
+            "female": "Femenino",
+            "other": "Otro"
+          }
+        },
+        "trainingDays": { "label": "Días de entrenamiento por semana" },
+        "trainingDuration": { "label": "Tiempo por sesión (minutos)" },
+        "clarification": { "label": "Tu Respuesta", "placeholder": "ej., Puedo hacer 10 flexiones..." }
+      },
+      "buttons": {
+        "back": "Atrás",
+        "next": "Siguiente",
+        "generate": "Generar Mi Plan"
+      },
+      "errors": {
+        "clarification": {
+          "title": "Error",
+          "description": "No se pudo obtener la pregunta de clarificación."
+        },
+        "generation": {
+          "title": "Error",
+          "description": "No se pudo generar la rutina de entrenamiento."
+        }
+      },
+      "success": {
+        "title": "¡Rutina de Entrenamiento Generada!",
+        "description": "Te estamos redirigiendo al panel de control."
+      },
+      "validation": {
+        "sport": { "min": "El deporte debe tener al menos 3 caracteres." },
+        "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
+        "age": { "min": "Debes tener al menos 10 años", "max": "Debes tener 100 años o menos" },
+        "weight": { "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
+        "trainingDays": { "min": "Al menos 1 día", "max": "Máximo 7 días" },
+        "trainingDuration": { "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" }
+      }
+    },
+    "workoutPage": {
+      "exercise": "Ejercicio",
+      "of": "de",
+      "dayComplete": "¡Día completado!",
+      "allExercisesComplete": "Has completado todos los ejercicios para hoy.",
+      "finishAndSave": "Finalizar y Guardar Entrenamiento",
+      "errors": {
+        "routineNotFound": "Rutina no encontrada",
+        "routineLoadError": "Error al cargar la rutina",
+        "loadError": {
+          "title": "Error al Cargar",
+          "description": "No se pudo cargar el entrenamiento del día."
+        }
+      },
+      "toast": {
+        "goodJob": "¡Buen trabajo!",
+        "pendingFeedback": "Tienes ejercicios pendientes para análisis. Ve a la herramienta de feedback para grabarlos.",
+        "workoutComplete": "¡Entrenamiento Completado!",
+        "workoutSaved": "{{title}} ha sido guardado. Redirigiendo..."
+      }
+    },
+    "restTimer": {
+      "title": "Descanso",
+      "skip": "Saltar Descanso"
+    },
+    "stopwatch": {
+      "title": "Cronómetro",
+      "start": "Iniciar",
+      "pause": "Pausar"
+    },
+    "workoutExerciseCard": {
+      "set": "Serie",
+      "weightLabel": "Peso",
+      "weightPlaceholder": "Peso (kg)",
+      "repsLabel": "Reps",
+      "repsPlaceholder": "Reps",
+      "secondsLabel": "Segundos",
+      "secondsPlaceholder": "Segundos",
+      "startTimer": "Iniciar Cronómetro",
+      "viewTechnique": "Ver Técnica",
+      "readyToRest": "Listo para Descansar",
+      "finishExercise": "Finalizar Ejercicio",
+      "feedbackTooltip": "Marcar para obtener feedback de IA sobre tu técnica",
+      "feedbackQueue": {
+        "added": {
+          "title": "Ejercicio Añadido a la Cola",
+          "description": "{{name}} se ha añadido a la lista de pendientes para análisis de forma."
+        },
+        "alreadyAdded": {
+          "title": "Ejercicio ya en la cola",
+          "description": "{{name}} ya está en la lista para ser analizado."
+        }
+      }
+    }
+  }
+}

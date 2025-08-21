@@ -16,6 +16,7 @@ const MultipleChoiceQuizInputSchema = z.object({
   sport: z.string().describe('The sport to generate quiz questions about. Should be broad, e.g., "powerlifting", "running", "general fitness".'),
   history: z.string().optional().describe("A JSON string of previously answered questions and whether the user was correct. Used to generate more advanced or targeted questions."),
   difficulty: z.enum(['easy', 'normal', 'hard']).optional().default('normal').describe("The desired difficulty for the new quiz questions."),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
 export type MultipleChoiceQuizInput = z.infer<typeof MultipleChoiceQuizInputSchema>;
 
@@ -39,12 +40,13 @@ export async function generateMultipleChoiceQuiz(input: MultipleChoiceQuizInput)
 
 const prompt = ai.definePrompt({
     name: 'multipleChoiceQuizPrompt',
-    input: { schema: z.object({ sport: z.string(), historyText: z.string(), difficulty: z.string() }) },
+    input: { schema: z.object({ sport: z.string(), historyText: z.string(), difficulty: z.string(), language: z.string() }) },
     output: { schema: MultipleChoiceQuizOutputSchema },
-    prompt: `Eres un experto tutor de fitness y nutrición deportiva. Tu tarea es generar una serie de 5 a 10 preguntas de trivia de opción múltiple en español, enfocadas en el deporte: {{{sport}}}.
-El nivel de dificultad solicitado para este quiz es: {{{difficulty}}}.
-Tu objetivo es crear una experiencia de aprendizaje adaptativa. Si se proporciona un historial de respuestas, analiza las respuestas anteriores del usuario para ajustar la dificultad y los temas de las nuevas preguntas, sin repetir preguntas del historial. Si el historial está vacío, genera una mezcla de preguntas de nivel principiante a intermedio para establecer una línea base. Para cada pregunta, proporciona una 'question', un array 'options' de 4 respuestas, el 'correctAnswerIndex' (0-3) y una 'explanation' concisa de la respuesta correcta. {{{historyText}}}
-Genera el array de preguntas.`,
+    prompt: `You are an expert fitness and sports nutrition tutor. Your task is to generate a series of 5 to 10 multiple-choice trivia questions, focused on the sport: {{{sport}}}.
+The requested difficulty level for this quiz is: {{{difficulty}}}.
+Your response MUST be in the user's selected language: {{{language}}}.
+Your goal is to create an adaptive learning experience. If a response history is provided, analyze the user's previous answers to adjust the difficulty and topics of the new questions, without repeating questions from the history. If the history is empty, generate a mix of beginner to intermediate questions to establish a baseline. For each question, provide a 'question', an array 'options' of 4 answers, the 'correctAnswerIndex' (0-3), and a concise 'explanation' of the correct answer. {{{historyText}}}
+Generate the array of questions.`,
 });
 
 const multipleChoiceQuizFlow = ai.defineFlow(
@@ -56,13 +58,14 @@ const multipleChoiceQuizFlow = ai.defineFlow(
     async (input) => {
         let historyText = "";
         if (input.history) {
-            historyText = `\nHistorial de respuestas del usuario para tu análisis: \`\`\`json\n${input.history}\n\`\`\``;
+            historyText = `\nUser's answer history for your analysis: \`\`\`json\n${input.history}\n\`\`\``;
         }
 
         const { output } = await prompt({
             sport: input.sport,
             historyText: historyText,
             difficulty: input.difficulty || 'normal',
+            language: input.language
         });
         return output!;
     }

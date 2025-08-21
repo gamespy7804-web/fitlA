@@ -16,11 +16,13 @@ import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
 import useAudioEffects from '@/hooks/use-audio-effects';
+import { useI18n } from '@/i18n/client';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
 
 function WorkoutPageContent() {
+  const { t } = useI18n();
   const [day, setDay] = useState<DaySchema | null>(null);
   const [exerciseLog, setExerciseLog] = useState<ExerciseLog[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -49,11 +51,11 @@ function WorkoutPageContent() {
           setDay(targetDay);
           initializeWorkoutLog(targetDay);
         } else {
-          toast({ variant: 'destructive', title: 'Rutina no encontrada' });
+          toast({ variant: 'destructive', title: t('workoutPage.errors.routineNotFound') });
           router.push('/dashboard');
         }
       } catch (error) {
-        toast({ variant: 'destructive', title: 'Error al cargar la rutina' });
+        toast({ variant: 'destructive', title: t('workoutPage.errors.routineLoadError') });
         router.push('/dashboard');
       } finally {
         setIsLoading(false);
@@ -169,14 +171,14 @@ function WorkoutPageContent() {
     
     if (hasPendingFeedback) {
         toast({
-          title: '¡Buen trabajo!',
-          description: `Tienes ejercicios pendientes para análisis. Ve a la herramienta de feedback para grabarlos.`,
+          title: t('workoutPage.toast.goodJob'),
+          description: t('workoutPage.toast.pendingFeedback'),
           duration: 5000,
         });
     } else {
         toast({
-            title: '¡Entrenamiento Completado!',
-            description: `${day.title} ha sido guardado. Redirigiendo...`,
+            title: t('workoutPage.toast.workoutComplete'),
+            description: t('workoutPage.toast.workoutSaved', { title: day.title }),
         });
     }
 
@@ -202,8 +204,8 @@ function WorkoutPageContent() {
   if (!day || exerciseLog.length === 0) {
     return (
       <Card className="text-center">
-        <CardHeader><CardTitle>Error al Cargar</CardTitle></CardHeader>
-        <CardContent><p>No se pudo cargar el entrenamiento del día.</p></CardContent>
+        <CardHeader><CardTitle>{t('workoutPage.errors.loadError.title')}</CardTitle></CardHeader>
+        <CardContent><p>{t('workoutPage.errors.loadError.description')}</p></CardContent>
       </Card>
     );
   }
@@ -215,7 +217,7 @@ function WorkoutPageContent() {
     <div className="space-y-6">
        <div>
         <h1 className="text-2xl text-center font-bold tracking-tight font-headline">
-          Ejercicio {currentExerciseIndex + 1} de {exerciseLog.length}
+          {t('workoutPage.exercise')} {currentExerciseIndex + 1} {t('workoutPage.of')} {exerciseLog.length}
         </h1>
       </div>
 
@@ -231,12 +233,12 @@ function WorkoutPageContent() {
         />
       ) : (
         <Card>
-           <CardHeader><CardTitle>¡Día completado!</CardTitle></CardHeader>
+           <CardHeader><CardTitle>{t('workoutPage.dayComplete')}</CardTitle></CardHeader>
            <CardContent className="text-center">
-             <p className="mb-4">Has completado todos los ejercicios para hoy.</p>
+             <p className="mb-4">{t('workoutPage.allExercisesComplete')}</p>
              <Button size="lg" onClick={handleCompleteWorkout}>
                <Flame className="mr-2" />
-               Finalizar y Guardar Entrenamiento
+               {t('workoutPage.finishAndSave')}
              </Button>
            </CardContent>
         </Card>

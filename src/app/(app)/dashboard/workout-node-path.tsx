@@ -15,12 +15,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
+import { useI18n } from '@/i18n/client';
 
 type CompletedDay = {
   workout: string;
 };
 
 export function WorkoutNodePath() {
+  const { t } = useI18n();
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutRoutineOutput | null>(null);
   const [completedDays, setCompletedDays] = useState<string[]>([]);
   const router = useRouter();
@@ -31,9 +33,14 @@ export function WorkoutNodePath() {
     const completed = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as CompletedDay[];
     
     if (storedRoutine) {
-      const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-      setWorkoutPlan(parsedRoutine);
-      setCompletedDays(completed.map(c => c.workout));
+      try {
+        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+        setWorkoutPlan(parsedRoutine);
+        setCompletedDays(completed.map(c => c.workout));
+      } catch (e) {
+        console.error("Failed to parse workout routine:", e);
+        setWorkoutPlan(null);
+      }
     }
   }, []);
 
@@ -51,8 +58,8 @@ export function WorkoutNodePath() {
     return (
         <Card className="mt-10 text-center">
             <CardHeader>
-                <CardTitle>No hay un plan de entrenamiento activo</CardTitle>
-                <CardDescription>Usa el generador para crear una nueva rutina.</CardDescription>
+                <CardTitle>{t('workoutNodePath.noPlan.title')}</CardTitle>
+                <CardDescription>{t('workoutNodePath.noPlan.description')}</CardDescription>
             </CardHeader>
             <CardContent>
                 <Dumbbell className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -123,12 +130,12 @@ export function WorkoutNodePath() {
                     {!isCompleted && !isLocked && (
                         <span className="text-3xl font-bold text-primary">{day.day}</span>
                     )}
-                     <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold">DÍA {day.day}</div>
+                     <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold">{t('workoutNodePath.day')} {day.day}</div>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className='font-bold'>{day.title}</p>
-                  <p className='text-sm text-muted-foreground'>{isLocked ? "Completa los días anteriores" : isCompleted ? 'Completado' : "¡A entrenar!"}</p>
+                  <p className='text-sm text-muted-foreground'>{isLocked ? t('workoutNodePath.tooltip.locked') : isCompleted ? t('workoutNodePath.tooltip.completed') : t('workoutNodePath.tooltip.active')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -140,7 +147,7 @@ export function WorkoutNodePath() {
              routine.length % 2 !== 0 ? 'self-start' : 'self-end'
         )}>
             <AdaptiveProgressionDialog className="w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
-                Generar Próxima Semana
+                {t('workoutNodePath.generateNextWeek')}
             </AdaptiveProgressionDialog>
         </div>
       </div>
