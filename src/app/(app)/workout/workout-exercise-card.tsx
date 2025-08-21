@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check, Repeat, Weight, Video, Timer, Youtube } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -62,9 +63,18 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
             </div>
           </div>
            {exercise.originalExercise.requiresFeedback && (
-              <a href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 text-primary hover:bg-primary/10">
-                  <Video />
-              </a>
+              <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <a href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 text-primary hover:bg-primary/10">
+                            <Video />
+                        </a>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Obtener feedback de IA sobre tu técnica</p>
+                    </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
         </CardTitle>
       </CardHeader>
