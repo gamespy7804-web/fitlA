@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music, Volume2 } from 'lucide-react';
+import { LogOut, Music, Volume2, ShieldAlert } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
@@ -118,10 +118,26 @@ export default function SettingsPage() {
           <CardDescription>Gestiona las acciones de tu cuenta.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-           <Button variant="destructive" onClick={signOut}>
+           <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-border p-4'>
+             <div>
+                <h3 className="font-medium">Cerrar Sesión</h3>
+                <p className="text-sm text-muted-foreground">Finaliza tu sesión actual en este dispositivo.</p>
+             </div>
+             <Button variant="outline" onClick={signOut} className="mt-2 md:mt-0 md:ml-4">
                 <LogOut className="mr-2" />
                 Cerrar sesión
-            </Button>
+             </Button>
+           </div>
+            <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-destructive/50 p-4'>
+             <div>
+                <h3 className="font-medium text-destructive">Eliminar Cuenta</h3>
+                <p className="text-sm text-muted-foreground">Esta acción es permanente y no se puede deshacer.</p>
+             </div>
+             <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
+                <ShieldAlert className="mr-2" />
+                Eliminar mi cuenta
+             </Button>
+           </div>
         </CardContent>
       </Card>
     </div>
