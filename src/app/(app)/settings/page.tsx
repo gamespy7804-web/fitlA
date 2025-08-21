@@ -8,11 +8,31 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { LogOut, Music } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { useMusic } from '@/hooks/use-music';
+import { useState, useEffect } from 'react';
+import { playMusic, stopMusic } from '@/hooks/use-sound';
+
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
-  const { isMusicEnabled, toggleMusic } = useMusic();
+  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+
+  useEffect(() => {
+    const storedPreference = localStorage.getItem('musicEnabled') === 'true';
+    setIsMusicEnabled(storedPreference);
+  }, []);
+
+  const handleMusicToggle = (enabled: boolean) => {
+    setIsMusicEnabled(enabled);
+    localStorage.setItem('musicEnabled', JSON.stringify(enabled));
+    if (enabled) {
+      playMusic();
+    } else {
+      stopMusic();
+    }
+    // Dispatch a storage event to notify other parts of the app, like the layout
+    window.dispatchEvent(new Event('storage'));
+  };
+
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -60,7 +80,7 @@ export default function SettingsPage() {
               <Switch
                 id="music-switch"
                 checked={isMusicEnabled}
-                onCheckedChange={toggleMusic}
+                onCheckedChange={handleMusicToggle}
                 aria-label="Activar o desactivar la música de fondo"
               />
             </div>
