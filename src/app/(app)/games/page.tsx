@@ -23,28 +23,30 @@ export default function GamesPage() {
 
   useEffect(() => {
     // When entering the games page, switch to game music
-    stopMusic().then(() => {
-        startMusic('game');
-    });
+    startMusic('game');
 
     // When leaving the games page, switch back to main music
     return () => {
-        stopMusic().then(() => {
-            startMusic('main');
-        });
+      startMusic('main');
     }
   }, []);
 
   const handleGameSelect = (gameId: Game) => {
     setActiveGame(gameId);
   }
+  
+  const handleGoBackToMenu = () => {
+    setActiveGame(null);
+    startMusic('game'); // Ensure game music continues if they just finish a game but stay on the page
+  }
+
 
   const renderGame = () => {
     switch(activeGame) {
         case 'trivia':
-            return <TriviaGame onGameFinish={() => setActiveGame(null)} />;
+            return <TriviaGame onGameFinish={handleGoBackToMenu} />;
         case 'quiz':
-            return <MultipleChoiceQuiz onGameFinish={() => setActiveGame(null)} />;
+            return <MultipleChoiceQuiz onGameFinish={handleGoBackToMenu} />;
         default:
             return null;
     }
@@ -64,7 +66,7 @@ export default function GamesPage() {
               className="w-full min-h-[calc(100vh-120px)] h-full flex flex-col justify-center items-center"
               >
                   <div className="w-full flex justify-start mb-4">
-                      <Button variant="ghost" size="icon" onClick={() => setActiveGame(null)}>
+                      <Button variant="ghost" size="icon" onClick={handleGoBackToMenu}>
                           <ArrowLeft />
                       </Button>
                   </div>

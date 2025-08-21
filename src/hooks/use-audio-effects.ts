@@ -8,10 +8,19 @@ type MusicType = 'main' | 'game';
 
 let audioContext: AudioContext | null = null;
 const musicBuffers = new Map<MusicType, AudioBuffer>();
-let musicSource: AudioBufferSourceNode | null = null;
-let gainNode: GainNode | null = null;
-let isPlaying: MusicType | null = null;
+
+// Audio state
+let currentSource: AudioBufferSourceNode | null = null;
+let currentGain: GainNode | null = null;
+let nextSource: AudioBufferSourceNode | null = null;
+let nextGain: GainNode | null = null;
+
+let currentMusicType: MusicType | null = null;
+let loopTimeout: NodeJS.Timeout | null = null;
 let isInitialized = false;
+let isEnabled = false;
+
+const FADE_TIME = 2; // seconds for crossfade
 
 // Must be called after a user interaction
 export const initializeAudio = () => {
@@ -22,6 +31,8 @@ export const initializeAudio = () => {
             audioContext.resume();
         }
         isInitialized = true;
+        // Check initial state from localStorage
+        isEnabled = localStorage.getItem('musicEnabled') === 'true';
     } catch (e) {
         console.error("AudioContext is not supported by this browser.", e);
     }
@@ -38,28 +49,24 @@ const loadMusicBuffer = async (type: MusicType): Promise<AudioBuffer | null> => 
 
     try {
         const response = await fetch(musicFile);
-        if (!response.ok) {
+         if (!response.ok) {
             console.error(`Failed to fetch music file: ${response.status} ${response.statusText}`);
             return null;
-        }
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('audio/mpeg')) {
-             console.error(`Error: The fetched file is not a valid audio file. Make sure '${musicFile}' exists and is not corrupted.`);
-             return null;
         }
         const arrayBuffer = await response.arrayBuffer();
         const decodedData = await audioContext.decodeAudioData(arrayBuffer);
         musicBuffers.set(type, decodedData);
         return decodedData;
     } catch (error) {
-        console.error('Error loading or decoding music file:', error);
+        console.error(`Error loading or decoding music file for type "${type}":`, error);
         return null;
     }
 };
 
+
 const useAudioEffects = () => {
   const playSound = useCallback((type: SoundType) => {
-    if (!audioContext || audioContext.state === 'suspended') return;
+    if (!audioContext || audioContext.state === 'suspended' || !isInitialized) return;
 
     try {
       let oscType: OscillatorType = 'sine';
@@ -136,68 +143,98 @@ const useAudioEffects = () => {
   return playSound;
 };
 
-export const startMusic = async (type: MusicType) => {
-    if (!audioContext || isPlaying === type) return;
-    
-    const isEnabled = localStorage.getItem('musicEnabled') === 'true';
-    if (!isEnabled) return;
-    
-    if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-    }
+// --- Standalone Music Control Functions ---
+
+const playTrack = async (type: MusicType, startTime = 0) => {
+    if (!audioContext || !isInitialized || !isEnabled) return;
     
     const buffer = await loadMusicBuffer(type);
     if (!buffer) return;
 
-    await stopMusic(); 
+    if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+    }
+    
+    // Stop any scheduled loops
+    if (loopTimeout) clearTimeout(loopTimeout);
 
-    musicSource = audioContext.createBufferSource();
-    musicSource.buffer = buffer;
-    musicSource.loop = true;
+    // Fade out the current track if it's playing
+    if (currentSource && currentGain) {
+        currentGain.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + FADE_TIME / 2);
+        const sourceToStop = currentSource;
+        setTimeout(() => {
+            try { sourceToStop.stop(); } catch(e) {}
+        }, (FADE_TIME / 2) * 1000);
+    }
 
-    gainNode = audioContext.createGain();
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start at 0 for fade-in
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2); // Fade in over 2 seconds
+    // Set up the new track
+    currentMusicType = type;
+    currentSource = audioContext.createBufferSource();
+    currentSource.buffer = buffer;
+    currentGain = audioContext.createGain();
+    
+    currentSource.connect(currentGain);
+    currentGain.connect(audioContext.destination);
 
-    musicSource.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Fade in
+    currentGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    currentGain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + FADE_TIME);
 
-    musicSource.start();
-    isPlaying = type;
+    currentSource.start(audioContext.currentTime, startTime);
+
+    // Schedule the next track (crossfade)
+    const trackDuration = buffer.duration;
+    const timeUntilCrossfade = (trackDuration - startTime - FADE_TIME) * 1000;
+
+    loopTimeout = setTimeout(() => {
+        playTrack(type); // This will handle the crossfade
+    }, timeUntilCrossfade > 0 ? timeUntilCrossfade : 0);
 };
 
-export const stopMusic = (): Promise<void> => {
-    return new Promise((resolve) => {
-        if (musicSource && gainNode && isPlaying && audioContext) {
-            try {
-                // Fade out over 1 second
-                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
-                
-                const sourceToStop = musicSource;
-                setTimeout(() => {
-                    try {
-                      sourceToStop.stop();
-                    } catch (e) {
-                      // It might have been stopped already
-                    }
-                    if (musicSource === sourceToStop) {
-                        musicSource = null;
-                        gainNode = null;
-                        isPlaying = null;
-                    }
-                    resolve();
-                }, 1000); // Wait for the fade-out to complete
+export const startMusic = (type: MusicType) => {
+    isEnabled = localStorage.getItem('musicEnabled') === 'true';
+    if (!isInitialized || !isEnabled) {
+        return;
+    }
+    if (currentMusicType === type) return; // Don't restart if already playing the same type
 
-            } catch (e) {
-                musicSource = null;
-                gainNode = null;
-                isPlaying = null;
-                resolve();
-            }
-        } else {
-          resolve();
+    playTrack(type);
+};
+
+export const stopMusic = () => {
+    isEnabled = false;
+     if (!audioContext || !isInitialized) return;
+    
+    if (loopTimeout) clearTimeout(loopTimeout);
+    loopTimeout = null;
+
+    if (currentSource && currentGain) {
+        // No fade out on manual stop, just stop immediately
+        currentGain.gain.cancelScheduledValues(audioContext.currentTime);
+        currentGain.gain.setValueAtTime(0, audioContext.currentTime);
+        try {
+            currentSource.stop();
+        } catch(e) {}
+    }
+
+    currentSource = null;
+    currentGain = null;
+    currentMusicType = null;
+};
+
+export const toggleMusic = (shouldBeEnabled: boolean) => {
+    if (shouldBeEnabled) {
+        isEnabled = true;
+        localStorage.setItem('musicEnabled', 'true');
+        if (!currentMusicType) {
+            startMusic('main');
         }
-    });
-};
+    } else {
+        isEnabled = false;
+        localStorage.setItem('musicEnabled', 'false');
+        stopMusic();
+    }
+}
+
 
 export default useAudioEffects;
