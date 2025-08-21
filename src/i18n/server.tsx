@@ -5,8 +5,8 @@ import resources from './resources';
 
 // This function is for use in Server Components and server-side logic (e.g., Genkit flows)
 export async function i18n(lng: 'en' | 'es') {
-  const i18next = createInstance()
-  await i18next
+  const i18nextInstance = createInstance();
+  await i18nextInstance
     .use(initReactI18next) // this is needed for i18next to work with React
     .init({
       resources,
@@ -17,7 +17,7 @@ export async function i18n(lng: 'en' | 'es') {
       },
     });
   return {
-    t: i18next.getFixedT(lng),
-    i18n: i18next
+    t: i18nextInstance.getFixedT(lng),
+    i18n: i18nextInstance
   }
 }
