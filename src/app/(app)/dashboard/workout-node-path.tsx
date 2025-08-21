@@ -69,7 +69,7 @@ export function WorkoutNodePath() {
 
   return (
     <TooltipProvider>
-      <div className="relative flex flex-col items-center w-full p-8 pt-20">
+      <div className="relative flex flex-col items-center w-full p-8 pt-20 pb-24">
         {/* The Path SVG */}
         <svg
           className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-auto"
