@@ -75,7 +75,7 @@ export function WorkoutNodePath() {
           className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-auto"
           width="100"
           height="100%"
-          viewBox={`0 0 100 ${routine.length * 120}`}
+          viewBox={`0 0 100 ${(routine.length + 1) * 120}`}
           preserveAspectRatio="none"
         >
           <path
@@ -129,8 +129,10 @@ export function WorkoutNodePath() {
           );
         })}
 
-         <div className="relative z-10 mt-8 w-full max-w-sm flex flex-col items-center">
-            <Flag className="w-16 h-16 text-primary mb-4" />
+        <div className={cn(
+            'relative z-10 w-48 h-48 flex items-center justify-center',
+             routine.length % 2 !== 0 ? 'self-start' : 'self-end'
+        )}>
             <AdaptiveProgressionDialog className="w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
                 Generar Próxima Semana
             </AdaptiveProgressionDialog>
