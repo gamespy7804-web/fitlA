@@ -11,15 +11,26 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { startMusic, initializeAudio } from '@/hooks/use-audio-effects';
+import { initializeAudio, startMusic } from '@/hooks/use-audio-effects';
+import { WelcomeOverlay } from './welcome-overlay';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [themeClass, setThemeClass] = useState('theme-default');
+  const [showWelcome, setShowWelcome] = useState(false);
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
   const audioInitialized = useRef(false);
+
+  useEffect(() => {
+    const hasInteracted = sessionStorage.getItem('userInteracted');
+    if (!hasInteracted) {
+      setShowWelcome(true);
+    } else {
+      handleFirstInteraction();
+    }
+  }, []);
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -45,9 +56,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleWelcomeClick = () => {
+    handleFirstInteraction();
+    sessionStorage.setItem('userInteracted', 'true');
+    setShowWelcome(false);
+  };
+
   return (
     <AuthProvider>
-        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)} onClick={handleFirstInteraction}>
+        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+          <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
           <AppShell openChatbot={() => setIsChatbotOpen(true)}>
             <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
             <BottomNavbar>
