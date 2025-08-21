@@ -6,10 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut } from 'lucide-react';
+import { LogOut, Music } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { useMusic } from '@/hooks/use-music';
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
+  const { isMusicEnabled, toggleMusic } = useMusic();
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -38,6 +41,29 @@ export default function SettingsPage() {
             </div>
           </div>
            <Button>Guardar Cambios</Button>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline">Sonido</CardTitle>
+          <CardDescription>Gestiona las preferencias de sonido de la aplicación.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+           <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="flex items-center space-x-3">
+                <Music className="h-5 w-5 text-primary" />
+                <Label htmlFor="music-switch" className="font-medium">
+                  Música de Fondo
+                </Label>
+              </div>
+              <Switch
+                id="music-switch"
+                checked={isMusicEnabled}
+                onCheckedChange={toggleMusic}
+                aria-label="Activar o desactivar la música de fondo"
+              />
+            </div>
         </CardContent>
       </Card>
 

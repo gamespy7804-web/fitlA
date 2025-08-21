@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
+import { MusicProvider } from '@/hooks/use-music';
 import { MusicPlayer } from '@/components/client/music-player';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -38,23 +39,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthProvider>
-      <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
-        <AppShell openChatbot={() => setIsChatbotOpen(true)}>
-          <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
-          <BottomNavbar>
-            <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
-          </BottomNavbar>
-        </AppShell>
-        <ChatbotSheet 
-          open={isChatbotOpen} 
-          onOpenChange={setIsChatbotOpen}
-          onOpenGenerator={() => {
-            setIsChatbotOpen(false);
-            setIsGeneratorOpen(true);
-          }} 
-        />
-        <MusicPlayer />
-      </div>
+      <MusicProvider>
+        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+          <AppShell openChatbot={() => setIsChatbotOpen(true)}>
+            <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
+            <BottomNavbar>
+              <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
+            </BottomNavbar>
+          </AppShell>
+          <ChatbotSheet 
+            open={isChatbotOpen} 
+            onOpenChange={setIsChatbotOpen}
+            onOpenGenerator={() => {
+              setIsChatbotOpen(false);
+              setIsGeneratorOpen(true);
+            }} 
+          />
+          <MusicPlayer />
+        </div>
+      </MusicProvider>
     </AuthProvider>
   );
 }
