@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Check, Repeat, Weight, Video, Timer, Youtube } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
+import useSound from '@/hooks/use-sound';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -20,6 +22,8 @@ interface WorkoutExerciseCardProps {
 }
 
 export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSetComplete, onStartTimer }: WorkoutExerciseCardProps) {
+  const { toast } = useToast();
+  const playSound = useSound();
 
   const handleSetFieldChange = (field: 'weight' | 'reps', value: string) => {
     const newSet = { ...set };
@@ -48,6 +52,27 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
     return set.reps > 0;
   }
 
+  const handleAddToFeedbackQueue = () => {
+    playSound('click');
+    const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
+    if (!pending.includes(exercise.name)) {
+        pending.push(exercise.name);
+        localStorage.setItem('pendingFeedbackExercises', JSON.stringify(pending));
+        // Manually trigger a storage event to notify other components (like the navbar badge)
+        window.dispatchEvent(new Event('storage'));
+        toast({
+            title: 'Ejercicio Añadido a la Cola',
+            description: `${exercise.name} se ha añadido a la lista de pendientes para análisis de forma.`,
+        });
+    } else {
+         toast({
+            variant: 'default',
+            title: 'Ejercicio ya en la cola',
+            description: `${exercise.name} ya está en la lista para ser analizado.`,
+        });
+    }
+  }
+
   const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.originalExercise.youtubeQuery)}`;
 
   return (
@@ -66,12 +91,12 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <a href={`/feedback?exercise=${encodeURIComponent(exercise.name)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10 text-primary hover:bg-primary/10">
+                        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10" onClick={handleAddToFeedbackQueue}>
                             <Video />
-                        </a>
+                        </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Obtener feedback de IA sobre tu técnica</p>
+                        <p>Marcar para obtener feedback de IA sobre tu técnica</p>
                     </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
