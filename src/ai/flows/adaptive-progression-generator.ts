@@ -102,7 +102,7 @@ const adaptiveProgressionFlow = ai.defineFlow(
     outputSchema: WorkoutRoutineOutputSchema,
   },
   async input => {
-    const { t } = await i18n(input.language as any);
+    const t = await i18n(input.language as any);
     const {output} = await prompt({
       ...input,
       selfReportedFitnessLabel: t(`adaptiveProgression.fitnessLevels.${input.selfReportedFitness}` as any)
