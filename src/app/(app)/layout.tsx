@@ -11,34 +11,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { startMusic, stopMusic, initializeAudio } from '@/hooks/use-audio-effects';
-
-
-// A simple component to manage music state based on localStorage
-function MusicManager() {
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const musicEnabled = localStorage.getItem('musicEnabled') === 'true';
-      if (musicEnabled) {
-        startMusic();
-      } else {
-        stopMusic();
-      }
-    };
-    
-    // Initial check
-    handleStorageChange();
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      stopMusic(); // Stop music on component unmount
-    };
-  }, []);
-
-  return null; // This component doesn't render anything
-}
-
+import { startMusic, initializeAudio } from '@/hooks/use-audio-effects';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -47,7 +20,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
   const audioInitialized = useRef(false);
-
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -68,6 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
       initializeAudio();
+      startMusic();
       audioInitialized.current = true;
     }
   };
@@ -89,7 +62,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               setIsGeneratorOpen(true);
             }} 
           />
-          <MusicManager />
         </div>
     </AuthProvider>
   );

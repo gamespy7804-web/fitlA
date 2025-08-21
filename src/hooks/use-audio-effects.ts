@@ -14,17 +14,15 @@ let isInitialized = false;
 
 // Must be called after a user interaction
 export const initializeAudio = () => {
-    if (isInitialized) return;
-    if (typeof window !== 'undefined') {
-        try {
-            audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            isInitialized = true;
-        } catch (e) {
-            console.error("AudioContext is not supported by this browser.", e);
+    if (isInitialized || typeof window === 'undefined') return;
+    try {
+        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
         }
+        isInitialized = true;
+    } catch (e) {
+        console.error("AudioContext is not supported by this browser.", e);
     }
 };
 
@@ -128,6 +126,10 @@ const useAudioEffects = () => {
 
 export const startMusic = async () => {
     if (!audioContext || isPlaying) return;
+    
+    const isEnabled = localStorage.getItem('musicEnabled') === 'true';
+    if (!isEnabled) return;
+    
     if (audioContext.state === 'suspended') {
         await audioContext.resume();
     }

@@ -29,8 +29,6 @@ export default function SettingsPage() {
     } else {
       stopMusic();
     }
-    // Dispatch a storage event to notify other parts of the app, like the layout
-    window.dispatchEvent(new Event('storage'));
   };
 
 
