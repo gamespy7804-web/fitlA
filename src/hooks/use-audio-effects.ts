@@ -145,7 +145,7 @@ export const startMusic = async () => {
 
     gainNode = audioContext.createGain();
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 1);
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2); // Fade in over 2 seconds
 
     musicSource.connect(gainNode);
     gainNode.connect(audioContext.destination);
@@ -157,8 +157,9 @@ export const startMusic = async () => {
 export const stopMusic = () => {
     if (musicSource && gainNode && isPlaying && audioContext) {
         try {
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.5);
-            musicSource.stop(audioContext.currentTime + 0.5);
+            // Fade out over 1 second
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
+            musicSource.stop(audioContext.currentTime + 1);
         } catch (e) {
             // Can throw if stop() is called multiple times.
         }
