@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -63,6 +64,7 @@ export function WorkoutNodePath() {
       }
   }
   const activeDayIndex = lastCompletedIndex + 1;
+  const allDaysComplete = activeDayIndex >= routine.length;
 
 
   return (
@@ -127,8 +129,9 @@ export function WorkoutNodePath() {
           );
         })}
 
-        <div className="mt-8 w-full max-w-sm">
-            <AdaptiveProgressionDialog className="w-full md:w-auto text-primary-foreground justify-center bg-primary hover:bg-primary/90">
+         <div className="relative z-10 mt-8 w-full max-w-sm flex flex-col items-center">
+            <Flag className="w-16 h-16 text-primary mb-4" />
+            <AdaptiveProgressionDialog className="w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
                 Generar Próxima Semana
             </AdaptiveProgressionDialog>
         </div>
