@@ -14,7 +14,6 @@ import {
 import React, { useEffect, useState } from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
 import { Badge } from '../ui/badge';
-import { useSound } from '@/hooks/use-sound';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
@@ -27,7 +26,6 @@ const navItems = [
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
-  const { playSound } = useSound();
 
   useEffect(() => {
     const updateCount = () => {
@@ -51,7 +49,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
               <div key={index} className="flex items-center justify-center">
                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button type="button" className="inline-flex items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none" onClick={() => playSound('button-press')}>
+                    <button type="button" className="inline-flex items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none">
                         <Plus className="w-8 h-8" />
                     </button>
                   </DropdownMenuTrigger>
@@ -85,7 +83,6 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={item.href!}
-              onClick={() => playSound('button-press')}
               className={cn(
                 'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
                 pathname === item.href ? 'text-primary' : 'text-muted-foreground'

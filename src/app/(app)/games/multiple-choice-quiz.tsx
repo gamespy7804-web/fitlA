@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useSound } from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type QuizHistory = {
@@ -31,13 +30,11 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const [currentDifficulty, setCurrentDifficulty] = useState<Difficulty>('normal');
   const { toast } = useToast();
   const feedbackRef = useRef<HTMLDivElement>(null);
-  const { playSound } = useSound();
 
   const startGame = useCallback(async (difficulty: Difficulty = 'normal') => {
     setGameState('loading');
     setCurrentDifficulty(difficulty);
     setSessionHistory([]);
-    playSound('swoosh');
     try {
       const storedRoutine = localStorage.getItem('workoutRoutine');
       if (!storedRoutine) {
@@ -68,7 +65,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
       onGameFinish();
     }
-  }, [onGameFinish, toast, playSound]);
+  }, [onGameFinish, toast]);
 
   useEffect(() => {
     startGame();
@@ -88,9 +85,6 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
     
     if (isCorrect) {
       setScore(score + 1);
-      playSound('success-1');
-    } else {
-      playSound('error-1');
     }
     
     setSessionHistory(prev => [...prev, {
@@ -105,13 +99,11 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   };
 
   const handleNextQuestion = () => {
-    playSound('swoosh');
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setUserAnswerIndex(null);
       setGameState('playing');
     } else {
-      playSound('success-2');
       const fullHistory = JSON.parse(localStorage.getItem('quizHistory') || '[]') as QuizHistory[];
       const updatedHistory = [...fullHistory, ...sessionHistory];
       localStorage.setItem('quizHistory', JSON.stringify(updatedHistory));
