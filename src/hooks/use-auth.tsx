@@ -51,6 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // Clear local storage related to the user's session
+      localStorage.removeItem('onboardingComplete');
+      localStorage.removeItem('workoutRoutine');
+      localStorage.removeItem('completedWorkouts');
+      localStorage.removeItem('detailedWorkoutLogs');
+      localStorage.removeItem('pendingFeedbackExercises');
+      localStorage.removeItem('quizHistory');
+      localStorage.removeItem('triviaHistory');
+      localStorage.removeItem('musicEnabled');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);
@@ -58,16 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const value = { user, loading, signInWithGoogle, signOut };
-
-  // This prevents the app from rendering until the auth state is determined.
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        {/* You can replace this with a more sophisticated loading skeleton */}
-      </div>
-    )
-  }
-
+  
   return (
     <AuthContext.Provider value={value}>
       {children}
