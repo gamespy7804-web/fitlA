@@ -144,8 +144,7 @@ export const startMusic = async () => {
     musicSource.loop = true;
 
     gainNode = audioContext.createGain();
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2); // Fade in over 2 seconds
+    gainNode.gain.value = 0.1; // Set volume directly
 
     musicSource.connect(gainNode);
     gainNode.connect(audioContext.destination);
