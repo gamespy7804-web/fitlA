@@ -10,8 +10,7 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useRouter, usePathname } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +39,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await signInWithPopup(auth, provider);
       // Let the onAuthStateChanged listener handle redirection by updating the user state
-    } catch (error) {
+    } catch (error: any) {
+      // Gracefully handle the case where the user closes the sign-in popup.
+      if (error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
       console.error('Error signing in with Google', error);
     }
   };
@@ -55,6 +58,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const value = { user, loading, signInWithGoogle, signOut };
+
+  // This prevents the app from rendering until the auth state is determined.
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        {/* You can replace this with a more sophisticated loading skeleton */}
+      </div>
+    )
+  }
 
   return (
     <AuthContext.Provider value={value}>
