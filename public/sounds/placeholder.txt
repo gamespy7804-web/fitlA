@@ -1,0 +1,1 @@
+You can delete this file. It exists only to create the 'public/sounds' directory. Please add your music files (e.g., music-1.mp3) here.
