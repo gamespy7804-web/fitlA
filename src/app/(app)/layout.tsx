@@ -39,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (storedRoutine) {
       try {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        if (parsedRoutine.sport) {
+        if (parsedRoutine.structuredRoutine && parsedRoutine.sport) {
           currentTheme = getThemeForSport(parsedRoutine.sport);
         }
       } catch (e) {
@@ -64,26 +64,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthProvider>
-      <I18nProvider>
-        <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
-          <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
-          <AppShell openChatbot={() => setIsChatbotOpen(true)}>
-            <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
-            <BottomNavbar>
-              <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
-            </BottomNavbar>
-          </AppShell>
-          <ChatbotSheet 
-            open={isChatbotOpen} 
-            onOpenChange={setIsChatbotOpen}
-            onOpenGenerator={() => {
-              setIsChatbotOpen(false);
-              setIsGeneratorOpen(true);
-            }} 
-          />
-        </div>
-      </I18nProvider>
-    </AuthProvider>
+    <I18nProvider>
+      <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+        <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
+        <AppShell openChatbot={() => setIsChatbotOpen(true)}>
+          <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
+          <BottomNavbar>
+            <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
+          </BottomNavbar>
+        </AppShell>
+        <ChatbotSheet 
+          open={isChatbotOpen} 
+          onOpenChange={setIsChatbotOpen}
+          onOpenGenerator={() => {
+            setIsChatbotOpen(false);
+            setIsGeneratorOpen(true);
+          }} 
+        />
+      </div>
+    </I18nProvider>
   );
 }

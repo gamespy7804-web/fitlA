@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
-import { I18nProvider } from '@/i18n/server';
 
 export const metadata: Metadata = {
   title: 'TrainSmart AI',
@@ -27,9 +26,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <I18nProvider>
-            {children}
-          </I18nProvider>
+          {children}
         </AuthProvider>
         <Toaster />
       </body>

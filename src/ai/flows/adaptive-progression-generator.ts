@@ -41,7 +41,17 @@ export async function adaptiveProgressionGenerator(input: AdaptiveProgressionInp
 
 const prompt = ai.definePrompt({
   name: 'adaptiveProgressionPrompt',
-  input: {schema: AdaptiveProgressionInputSchema},
+  input: {schema: z.object({
+    trainingData: z.string(),
+    adherence: z.number(),
+    selfReportedFitness: z.string(),
+    originalRoutine: z.string(),
+    trainingDays: z.coerce.number().optional(),
+    trainingDuration: z.coerce.number().optional(),
+    userFeedback: z.string().optional(),
+    language: z.string(),
+    selfReportedFitnessLabel: z.string(),
+  })},
   output: {schema: WorkoutRoutineOutputSchema},
   prompt: `You are an expert AI sports trainer, specializing in creating weekly training progressions.
 Your response MUST be in the user's selected language: {{language}}.
@@ -57,7 +67,7 @@ Your task is to analyze a user's previous training cycle data, their adherence, 
 Use the original routine as a baseline and adjust it for progression. The key principles are progressive overload and recovery.
 
 - If adherence is low (< 75%), the plan was likely too demanding. Consider reducing volume (fewer sets or exercises) or intensity.
-- If the user reported the cycle was "easy" and adherence is high (> 90%), increase the intensity significantly. Increment weight, reps, or introduce more difficult exercise variations.
+- If the user reported the cycle was "{{selfReportedFitnessLabel}}" (easy) and adherence is high (> 90%), increase the intensity significantly. Increment weight, reps, or introduce more difficult exercise variations.
 - If the user reported it was "too hard", reduce the intensity. Decrease weight, reps, or simplify the exercises.
 - If the user reported it was "just right" and adherence is high, apply moderate progressive overload. Slightly increase reps or weight on key exercises.
 - Analyze the actual performance (training data) to make precise adjustments. If the user consistently exceeded target reps, increase the weight or reps for that exercise. If they fell short, maintain or slightly reduce the difficulty.
@@ -95,7 +105,7 @@ const adaptiveProgressionFlow = ai.defineFlow(
     const { t } = await i18n(input.language as any);
     const {output} = await prompt({
       ...input,
-      selfReportedFitness: t(`adaptiveProgression.fitnessLevels.${input.selfReportedFitness}` as any)
+      selfReportedFitnessLabel: t(`adaptiveProgression.fitnessLevels.${input.selfReportedFitness}` as any)
     });
     return output!;
   }
