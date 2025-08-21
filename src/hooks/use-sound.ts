@@ -28,6 +28,10 @@ const loadMusic = async () => {
     if (!audioContext || musicBuffer) return;
     try {
         const response = await fetch('/sounds/music-1.mp3');
+        if (!response.ok) {
+            console.error(`Error fetching music file: Status ${response.status}. Make sure "public/sounds/music-1.mp3" exists.`);
+            return;
+        }
         const arrayBuffer = await response.arrayBuffer();
         audioContext.decodeAudioData(arrayBuffer, (buffer) => {
             musicBuffer = buffer;
@@ -35,7 +39,7 @@ const loadMusic = async () => {
             console.error('Error decoding audio data:', error);
         });
     } catch (error) {
-        console.error('Error fetching music file:', error);
+        console.error('Error fetching or decoding music file:', error);
     }
 };
 
