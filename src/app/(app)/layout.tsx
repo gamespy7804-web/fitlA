@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
+import { MusicPlayer } from '@/components/client/music-player';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -52,6 +53,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             setIsGeneratorOpen(true);
           }} 
         />
+        <MusicPlayer />
       </div>
     </AuthProvider>
   );
