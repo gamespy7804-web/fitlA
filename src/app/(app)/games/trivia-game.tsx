@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
+import { useSound } from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type TriviaHistory = {
@@ -26,10 +27,12 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   const [userAnswer, setUserAnswer] = useState<boolean | null>(null);
   const [sessionHistory, setSessionHistory] = useState<TriviaHistory[]>([]);
   const { toast } = useToast();
+  const { playSound } = useSound();
 
   const startGame = useCallback(async () => {
     setGameState('loading');
     setSessionHistory([]);
+    playSound('swoosh');
     try {
       const storedRoutine = localStorage.getItem('workoutRoutine');
       if (!storedRoutine) {
@@ -60,7 +63,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron generar las preguntas. Inténtalo de nuevo.' });
       onGameFinish();
     }
-  }, [onGameFinish, toast]);
+  }, [onGameFinish, toast, playSound]);
 
   useEffect(() => {
     startGame();
@@ -72,6 +75,9 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
     
     if (isCorrect) {
       setScore(score + 1);
+      playSound('success-1');
+    } else {
+      playSound('error-1');
     }
     
     setSessionHistory(prev => [...prev, {
@@ -86,11 +92,13 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   };
 
   const handleNextQuestion = () => {
+    playSound('swoosh');
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setUserAnswer(null);
       setGameState('playing');
     } else {
+      playSound('success-2');
       const fullHistory = JSON.parse(localStorage.getItem('triviaHistory') || '[]') as TriviaHistory[];
       const updatedHistory = [...fullHistory, ...sessionHistory];
       localStorage.setItem('triviaHistory', JSON.stringify(updatedHistory));

@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
+import { useSound } from '@/hooks/use-sound';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
@@ -32,6 +33,7 @@ function WorkoutPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { playSound } = useSound();
   
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -86,6 +88,7 @@ function WorkoutPageContent() {
     newLog[currentExerciseIndex].sets[currentSetIndex].completed = true;
     setExerciseLog(newLog);
 
+    playSound('success-1');
     const isLastSetOfExercise = currentSetIndex === exerciseLog[currentExerciseIndex].sets.length - 1;
     const isLastExercise = currentExerciseIndex === exerciseLog.length - 1;
 
@@ -100,6 +103,7 @@ function WorkoutPageContent() {
 
   const handleRestComplete = () => {
     setIsResting(false);
+    playSound('swoosh');
     
     const isLastSetOfExercise = currentSetIndex === exerciseLog[currentExerciseIndex].sets.length - 1;
 
@@ -121,6 +125,7 @@ function WorkoutPageContent() {
 
   const handleCompleteWorkout = () => {
     if (!day) return;
+    playSound('success-2');
 
     let totalVolume = 0;
     const exercisesForFeedback: string[] = [];
