@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { LogOut, Music } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
-import { playMusic, stopMusic } from '@/hooks/use-sound';
+import { startMusic, stopMusic } from '@/hooks/use-sound';
 
 
 export default function SettingsPage() {
@@ -25,7 +25,7 @@ export default function SettingsPage() {
     setIsMusicEnabled(enabled);
     localStorage.setItem('musicEnabled', JSON.stringify(enabled));
     if (enabled) {
-      playMusic();
+      startMusic();
     } else {
       stopMusic();
     }

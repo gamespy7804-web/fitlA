@@ -11,7 +11,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { playMusic, stopMusic } from '@/hooks/use-sound';
+import { startMusic, stopMusic } from '@/hooks/use-sound';
 
 // A simple component to manage music state based on localStorage
 function MusicManager() {
@@ -19,7 +19,7 @@ function MusicManager() {
     const handleStorageChange = () => {
       const musicEnabled = localStorage.getItem('musicEnabled') === 'true';
       if (musicEnabled) {
-        playMusic();
+        startMusic();
       } else {
         stopMusic();
       }
