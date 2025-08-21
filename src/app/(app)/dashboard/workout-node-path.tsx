@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
+import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
 
 type CompletedDay = {
   workout: string;
@@ -23,6 +24,7 @@ export function WorkoutNodePath() {
   const [workoutPlan, setWorkoutPlan] = useState<WorkoutRoutineOutput | null>(null);
   const [completedDays, setCompletedDays] = useState<string[]>([]);
   const router = useRouter();
+  const playSound = useAudioEffects();
 
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -36,7 +38,11 @@ export function WorkoutNodePath() {
   }, []);
 
   const handleNodeClick = (dayIndex: number) => {
-    router.push(`/workout?day=${dayIndex}`);
+    stopMusic();
+    playSound('startWorkout');
+    setTimeout(() => {
+      router.push(`/workout?day=${dayIndex}`);
+    }, 500); // Wait for sound to play a bit
   };
   
   const routine = workoutPlan?.structuredRoutine;

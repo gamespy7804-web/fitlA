@@ -40,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
       initializeAudio();
-      startMusic();
+      startMusic('main');
       audioInitialized.current = true;
     }
   };

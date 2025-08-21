@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Zap, Lightbulb, Gamepad2, ArrowLeft, ChevronRight } from 'lucide-react';
@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TriviaGame } from './trivia-game';
 import { MultipleChoiceQuiz } from './multiple-choice-quiz';
 import { cn } from '@/lib/utils';
+import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
 
 type Game = 'trivia' | 'quiz' | null;
 
@@ -20,6 +21,19 @@ const games = [
 export default function GamesPage() {
   const [activeGame, setActiveGame] = useState<Game>(null);
 
+  useEffect(() => {
+    // When entering the games page, switch to game music
+    stopMusic().then(() => {
+        startMusic('game');
+    });
+
+    // When leaving the games page, switch back to main music
+    return () => {
+        stopMusic().then(() => {
+            startMusic('main');
+        });
+    }
+  }, []);
 
   const handleGameSelect = (gameId: Game) => {
     setActiveGame(gameId);

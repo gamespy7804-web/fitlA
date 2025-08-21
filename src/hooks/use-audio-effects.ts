@@ -3,13 +3,14 @@
 
 import { useCallback } from 'react';
 
-type SoundType = 'success' | 'error' | 'click' | 'swoosh';
+type SoundType = 'success' | 'error' | 'click' | 'swoosh' | 'startWorkout';
+type MusicType = 'main' | 'game';
 
 let audioContext: AudioContext | null = null;
-let musicBuffer: AudioBuffer | null = null;
+const musicBuffers = new Map<MusicType, AudioBuffer>();
 let musicSource: AudioBufferSourceNode | null = null;
 let gainNode: GainNode | null = null;
-let isPlaying = false;
+let isPlaying: MusicType | null = null;
 let isInitialized = false;
 
 // Must be called after a user interaction
@@ -26,28 +27,30 @@ export const initializeAudio = () => {
     }
 };
 
-const loadMusicBuffer = async (): Promise<AudioBuffer | null> => {
-    if (musicBuffer) return musicBuffer;
+const loadMusicBuffer = async (type: MusicType): Promise<AudioBuffer | null> => {
+    if (musicBuffers.has(type)) return musicBuffers.get(type)!;
     if (!audioContext) {
         console.warn("AudioContext not initialized. Cannot load music.");
         return null;
     }
 
+    const musicFile = type === 'main' ? '/sounds/music-1.mp3' : '/sounds/music-2.mp3';
+
     try {
-        const response = await fetch('/sounds/music-1.mp3');
+        const response = await fetch(musicFile);
         if (!response.ok) {
             console.error(`Failed to fetch music file: ${response.status} ${response.statusText}`);
             return null;
         }
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('audio/mpeg')) {
-             console.error("Error: The fetched file is not a valid audio file. Make sure 'public/sounds/music-1.mp3' exists and is not corrupted.");
+             console.error(`Error: The fetched file is not a valid audio file. Make sure '${musicFile}' exists and is not corrupted.`);
              return null;
         }
         const arrayBuffer = await response.arrayBuffer();
         const decodedData = await audioContext.decodeAudioData(arrayBuffer);
-        musicBuffer = decodedData;
-        return musicBuffer;
+        musicBuffers.set(type, decodedData);
+        return decodedData;
     } catch (error) {
         console.error('Error loading or decoding music file:', error);
         return null;
@@ -59,47 +62,44 @@ const useAudioEffects = () => {
     if (!audioContext || audioContext.state === 'suspended') return;
 
     try {
+      let oscType: OscillatorType = 'sine';
+      let freq = 440;
+      let duration = 0.1;
+      let gainVal = 0.1;
+
       switch (type) {
-        case 'success': {
-          const oscillator = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          oscillator.connect(gain);
-          gain.connect(audioContext.destination);
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.5);
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.5);
+        case 'success':
+          freq = 600;
+          duration = 0.5;
+          gainVal = 0.2;
           break;
-        }
-        case 'error': {
-          const oscillator = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          oscillator.connect(gain);
-          gain.connect(audioContext.destination);
-          oscillator.type = 'square';
-          oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
-          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.3);
-          oscillator.start(audioContext.currentTime);
-          oscillator.stop(audioContext.currentTime + 0.3);
+        case 'error':
+          oscType = 'square';
+          freq = 150;
+          duration = 0.3;
+          gainVal = 0.2;
           break;
-        }
-        case 'click': {
-           const oscillator = audioContext.createOscillator();
-           const gain = audioContext.createGain();
-           oscillator.connect(gain);
-           gain.connect(audioContext.destination);
-           oscillator.type = 'sine';
-           oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-           gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-           gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.1);
-           oscillator.start(audioContext.currentTime);
-           oscillator.stop(audioContext.currentTime + 0.1);
+        case 'click':
+          // Use default values
           break;
-        }
-         case 'swoosh': {
+        case 'startWorkout':
+            oscType = 'sawtooth';
+            freq = 200;
+            duration = 0.8;
+            gainVal = 0.2;
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.type = 'sawtooth';
+            osc2.frequency.setValueAtTime(300, audioContext.currentTime);
+            osc2.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + duration);
+            gain2.gain.setValueAtTime(gainVal, audioContext.currentTime);
+            gain2.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+            osc2.start(audioContext.currentTime);
+            osc2.stop(audioContext.currentTime + duration);
+            break;
+        case 'swoosh': {
           const bufferSize = audioContext.sampleRate * 0.2;
           const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
           const output = buffer.getChannelData(0);
@@ -113,9 +113,21 @@ const useAudioEffects = () => {
           source.connect(gain);
           gain.connect(audioContext.destination);
           source.start();
-          break;
+          return; // Exit to avoid oscillator logic
         }
       }
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.type = oscType;
+      oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+      gain.gain.setValueAtTime(gainVal, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+
     } catch (error) {
       console.error(`Error playing sound type "${type}":`, error);
     }
@@ -124,8 +136,8 @@ const useAudioEffects = () => {
   return playSound;
 };
 
-export const startMusic = async () => {
-    if (!audioContext || isPlaying) return;
+export const startMusic = async (type: MusicType) => {
+    if (!audioContext || isPlaying === type) return;
     
     const isEnabled = localStorage.getItem('musicEnabled') === 'true';
     if (!isEnabled) return;
@@ -134,38 +146,58 @@ export const startMusic = async () => {
         await audioContext.resume();
     }
     
-    const buffer = await loadMusicBuffer();
+    const buffer = await loadMusicBuffer(type);
     if (!buffer) return;
 
-    stopMusic(); 
+    await stopMusic(); 
 
     musicSource = audioContext.createBufferSource();
     musicSource.buffer = buffer;
     musicSource.loop = true;
 
     gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.1; // Set volume directly
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start at 0 for fade-in
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2); // Fade in over 2 seconds
 
     musicSource.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
     musicSource.start();
-    isPlaying = true;
+    isPlaying = type;
 };
 
-export const stopMusic = () => {
-    if (musicSource && gainNode && isPlaying && audioContext) {
-        try {
-            // Fade out over 1 second
-            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
-            musicSource.stop(audioContext.currentTime + 1);
-        } catch (e) {
-            // Can throw if stop() is called multiple times.
+export const stopMusic = (): Promise<void> => {
+    return new Promise((resolve) => {
+        if (musicSource && gainNode && isPlaying && audioContext) {
+            try {
+                // Fade out over 1 second
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
+                
+                const sourceToStop = musicSource;
+                setTimeout(() => {
+                    try {
+                      sourceToStop.stop();
+                    } catch (e) {
+                      // It might have been stopped already
+                    }
+                    if (musicSource === sourceToStop) {
+                        musicSource = null;
+                        gainNode = null;
+                        isPlaying = null;
+                    }
+                    resolve();
+                }, 1000); // Wait for the fade-out to complete
+
+            } catch (e) {
+                musicSource = null;
+                gainNode = null;
+                isPlaying = null;
+                resolve();
+            }
+        } else {
+          resolve();
         }
-    }
-    musicSource = null;
-    gainNode = null;
-    isPlaying = false;
+    });
 };
 
 export default useAudioEffects;

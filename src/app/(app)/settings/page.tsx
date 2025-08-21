@@ -25,7 +25,7 @@ export default function SettingsPage() {
     setIsMusicEnabled(enabled);
     localStorage.setItem('musicEnabled', JSON.stringify(enabled));
     if (enabled) {
-      startMusic();
+      startMusic('main');
     } else {
       stopMusic();
     }
