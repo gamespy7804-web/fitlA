@@ -89,23 +89,27 @@ const useAudioEffects = () => {
         case 'click':
           // Use default values
           break;
-        case 'startWorkout':
-            oscType = 'sawtooth';
-            freq = 200;
-            duration = 0.8;
-            gainVal = 0.2;
-            const osc2 = audioContext.createOscillator();
-            const gain2 = audioContext.createGain();
-            osc2.connect(gain2);
-            gain2.connect(audioContext.destination);
-            osc2.type = 'sawtooth';
-            osc2.frequency.setValueAtTime(300, audioContext.currentTime);
-            osc2.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + duration);
-            gain2.gain.setValueAtTime(gainVal, audioContext.currentTime);
-            gain2.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + duration);
-            osc2.start(audioContext.currentTime);
-            osc2.stop(audioContext.currentTime + duration);
-            break;
+        case 'startWorkout': {
+          const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+          const noteDuration = 0.15;
+          const startTime = audioContext.currentTime;
+
+          notes.forEach((noteFreq, i) => {
+            const osc = audioContext!.createOscillator();
+            const gain = audioContext!.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext!.destination);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(noteFreq, startTime + i * noteDuration);
+            gain.gain.setValueAtTime(0.2, startTime + i * noteDuration);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + (i + 1) * noteDuration);
+
+            osc.start(startTime + i * noteDuration);
+            osc.stop(startTime + (i + 1) * noteDuration);
+          });
+          return;
+        }
         case 'swoosh': {
           const bufferSize = audioContext.sampleRate * 0.2;
           const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
@@ -155,34 +159,35 @@ const playTrack = async (type: MusicType, startTime = 0) => {
         await audioContext.resume();
     }
     
-    // Stop any scheduled loops
     if (loopTimeout) clearTimeout(loopTimeout);
 
-    // Fade out the current track if it's playing
+    // Set up the new track (nextSource)
+    nextSource = audioContext.createBufferSource();
+    nextSource.buffer = buffer;
+    nextGain = audioContext.createGain();
+    nextSource.connect(nextGain);
+    nextGain.connect(audioContext.destination);
+
+    // Fade in the new track
+    nextGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    nextGain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + FADE_TIME);
+    nextSource.start(audioContext.currentTime, startTime);
+
+    // Fade out the old track
     if (currentSource && currentGain) {
-        currentGain.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + FADE_TIME / 2);
+        currentGain.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + FADE_TIME);
         const sourceToStop = currentSource;
         setTimeout(() => {
             try { sourceToStop.stop(); } catch(e) {}
-        }, (FADE_TIME / 2) * 1000);
+        }, FADE_TIME * 1000);
     }
 
-    // Set up the new track
+    // The new track becomes the current track
+    currentSource = nextSource;
+    currentGain = nextGain;
     currentMusicType = type;
-    currentSource = audioContext.createBufferSource();
-    currentSource.buffer = buffer;
-    currentGain = audioContext.createGain();
-    
-    currentSource.connect(currentGain);
-    currentGain.connect(audioContext.destination);
 
-    // Fade in
-    currentGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    currentGain.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + FADE_TIME);
-
-    currentSource.start(audioContext.currentTime, startTime);
-
-    // Schedule the next track (crossfade)
+    // Schedule the next crossfade for looping
     const trackDuration = buffer.duration;
     const timeUntilCrossfade = (trackDuration - startTime - FADE_TIME) * 1000;
 
@@ -196,25 +201,24 @@ export const startMusic = (type: MusicType) => {
     if (!isInitialized || !isEnabled) {
         return;
     }
-    if (currentMusicType === type) return; // Don't restart if already playing the same type
+    if (currentMusicType === type) return;
 
     playTrack(type);
 };
 
 export const stopMusic = () => {
-    isEnabled = false;
-     if (!audioContext || !isInitialized) return;
+    if (!audioContext || !isInitialized) return;
     
     if (loopTimeout) clearTimeout(loopTimeout);
     loopTimeout = null;
 
     if (currentSource && currentGain) {
-        // No fade out on manual stop, just stop immediately
         currentGain.gain.cancelScheduledValues(audioContext.currentTime);
-        currentGain.gain.setValueAtTime(0, audioContext.currentTime);
-        try {
-            currentSource.stop();
-        } catch(e) {}
+        currentGain.gain.linearRampToValueAtTime(0.0001, audioContext.currentTime + 1); // 1 sec fade out
+        const sourceToStop = currentSource;
+        setTimeout(() => {
+            try { sourceToStop.stop(); } catch(e) {}
+        }, 1000);
     }
 
     currentSource = null;
