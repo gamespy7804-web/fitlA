@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
 import { Badge } from '../ui/badge';
-import useAudioEffects from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-audio-effects';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },

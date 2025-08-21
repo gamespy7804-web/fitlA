@@ -10,7 +10,7 @@ import { Check, Repeat, Weight, Video, Timer, Youtube } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
-import useAudioEffects from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-audio-effects';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;

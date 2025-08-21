@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
-import useAudioEffects from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-audio-effects';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };

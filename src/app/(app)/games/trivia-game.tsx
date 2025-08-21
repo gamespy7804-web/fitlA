@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
-import useAudioEffects from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-audio-effects';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type TriviaHistory = {

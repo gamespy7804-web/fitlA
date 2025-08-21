@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import useAudioEffects from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-audio-effects';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type QuizHistory = {
