@@ -6,11 +6,9 @@ import { useCallback } from 'react';
 type SoundType = 'success' | 'error' | 'click' | 'swoosh';
 
 let audioContext: AudioContext | null = null;
-let musicSource: AudioBufferSourceNode | null = null;
-let musicBuffer: AudioBuffer | null = null;
+let musicSource: OscillatorNode | null = null; // Changed to OscillatorNode
 let musicGainNode: GainNode | null = null;
 let isMusicPlaying = false;
-let hasAttemptedLoad = false;
 let isMusicEnabledGlobally = false;
 
 // Function to initialize AudioContext safely on the client side after user interaction
@@ -25,50 +23,22 @@ const initAudioContext = () => {
   return audioContext;
 };
 
-// Function to load the music file
-const loadMusic = async () => {
-    initAudioContext();
-    if (!audioContext || musicBuffer || hasAttemptedLoad) return;
-    hasAttemptedLoad = true; // Mark that we are trying to load
-
-    try {
-        const response = await fetch('/sounds/music-1.mp3');
-        
-        // Check if the response is successful and the content type is correct
-        if (!response.ok || !response.headers.get('content-type')?.includes('audio')) {
-             console.error("Error: El archivo de música no es un archivo de audio válido. Asegúrate de que 'public/sounds/music-1.mp3' existe y no está dañado.");
-            return;
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        audioContext.decodeAudioData(arrayBuffer, (buffer) => {
-            musicBuffer = buffer;
-            // If music should be playing, start it now that it's loaded
-            if (isMusicEnabledGlobally) {
-                playMusicInternal();
-            }
-        }, (error) => {
-            console.error('Error decoding audio data:', error);
-        });
-    } catch (error) {
-        console.error('Error fetching or decoding music file:', error);
-    }
-};
-
 const playMusicInternal = () => {
     const context = initAudioContext();
-    if (!context || !musicBuffer || isMusicPlaying) return;
+    if (!context || isMusicPlaying) return;
 
     if (context.state === 'suspended') {
         context.resume();
     }
 
-    musicSource = context.createBufferSource();
-    musicSource.buffer = musicBuffer;
-    musicSource.loop = true;
+    // Create a simple sine wave oscillator for background music
+    musicSource = context.createOscillator();
+    musicSource.type = 'sine';
+    musicSource.frequency.setValueAtTime(110, context.currentTime); // A low 'A' note
 
     musicGainNode = context.createGain();
-    musicGainNode.gain.setValueAtTime(0.3, context.currentTime);
+    musicGainNode.gain.setValueAtTime(0, context.currentTime);
+    musicGainNode.gain.linearRampToValueAtTime(0.1, context.currentTime + 1); // Fade in
 
     musicSource.connect(musicGainNode);
     musicGainNode.connect(context.destination);
@@ -79,11 +49,7 @@ const playMusicInternal = () => {
 
 export const startMusic = () => {
     isMusicEnabledGlobally = true;
-    if (!musicBuffer) {
-        loadMusic();
-    } else {
-        playMusicInternal();
-    }
+    playMusicInternal();
 };
 
 export const stopMusic = () => {
