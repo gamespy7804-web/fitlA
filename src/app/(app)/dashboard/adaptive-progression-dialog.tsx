@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
@@ -47,6 +48,7 @@ const formSchema = z.object({
     (val) => (val === '' ? undefined : val),
     z.coerce.number().min(15).max(240).optional()
   ),
+  userFeedback: z.string().optional(),
 });
 
 export function AdaptiveProgressionDialog({ children, className }: { children?: React.ReactNode, className?: string }) {
@@ -62,6 +64,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       selfReportedFitness: 'just-right',
       trainingDays: undefined,
       trainingDuration: undefined,
+      userFeedback: '',
     },
   });
 
@@ -132,6 +135,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         adherence,
         trainingDays: values.trainingDays,
         trainingDuration: values.trainingDuration,
+        userFeedback: values.userFeedback,
       });
 
       localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
@@ -160,7 +164,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      form.reset({ selfReportedFitness: 'just-right'});
+      form.reset({ selfReportedFitness: 'just-right', userFeedback: ''});
       setIsLoading(false);
     }
   };
@@ -207,6 +211,25 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="userFeedback"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>¿Algún comentario o cambio que te gustaría hacer?</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="ej., Me gustaría enfocarme más en el pecho, sentí que los días de pierna fueron muy largos..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="space-y-2 pt-2">
                 <p className="text-sm font-medium">Ajustes para la próxima semana (Opcional)</p>
                  <div className="grid grid-cols-2 gap-4">

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for generating weekly workout progressions based on user data.
@@ -27,6 +28,7 @@ const AdaptiveProgressionInputSchema = z.object({
   originalRoutine: z.string().describe("The user's original workout routine, used as a baseline for the new progression."),
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train for the new cycle."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes for the new cycle."),
+  userFeedback: z.string().optional().describe("Free-text feedback from the user about the last cycle and what they'd like to change."),
 });
 export type AdaptiveProgressionInput = z.infer<typeof AdaptiveProgressionInputSchema>;
 
@@ -41,7 +43,13 @@ const prompt = ai.definePrompt({
   output: {schema: WorkoutRoutineOutputSchema},
   prompt: `Eres un entrenador deportivo experto en IA, especializado en crear progresiones de entrenamiento semanales. Tu respuesta debe ser en español.
 
-  Tu tarea es analizar los datos de entrenamiento del ciclo anterior de un usuario, su adherencia y su nivel de condición física auto-reportado para generar un NUEVO plan de entrenamiento progresivo para la próxima semana.
+  Tu tarea es analizar los datos de entrenamiento del ciclo anterior de un usuario, su adherencia, su nivel de condición física auto-reportado y, lo más importante, sus comentarios directos para generar un NUEVO plan de entrenamiento progresivo para la próxima semana.
+
+  **Feedback del Usuario (Máxima Prioridad):**
+  {{#if userFeedback}}
+  - El usuario ha proporcionado los siguientes comentarios, que DEBEN ser la guía principal para tus ajustes: "{{{userFeedback}}}"
+  - Prioriza estos comentarios sobre las reglas generales de abajo si hay un conflicto. Por ejemplo, si el usuario dice que fue "fácil" pero pide "menos volumen", debes reducir el volumen.
+  {{/if}}
 
   Utiliza la rutina original como base y ajústala para la progresión. Los principios clave son la sobrecarga progresiva y la recuperación.
 
