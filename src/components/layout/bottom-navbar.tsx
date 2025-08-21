@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-dialog';
 import { Badge } from '../ui/badge';
-import useSound from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-sound';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Inicio' },
@@ -27,7 +27,7 @@ const navItems = [
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
-  const playSound = useSound();
+  const playSound = useAudioEffects();
 
   useEffect(() => {
     const updateCount = () => {

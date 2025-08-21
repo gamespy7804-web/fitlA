@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
-import useSound from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type TriviaHistory = {
@@ -27,7 +27,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   const [userAnswer, setUserAnswer] = useState<boolean | null>(null);
   const [sessionHistory, setSessionHistory] = useState<TriviaHistory[]>([]);
   const { toast } = useToast();
-  const playSound = useSound();
+  const playSound = useAudioEffects();
 
   const startGame = useCallback(async () => {
     setGameState('loading');

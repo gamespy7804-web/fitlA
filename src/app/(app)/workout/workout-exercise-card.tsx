@@ -10,7 +10,7 @@ import { Check, Repeat, Weight, Video, Timer, Youtube } from 'lucide-react';
 import type { ExerciseLog, SetLog } from './page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
-import useSound from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-sound';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -23,7 +23,7 @@ interface WorkoutExerciseCardProps {
 
 export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSetComplete, onStartTimer }: WorkoutExerciseCardProps) {
   const { toast } = useToast();
-  const playSound = useSound();
+  const playSound = useAudioEffects();
 
   const handleSetFieldChange = (field: 'weight' | 'reps', value: string) => {
     const newSet = { ...set };

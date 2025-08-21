@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCallback } from 'react';
@@ -6,12 +5,10 @@ import { useCallback } from 'react';
 type SoundType = 'success' | 'error' | 'click' | 'swoosh';
 
 let audioContext: AudioContext | null = null;
-let musicSource: OscillatorNode | null = null; // Changed to OscillatorNode
+let musicSource: OscillatorNode | null = null;
 let musicGainNode: GainNode | null = null;
 let isMusicPlaying = false;
-let isMusicEnabledGlobally = false;
 
-// Function to initialize AudioContext safely on the client side after user interaction
 const initAudioContext = () => {
   if (typeof window !== 'undefined' && !audioContext) {
     try {
@@ -25,13 +22,15 @@ const initAudioContext = () => {
 
 const playMusicInternal = () => {
     const context = initAudioContext();
-    if (!context || isMusicPlaying) return;
-
+    if (!context) return;
+    
+    // Ensure we can play audio
     if (context.state === 'suspended') {
         context.resume();
     }
 
-    // Create a simple sine wave oscillator for background music
+    if (isMusicPlaying) return;
+
     musicSource = context.createOscillator();
     musicSource.type = 'sine';
     musicSource.frequency.setValueAtTime(110, context.currentTime); // A low 'A' note
@@ -42,28 +41,27 @@ const playMusicInternal = () => {
 
     musicSource.connect(musicGainNode);
     musicGainNode.connect(context.destination);
-
+    
+    musicSource.loop = true;
     musicSource.start();
     isMusicPlaying = true;
 };
 
 export const startMusic = () => {
-    isMusicEnabledGlobally = true;
-    playMusicInternal();
+  playMusicInternal();
 };
 
 export const stopMusic = () => {
-    isMusicEnabledGlobally = false;
-    if (musicSource && isMusicPlaying) {
-        musicSource.stop();
-        musicSource.disconnect();
-        musicSource = null;
-        isMusicPlaying = false;
-    }
+  if (musicGainNode && musicSource && isMusicPlaying) {
+    musicGainNode.gain.linearRampToValueAtTime(0, audioContext!.currentTime + 0.5);
+    musicSource.stop(audioContext!.currentTime + 0.5);
+    musicSource = null;
+    musicGainNode = null;
+    isMusicPlaying = false;
+  }
 };
 
-
-const useSound = () => {
+const useAudioEffects = () => {
   const playSound = useCallback((type: SoundType) => {
     const context = initAudioContext();
     if (!context) return;
@@ -148,4 +146,4 @@ const useSound = () => {
   return playSound;
 };
 
-export default useSound;
+export default useAudioEffects;

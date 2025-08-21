@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import useSound from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-sound';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type QuizHistory = {
@@ -31,7 +31,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
   const [currentDifficulty, setCurrentDifficulty] = useState<Difficulty>('normal');
   const { toast } = useToast();
   const feedbackRef = useRef<HTMLDivElement>(null);
-  const playSound = useSound();
+  const playSound = useAudioEffects();
 
   const startGame = useCallback(async (difficulty: Difficulty = 'normal') => {
     setGameState('loading');

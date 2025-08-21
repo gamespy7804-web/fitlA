@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WorkoutExerciseCard } from './workout-exercise-card';
 import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
-import useSound from '@/hooks/use-sound';
+import useAudioEffects from '@/hooks/use-sound';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
@@ -33,7 +33,7 @@ function WorkoutPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const playSound = useSound();
+  const playSound = useAudioEffects();
   
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
