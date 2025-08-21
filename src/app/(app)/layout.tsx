@@ -11,8 +11,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
-import { initializeAudio } from '@/hooks/use-music';
+import { startMusic, stopMusic, initializeAudio } from '@/hooks/use-audio-effects';
 
 
 // A simple component to manage music state based on localStorage
