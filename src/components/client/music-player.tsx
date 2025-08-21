@@ -21,13 +21,21 @@ export function MusicPlayer() {
     if (!audio) return;
 
     if (enabled && track !== 'none' && musicFileMap[track]) {
-      if (audio.src.split('/').pop() !== musicFileMap[track].split('/').pop()) {
-        audio.src = musicFileMap[track];
+      const newSrc = musicFileMap[track];
+      // Check if the source needs to be updated
+      if (!audio.src.endsWith(newSrc)) {
+        audio.src = newSrc;
       }
       audio.volume = volume / 100;
       audio.loop = true;
-      audio.play().catch(error => console.error("Audio play failed:", error));
-      setIsPlaying(true);
+      // Attempt to play. This might fail due to autoplay policies.
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(error => {
+        // Playback was prevented. We'll wait for user interaction.
+        setIsPlaying(false);
+        console.warn("Audio play prevented by browser policy. Waiting for user interaction.");
+      });
     } else {
       audio.pause();
       setIsPlaying(false);
@@ -39,19 +47,27 @@ export function MusicPlayer() {
 
     window.addEventListener('music-settings-changed', updateMusicState);
 
-    // Intentar reanudar la reproducción en la interacción del usuario
+    // This effect tries to resume playback upon user interaction.
     const resumePlayback = () => {
-      if (audioRef.current && audioRef.current.paused && isPlaying) {
-        audioRef.current.play().catch(e => {});
+      const settings = JSON.parse(localStorage.getItem('musicSettings') || '{}');
+      if (audioRef.current && audioRef.current.paused && settings.enabled && settings.track !== 'none') {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch(e => {
+            // Still couldn't play, maybe another reason.
+        });
       }
     };
-    document.addEventListener('click', resumePlayback);
+    
+    document.addEventListener('click', resumePlayback, { once: true });
+    document.addEventListener('keydown', resumePlayback, { once: true });
 
     return () => {
       window.removeEventListener('music-settings-changed', updateMusicState);
       document.removeEventListener('click', resumePlayback);
+      document.removeEventListener('keydown', resumePlayback);
     };
-  }, [updateMusicState, isPlaying]);
+  }, [updateMusicState]);
 
   return <audio ref={audioRef} />;
 }
