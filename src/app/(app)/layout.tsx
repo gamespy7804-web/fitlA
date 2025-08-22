@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -24,11 +23,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const audioInitialized = useRef(false);
 
   useEffect(() => {
-    const hasInteracted = sessionStorage.getItem('userInteracted');
-    if (!hasInteracted) {
-      setShowWelcome(true);
-    } else {
-      handleFirstInteraction();
+    // This check should only happen on the client
+    if (typeof window !== 'undefined') {
+      const hasInteracted = sessionStorage.getItem('userInteracted');
+      if (!hasInteracted) {
+        setShowWelcome(true);
+      } else {
+        handleFirstInteraction();
+      }
     }
   }, []);
 
