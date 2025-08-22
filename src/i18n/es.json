@@ -305,7 +305,7 @@
       "aiThinking": "La IA está pensando...",
       "questions": {
         "sport": { 
-          "label": "Deporte Principal", 
+          "label": "¿Cuál es tu deporte o actividad principal?", 
           "placeholder": "ej., Fútbol, Crossfit",
           "options": {
             "weightlifting": "Halterofilia",
@@ -315,9 +315,9 @@
             "other": "Otro"
           }
         },
-        "goals": { "label": "Tus Metas", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
+        "goals": { "label": "¿Cuáles son tus metas principales?", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
         "fitnessLevel": { 
-          "label": "Nivel de Condición Física",
+          "label": "¿Cuál es tu nivel de condición física actual?",
           "options": {
             "beginner": "Principiante",
             "intermediate": "Intermedio",
@@ -334,9 +334,10 @@
             "other": "Otro"
           }
         },
-        "trainingDays": { "label": "Días de entrenamiento por semana" },
-        "trainingDuration": { "label": "Tiempo por sesión (minutos)" },
-        "clarification": { "label": "Tu Respuesta", "placeholder": "ej., Puedo hacer 10 flexiones..." }
+        "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?" },
+        "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?" },
+        "clarification": { "label": "Tu Respuesta", "placeholder": "ej., Puedo hacer 10 flexiones..." },
+        "optionalDetails": "Detalles Opcionales"
       },
       "buttons": {
         "back": "Atrás",
@@ -362,8 +363,9 @@
         "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
         "age": { "min": "Debes tener al menos 10 años", "max": "Debes tener 100 años o menos" },
         "weight": { "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
-        "trainingDays": { "min": "Al menos 1 día", "max": "Máximo 7 días" },
-        "trainingDuration": { "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" }
+        "trainingDays": { "required": "Los días son requeridos", "min": "Al menos 1 día", "max": "Máximo 7 días" },
+        "trainingDuration": { "required": "La duración es requerida", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" },
+        "clarification": { "min": "Por favor, responde la pregunta para continuar." }
       }
     },
     "workoutPage": {

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -33,12 +33,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
-import { cn } from '@/lib/utils';
-
-const emptyStringToUndefined = z.literal('').transform(() => undefined);
 
 const createOnboardingSchema = (t: (key: string, ...args: any[]) => string) => z.object({
   sport: z.string().min(3, t('onboarding.validation.sport.min')),
@@ -52,50 +49,25 @@ const createOnboardingSchema = (t: (key: string, ...args: any[]) => string) => z
     (val) => (val === '' ? undefined : val),
     z.coerce.number().min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')).optional()
   ),
-  gender: z.enum(['male', 'female', 'other']),
-  trainingDays: z.coerce.number().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
-  trainingDuration: z.coerce.number().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
-  clarificationAnswers: z.string().optional(),
+  gender: z.enum(['male', 'female', 'other']).optional(),
+  trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+  trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
+  clarificationAnswers: z.string().min(1, t('onboarding.validation.clarification.min')),
 });
 
 type OnboardingData = z.infer<ReturnType<typeof createOnboardingSchema>>;
 
+type StepId = 'sport' | 'goals' | 'fitnessLevel' | 'clarification' | 'details';
+
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentStep, setCurrentStep] = useState<StepId>('sport');
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [direction, setDirection] = useState(1);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-
-  useEffect(() => {
-    // This effect runs on the client after hydration
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (onboardingComplete === 'true') {
-      router.replace('/dashboard');
-    }
-  }, [router]);
-
-  const questions = [
-    { id: 'sport', label: t('onboarding.questions.sport.label'), placeholder: t('onboarding.questions.sport.placeholder'), type: 'sport' },
-    { id: 'goals', label: t('onboarding.questions.goals.label'), placeholder: t('onboarding.questions.goals.placeholder'), type: 'text' },
-    { id: 'fitnessLevel', label: t('onboarding.questions.fitnessLevel.label'), options: { beginner: t('onboarding.questions.fitnessLevel.options.beginner'), intermediate: t('onboarding.questions.fitnessLevel.options.intermediate'), advanced: t('onboarding.questions.fitnessLevel.options.advanced') }, type: 'select' },
-    { id: 'age', label: t('onboarding.questions.age.label'), placeholder: '25', type: 'number' },
-    { id: 'weight', label: t('onboarding.questions.weight.label'), placeholder: '70', type: 'number' },
-    { id: 'gender', label: t('onboarding.questions.gender.label'), options: { male: t('onboarding.questions.gender.options.male'), female: t('onboarding.questions.gender.options.female'), other: t('onboarding.questions.gender.options.other') }, type: 'select' },
-    { id: 'trainingDays', label: t('onboarding.questions.trainingDays.label'), placeholder: '4', type: 'number' },
-    { id: 'trainingDuration', label: t('onboarding.questions.trainingDuration.label'), placeholder: '60', type: 'number' },
-    { id: 'clarificationAnswers', label: '', placeholder: t('onboarding.questions.clarification.placeholder'), type: 'text' },
-  ] as const;
-  
-  const popularSports = [
-      { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },
-      { id: 'calisthenics', name: t('onboarding.questions.sport.options.calisthenics') },
-      { id: 'running', name: t('onboarding.questions.sport.options.running') },
-      { id: 'yoga', name: t('onboarding.questions.sport.options.yoga') },
-  ];
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(createOnboardingSchema(t)),
@@ -106,88 +78,90 @@ export default function OnboardingPage() {
       age: undefined,
       weight: undefined,
       gender: 'male',
-      trainingDays: 3,
-      trainingDuration: 60,
       clarificationAnswers: '',
     },
     mode: 'onChange'
   });
   
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    if (onboardingComplete === 'true') {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
   const sportValue = form.watch('sport');
 
-  const currentQuestionId = questions[currentQuestionIndex].id;
+  const popularSports = [
+      { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },
+      { id: 'calisthenics', name: t('onboarding.questions.sport.options.calisthenics') },
+      { id: 'running', name: t('onboarding.questions.sport.options.running') },
+      { id: 'yoga', name: t('onboarding.questions.sport.options.yoga') },
+  ];
 
   const handleNext = async () => {
-    const isValid = await form.trigger(currentQuestionId as keyof OnboardingData);
-    if (!isValid) return;
-
     setDirection(1);
     
-    const apiValues = { ...form.getValues(), language: locale };
-
-    // After fitnessLevel, call API to get clarification question
-    if (currentQuestionId === 'fitnessLevel') {
-      setIsLoading(true);
-      try {
-        const { sport, goals, fitnessLevel } = apiValues;
-        const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
-        if (result.clarificationQuestion) {
-          setClarificationQuestion(result.clarificationQuestion);
-           setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
-        } else {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
+    switch (currentStep) {
+      case 'sport':
+        if (await form.trigger('sport')) setCurrentStep('goals');
+        break;
+      case 'goals':
+        if (await form.trigger('goals')) setCurrentStep('fitnessLevel');
+        break;
+      case 'fitnessLevel':
+        if (await form.trigger('fitnessLevel')) {
+          setIsLoading(true);
+          try {
+            const { sport, goals, fitnessLevel } = form.getValues();
+            const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
+            if (result.clarificationQuestion) {
+              setClarificationQuestion(result.clarificationQuestion);
+              setCurrentStep('clarification');
+            } else {
+              toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
+            }
+          } catch (error) {
+            console.error(error);
+            toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
+          } finally {
+            setIsLoading(false);
+          }
         }
-      } catch (error) {
-        console.error(error);
-        toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } finally {
-        setIsLoading(false);
-      }
-      return; 
-    }
-    
-    if (currentQuestionId === 'trainingDuration') {
-       if (clarificationQuestion) {
-         setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
-       } else {
-         handleSubmitForm(apiValues);
-       }
-       return;
-    }
-
-
-    if (currentQuestionId === 'clarificationAnswers') {
-      handleSubmitForm(apiValues);
-      return;
-    }
-    
-    if (currentQuestionIndex < questions.length - 1) {
-       if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
-         handleSubmitForm(apiValues);
-       } else {
-         setCurrentQuestionIndex(currentQuestionIndex + 1);
-       }
+        break;
+      case 'clarification':
+        if(await form.trigger('clarificationAnswers')) setCurrentStep('details');
+        break;
+      case 'details':
+        if (await form.trigger(['trainingDays', 'trainingDuration', 'age', 'weight', 'gender'])) {
+          handleSubmitForm();
+        }
+        break;
     }
   };
 
   const handleBack = () => {
     setDirection(-1);
-    if (currentQuestionIndex > 0) {
-      if (currentQuestionId === 'clarificationAnswers') {
-        setCurrentQuestionIndex(questions.findIndex(q => q.id === 'trainingDuration'))
-      } else if (currentQuestionId === 'age' && clarificationQuestion) {
-        setCurrentQuestionIndex(questions.findIndex(q => q.id === 'fitnessLevel'))
-      }
-      else {
-        setCurrentQuestionIndex(currentQuestionIndex - 1);
-      }
+    switch (currentStep) {
+      case 'details':
+        setCurrentStep('clarification');
+        break;
+      case 'clarification':
+        setCurrentStep('fitnessLevel');
+        break;
+      case 'fitnessLevel':
+        setCurrentStep('goals');
+        break;
+      case 'goals':
+        setCurrentStep('sport');
+        break;
     }
   };
 
-  const handleSubmitForm = async (values: OnboardingData) => {
+  const handleSubmitForm = async () => {
     setIsLoading(true);
     try {
+      const values = form.getValues();
       const result = await generateWorkoutRoutine({...values, language: locale});
       localStorage.setItem('workoutRoutine', JSON.stringify(result));
       localStorage.setItem('onboardingComplete', 'true');
@@ -208,87 +182,27 @@ export default function OnboardingPage() {
   }
 
   const handleOtherSportClick = () => {
-    form.setValue('sport', '', { shouldValidate: false }); // Clear value if user wants to type
+    form.setValue('sport', '', { shouldValidate: true });
     setShowOtherSportInput(true);
   }
-
-  const renderInput = (field: any) => {
-    const question = questions[currentQuestionIndex];
-    
-    if (question.type === 'sport') {
-      return (
-          <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                  {popularSports.map(sport => (
-                      <Button key={sport.id} type="button" variant={sportValue === sport.name ? 'default' : 'outline'} onClick={() => handleSportSelect(sport.name)}>
-                          {sport.name}
-                      </Button>
-                  ))}
-                  <Button type="button" variant={showOtherSportInput ? 'default' : 'outline'} onClick={handleOtherSportClick}>
-                      {t('onboarding.questions.sport.options.other')}
-                  </Button>
-              </div>
-              {showOtherSportInput && (
-                  <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
-                    <Input type="text" placeholder={question.placeholder} {...field} value={field.value ?? ''} />
-                  </motion.div>
-              )}
-          </div>
-      );
-    }
-
-    if (question.type === 'select') {
-      const options = question.options;
-
-      return (
-        <Select onValueChange={field.onChange} defaultValue={field.value}>
-          <FormControl>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            {Object.entries(options).map(([value, label]) => (
-              <SelectItem key={value} value={value} className="capitalize">{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
-    }
-    return <Input type={question.type} placeholder={question.placeholder} {...field} value={field.value ?? ''} />;
-  };
+  
+  const steps: {id: StepId, isCompleted: boolean}[] = [
+      { id: 'sport', isCompleted: form.formState.dirtyFields.sport || false },
+      { id: 'goals', isCompleted: form.formState.dirtyFields.goals || false },
+      { id: 'fitnessLevel', isCompleted: form.formState.dirtyFields.fitnessLevel || false },
+      { id: 'clarification', isCompleted: form.formState.dirtyFields.clarificationAnswers || false },
+      { id: 'details', isCompleted: form.formState.dirtyFields.trainingDays && form.formState.dirtyFields.trainingDuration || false },
+  ];
+  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
   const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 30 : -30,
-      opacity: 0,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 30 : -30,
-      opacity: 0,
-    }),
+    enter: (direction: number) => ({ x: direction > 0 ? '100%' : '-100%', opacity: 0 }),
+    center: { x: '0%', opacity: 1 },
+    exit: (direction: number) => ({ x: direction < 0 ? '100%' : '-100%', opacity: 0 }),
   };
-  
-  const isClarificationStep = currentQuestionId === 'clarificationAnswers';
-
-  const finalSteps = ['age', 'weight', 'gender', 'trainingDays', 'trainingDuration'];
-  const totalSteps = 3 + (clarificationQuestion ? 1 : 0) + finalSteps.length;
-  let completedSteps = 0;
-  if(isClarificationStep) {
-    completedSteps = 3;
-  } else if (currentQuestionIndex > 2) {
-    completedSteps = 3 + (clarificationQuestion ? 1 : 0) + (questions.findIndex(q => q.id === currentQuestionId) - questions.findIndex(q => q.id === 'age') +1)
-  } else {
-    completedSteps = currentQuestionIndex;
-  }
-
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center">
+    <div className="container mx-auto flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-center">{t('onboarding.title')}</CardTitle>
@@ -296,79 +210,181 @@ export default function OnboardingPage() {
             {t('onboarding.description')}
           </CardDescription>
           <div className="flex justify-center gap-2 pt-4">
-             {Array.from({ length: totalSteps }).map((_, index) => (
-                <div key={index} className={`h-2 rounded-full transition-all duration-300 ${index < completedSteps ? 'bg-primary w-6' : index === completedSteps ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
+             {steps.map((step, index) => (
+                <div key={step.id} className={`h-2 rounded-full transition-all duration-300 ${index < currentStepIndex ? 'bg-primary w-6' : index === currentStepIndex ? 'bg-primary/50 w-6' : 'bg-muted w-2' }`} />
             ))}
           </div>
         </CardHeader>
-        <CardContent className="overflow-hidden relative h-64">
-           <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={currentQuestionIndex}
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 }
-                }}
-                className="absolute w-full px-6"
-              >
-                  <Form {...form}>
-                    <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
-                      {isClarificationStep ? (
-                         <div>
-                           <div className="mt-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
-                              <Bot className="text-primary size-8 shrink-0 mt-1" />
-                              <p className="text-secondary-foreground">{clarificationQuestion || t('onboarding.aiThinking')}</p>
-                           </div>
-                           <FormField
-                              control={form.control}
-                              name="clarificationAnswers"
-                              render={({ field }) => (
-                                <FormItem className="mt-4">
-                                  <FormLabel>{t('onboarding.questions.clarification.label')}</FormLabel>
-                                  <FormControl>{renderInput(field)}</FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+        <CardContent className="overflow-hidden relative h-80">
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute w-full px-6"
+            >
+              <Form {...form}>
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-4">
+                  {currentStep === 'sport' && (
+                    <FormField
+                      control={form.control}
+                      name="sport"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">{t('onboarding.questions.sport.label')}</FormLabel>
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    {popularSports.map(sport => (
+                                        <Button key={sport.id} type="button" variant={sportValue === sport.name ? 'default' : 'outline'} onClick={() => handleSportSelect(sport.name)}>
+                                            {sport.name}
+                                        </Button>
+                                    ))}
+                                    <Button type="button" variant={showOtherSportInput ? 'default' : 'outline'} onClick={handleOtherSportClick}>
+                                        {t('onboarding.questions.sport.options.other')}
+                                    </Button>
+                                </div>
+                                {(showOtherSportInput || (!popularSports.some(p => p.name === sportValue) && sportValue)) && (
+                                    <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
+                                      <Input type="text" placeholder={t('onboarding.questions.sport.placeholder')} {...field} value={field.value ?? ''} />
+                                    </motion.div>
+                                )}
+                            </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {currentStep === 'goals' && (
+                     <FormField
+                      control={form.control}
+                      name="goals"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">{t('onboarding.questions.goals.label')}</FormLabel>
+                          <FormControl><Input placeholder={t('onboarding.questions.goals.placeholder')} {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {currentStep === 'fitnessLevel' && (
+                    <FormField
+                      control={form.control}
+                      name="fitnessLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</SelectItem>
+                              <SelectItem value="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</SelectItem>
+                              <SelectItem value="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  
+                  {currentStep === 'clarification' && (
+                      <div>
+                        <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
+                          <Bot className="text-primary size-8 shrink-0 mt-1" />
+                          <p className="text-secondary-foreground">{clarificationQuestion || t('onboarding.aiThinking')}</p>
                         </div>
-                      ) : (
                         <FormField
                           control={form.control}
-                          name={currentQuestionId as keyof OnboardingData}
+                          name="clarificationAnswers"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-lg">{questions[currentQuestionIndex].label}</FormLabel>
-                              <FormControl>{renderInput(field)}</FormControl>
+                              <FormLabel className="text-lg">{t('onboarding.questions.clarification.label')}</FormLabel>
+                              <FormControl><Input placeholder={t('onboarding.questions.clarification.placeholder')} {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      )}
-                      
-                      <div className="flex justify-between items-center pt-4">
-                          <Button type="button" variant="ghost" onClick={handleBack} disabled={currentQuestionIndex === 0 || isLoading}>
-                            <ChevronLeft /> {t('onboarding.buttons.back')}
-                          </Button>
-                          
-                          {(isClarificationStep || (currentQuestionId === 'trainingDuration' && !clarificationQuestion)) ? (
-                             <Button type="submit" disabled={isLoading}>
-                               {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> {t('onboarding.buttons.generate')}</>}
-                             </Button>
-                          ) : (
-                            <Button type="submit" disabled={isLoading}>
-                              {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next') }
-                              <ChevronRight />
-                           </Button>
-                          )}
                       </div>
-                    </form>
-                  </Form>
-              </motion.div>
+                  )}
+
+                  {currentStep === 'details' && (
+                    <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="trainingDays"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
+                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="trainingDuration"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
+                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <p className="text-xs text-muted-foreground pt-2">{t('onboarding.questions.optionalDetails')}</p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="age"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
+                                <FormControl><Input type="number" placeholder="25" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="weight"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
+                                <FormControl><Input type="number" placeholder="70" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center pt-4">
+                    <Button type="button" variant="ghost" onClick={handleBack} disabled={currentStep === 'sport' || isLoading}>
+                      <ChevronLeft /> {t('onboarding.buttons.back')}
+                    </Button>
+                    
+                    {currentStep === 'details' ? (
+                       <Button type="submit" disabled={isLoading}>
+                         {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> {t('onboarding.buttons.generate')}</>}
+                       </Button>
+                    ) : (
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next') }
+                        <ChevronRight />
+                     </Button>
+                    )}
+                  </div>
+                </form>
+              </Form>
+            </motion.div>
           </AnimatePresence>
         </CardContent>
       </Card>
