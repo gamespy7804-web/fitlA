@@ -77,8 +77,8 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: undefined,
-      trainingDays: 3,
-      trainingDuration: 60,
+      trainingDays: undefined,
+      trainingDuration: undefined,
     }
   });
   const { watch, setValue, trigger } = form;
@@ -301,7 +301,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder="ej. 3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -312,7 +312,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder="ej. 60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -370,3 +370,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
