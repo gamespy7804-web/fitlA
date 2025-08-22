@@ -331,45 +331,47 @@ export default function OnboardingPage() {
                   exit={{ opacity: 0, x: 50 }}
                   className="space-y-6"
                 >
-                  {isLoading && assessmentQuestions.length === 0 ? (
-                      <div className="flex justify-center items-center h-48">
-                        <Loader2 className="animate-spin text-primary size-10" />
-                      </div>
-                  ) : (
-                      <>
-                          <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
-                            <Bot className="text-primary size-10 shrink-0 mt-1" />
-                            <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
-                          </div>
-                          <div className='space-y-6'>
-                              {assessmentQuestions.map((q, index) => (
-                                  <div key={index}>
-                                      <Label className="font-semibold">{q.question}</Label>
-                                      <RadioGroup 
-                                          className="mt-2"
-                                          onValueChange={(value) => setAssessmentAnswers(prev => ({...prev, [q.question]: value}))}
-                                          value={assessmentAnswers[q.question]}
-                                      >
-                                          {q.options.map(opt => (
-                                              <div key={opt} className="flex items-center space-x-2">
-                                                  <RadioGroupItem value={opt} id={`${index}-${opt}`} />
-                                                  <Label htmlFor={`${index}-${opt}`}>{opt}</Label>
-                                              </div>
-                                          ))}
-                                      </RadioGroup>
-                                  </div>
-                              ))}
-                          </div>
-                          <div className="pt-4 flex items-center gap-4">
-                              <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={isLoading}>
-                                  <ChevronLeft /> {t('onboarding.buttons.back')}
-                              </Button>
-                              <Button onClick={handleAssessmentSubmit} disabled={isLoading} className="w-full" size="lg">
-                                  {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
-                              </Button>
-                          </div>
-                      </>
-                  )}
+                    <form onSubmit={(e) => { e.preventDefault(); handleAssessmentSubmit(); }}>
+                        {isLoading && assessmentQuestions.length === 0 ? (
+                            <div className="flex justify-center items-center h-48">
+                                <Loader2 className="animate-spin text-primary size-10" />
+                            </div>
+                        ) : (
+                            <>
+                                <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
+                                    <Bot className="text-primary size-10 shrink-0 mt-1" />
+                                    <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
+                                </div>
+                                <div className='space-y-6'>
+                                    {assessmentQuestions.map((q, index) => (
+                                        <div key={index}>
+                                            <Label className="font-semibold">{q.question}</Label>
+                                            <RadioGroup
+                                                className="mt-2"
+                                                onValueChange={(value) => setAssessmentAnswers(prev => ({ ...prev, [q.question]: value }))}
+                                                value={assessmentAnswers[q.question]}
+                                            >
+                                                {q.options.map(opt => (
+                                                    <div key={opt} className="flex items-center space-x-2">
+                                                        <RadioGroupItem value={opt} id={`${index}-${opt}`} />
+                                                        <Label htmlFor={`${index}-${opt}`}>{opt}</Label>
+                                                    </div>
+                                                ))}
+                                            </RadioGroup>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="pt-4 flex items-center gap-4">
+                                    <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={isLoading}>
+                                        <ChevronLeft /> {t('onboarding.buttons.back')}
+                                    </Button>
+                                    <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                                        {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </form>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -379,3 +381,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
