@@ -62,7 +62,7 @@ Review all the user's provided information.
 - Example for "Calisthenics": \`[{"question": "How many consecutive PULL-UPS can you do?", "options": ["0", "1-5", "6-10", "More than 10"]}, {"question": "How many consecutive DIPS can you do?", "options": ["0-5", "6-15", "16-25", "More than 25"]}, ...]\`
 - If you generate questions, DO NOT generate a routine. The 'routine' and 'structuredRoutine' fields must be empty.
 
-- **IF the 'fitnessAssessment' field contains answers to your previously generated questions**, you have enough information. Generate a full, detailed routine.
+- **IF the 'fitnessAssessment' field contains answers to your previously generated questions, you have enough information. Generate a full, detailed routine.**
 - The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'.
 - For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts, Olympic Lifts).
 - For EACH exercise, set 'requiresWeight' to true for weightlifting exercises and false for bodyweight ones.
@@ -84,5 +84,6 @@ const workoutRoutineFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
 
