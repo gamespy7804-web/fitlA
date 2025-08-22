@@ -54,7 +54,7 @@ Review all the user's provided information.
 **Step 2: Decide Action - Ask or Generate**
 
 - **IF the 'fitnessAssessment' field is empty or contains fewer than 5 questions, your PRIMARY action is to generate a new set of diagnostic questions.** Do NOT generate a routine.
-- You MUST generate a set of at least 5 multiple-choice questions.
+- You MUST generate a set of exactly 5 multiple-choice questions.
 - These questions must be designed to evaluate different skills and abilities relevant to the user's SPECIFIC SPORT AND GOALS.
   - For example, if the sport is "Calisthenics" and goals are "learn planche", you must ask about pushing strength (dips), pulling strength (pull-ups), core strength, and a specific question about their current planche progression (e.g., "How long can you hold a tuck planche?").
   - For "Running" with a goal of "run a 10k", ask about their best 5k time, weekly mileage, and leg strength (e.g., "How many squats can you do?").
@@ -84,6 +84,7 @@ const workoutRoutineFlow = ai.defineFlow(
     return output!;
   }
 );
+
 
 
 
