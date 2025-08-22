@@ -438,7 +438,7 @@
         }
       }
     },
-     "onboardingTour": {
+    "onboardingTour": {
       "next": "Siguiente",
       "prev": "Anterior",
       "done": "Terminar",
@@ -489,4 +489,5 @@
     }
   }
 }
-`
+
+    
