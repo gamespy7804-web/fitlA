@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Bot, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
+import { cn } from '@/lib/utils';
 
 const emptyStringToUndefined = z.literal('').transform(() => undefined);
 
@@ -65,6 +66,7 @@ export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [direction, setDirection] = useState(1);
+  const [showOtherSportInput, setShowOtherSportInput] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -77,7 +79,7 @@ export default function OnboardingPage() {
   }, [router]);
 
   const questions = [
-    { id: 'sport', label: t('onboarding.questions.sport.label'), placeholder: t('onboarding.questions.sport.placeholder'), type: 'text' },
+    { id: 'sport', label: t('onboarding.questions.sport.label'), placeholder: t('onboarding.questions.sport.placeholder'), type: 'sport' },
     { id: 'goals', label: t('onboarding.questions.goals.label'), placeholder: t('onboarding.questions.goals.placeholder'), type: 'text' },
     { id: 'fitnessLevel', label: t('onboarding.questions.fitnessLevel.label'), options: { beginner: t('onboarding.questions.fitnessLevel.options.beginner'), intermediate: t('onboarding.questions.fitnessLevel.options.intermediate'), advanced: t('onboarding.questions.fitnessLevel.options.advanced') }, type: 'select' },
     { id: 'age', label: t('onboarding.questions.age.label'), placeholder: '25', type: 'number' },
@@ -87,6 +89,13 @@ export default function OnboardingPage() {
     { id: 'trainingDuration', label: t('onboarding.questions.trainingDuration.label'), placeholder: '60', type: 'number' },
     { id: 'clarificationAnswers', label: '', placeholder: t('onboarding.questions.clarification.placeholder'), type: 'text' },
   ] as const;
+  
+  const popularSports = [
+      { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },
+      { id: 'calisthenics', name: t('onboarding.questions.sport.options.calisthenics') },
+      { id: 'running', name: t('onboarding.questions.sport.options.running') },
+      { id: 'yoga', name: t('onboarding.questions.sport.options.yoga') },
+  ];
 
   const form = useForm<OnboardingData>({
     resolver: zodResolver(createOnboardingSchema(t)),
@@ -103,6 +112,8 @@ export default function OnboardingPage() {
     },
     mode: 'onChange'
   });
+  
+  const sportValue = form.watch('sport');
 
   const currentQuestionId = questions[currentQuestionIndex].id;
 
@@ -190,9 +201,42 @@ export default function OnboardingPage() {
       setIsLoading(false);
     }
   };
+  
+  const handleSportSelect = (sportName: string) => {
+    form.setValue('sport', sportName, { shouldValidate: true });
+    setShowOtherSportInput(false);
+  }
+
+  const handleOtherSportClick = () => {
+    form.setValue('sport', '', { shouldValidate: false }); // Clear value if user wants to type
+    setShowOtherSportInput(true);
+  }
 
   const renderInput = (field: any) => {
     const question = questions[currentQuestionIndex];
+    
+    if (question.type === 'sport') {
+      return (
+          <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                  {popularSports.map(sport => (
+                      <Button key={sport.id} type="button" variant={sportValue === sport.name ? 'default' : 'outline'} onClick={() => handleSportSelect(sport.name)}>
+                          {sport.name}
+                      </Button>
+                  ))}
+                  <Button type="button" variant={showOtherSportInput ? 'default' : 'outline'} onClick={handleOtherSportClick}>
+                      {t('onboarding.questions.sport.options.other')}
+                  </Button>
+              </div>
+              {showOtherSportInput && (
+                  <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} transition={{duration: 0.3}}>
+                    <Input type="text" placeholder={question.placeholder} {...field} value={field.value ?? ''} />
+                  </motion.div>
+              )}
+          </div>
+      );
+    }
+
     if (question.type === 'select') {
       const options = question.options;
 

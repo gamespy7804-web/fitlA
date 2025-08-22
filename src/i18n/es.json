@@ -304,7 +304,17 @@
       "description": "Vamos a personalizar tu viaje de fitness.",
       "aiThinking": "La IA está pensando...",
       "questions": {
-        "sport": { "label": "Deporte Principal", "placeholder": "ej., Fútbol, Halterofilia" },
+        "sport": { 
+          "label": "Deporte Principal", 
+          "placeholder": "ej., Fútbol, Crossfit",
+          "options": {
+            "weightlifting": "Halterofilia",
+            "calisthenics": "Calistenia",
+            "running": "Running",
+            "yoga": "Yoga",
+            "other": "Otro"
+          }
+        },
         "goals": { "label": "Tus Metas", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
         "fitnessLevel": { 
           "label": "Nivel de Condición Física",
