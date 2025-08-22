@@ -60,6 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('quizHistory');
       localStorage.removeItem('triviaHistory');
       localStorage.removeItem('musicEnabled');
+      localStorage.removeItem('musicVolume');
+      localStorage.removeItem('sfxVolume');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);
