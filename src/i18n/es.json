@@ -293,15 +293,15 @@
           "description": "Finaliza tu sesión actual en este dispositivo.",
           "button": "Cerrar sesión"
         },
-        "delete": {
-          "title": "Eliminar Cuenta",
-          "description": "Esta acción es permanente y no se puede deshacer.",
-          "button": "Eliminar mi cuenta",
+        "reset": {
+          "title": "Restablecer Datos",
+          "description": "Borra todo tu progreso y empieza de nuevo.",
+          "button": "Restablecer datos",
           "confirm": {
             "title": "¿Estás seguro?",
-            "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y todos tus datos de nuestros servidores.",
+            "description": "Esta acción borrará todo tu progreso (rutinas, registros, etc.) y no se puede deshacer. Tu cuenta no será eliminada.",
             "cancel": "Cancelar",
-            "action": "Sí, eliminar cuenta"
+            "action": "Sí, restablecer datos"
           }
         }
       }

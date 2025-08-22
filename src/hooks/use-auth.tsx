@@ -8,8 +8,6 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   User,
-  reauthenticateWithPopup,
-  deleteUser,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -20,7 +18,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  resetAccountData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -83,48 +81,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const deleteAccount = async () => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-        toast({
+  const resetAccountData = async () => {
+    if (!auth.currentUser) {
+       toast({
             variant: "destructive",
             title: "Error",
             description: "No user is currently signed in.",
         });
         return;
     }
-
-    const provider = new GoogleAuthProvider();
-    try {
-      await reauthenticateWithPopup(currentUser, provider);
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Re-authentication Failed",
-            description: "We couldn't confirm your identity. Please try again.",
-        });
-        console.error("Re-authentication error:", error);
-        return;
-    }
-
-    try {
-        await deleteUser(currentUser);
-        toast({
-            title: "Account Deleted",
-            description: "Your account has been permanently deleted.",
-        });
-        cleanUpUserSession();
-    } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Deletion Failed",
-            description: "An error occurred while deleting your account. Please try again.",
-        });
-        console.error("Account deletion error:", error);
-    }
+    await signOut();
+    toast({
+        title: "Account Data Reset",
+        description: "All your progress has been reset. You can now start over.",
+    });
   }
   
-  const value = { user, loading, signInWithGoogle, signOut, deleteAccount };
+  const value = { user, loading, signInWithGoogle, signOut, resetAccountData };
   
   return (
     <AuthContext.Provider value={value}>
