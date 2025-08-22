@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   type WorkoutRoutineOutput,
@@ -38,11 +38,25 @@ function WorkoutPageContent() {
   const searchParams = useSearchParams();
   const playSound = useAudioEffects();
   
+  const dayParam = searchParams.get('day');
+
+  const initializeWorkoutLog = useCallback((dayData: DaySchema) => {
+    const newLog = dayData.exercises.map((exercise) => ({
+      name: exercise.name,
+      originalExercise: exercise,
+      sets: Array.from({ length: parseInt(exercise.sets, 10) || 1 }, () => ({
+        weight: 0,
+        reps: 0,
+        completed: false,
+      })),
+    }));
+    setExerciseLog(newLog);
+  }, []);
+
   useEffect(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
-    const dayParam = searchParams.get('day');
     
-    if (storedRoutine && dayParam) {
+    if (storedRoutine && dayParam !== null) {
       try {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
         const dayIndex = parseInt(dayParam, 10);
@@ -64,21 +78,7 @@ function WorkoutPageContent() {
     } else {
       router.push('/dashboard');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.get('day')]);
-
-  const initializeWorkoutLog = (dayData: DaySchema) => {
-    const newLog = dayData.exercises.map((exercise) => ({
-      name: exercise.name,
-      originalExercise: exercise,
-      sets: Array.from({ length: parseInt(exercise.sets, 10) || 1 }, () => ({
-        weight: 0,
-        reps: 0,
-        completed: false,
-      })),
-    }));
-    setExerciseLog(newLog);
-  };
+  }, [dayParam, initializeWorkoutLog, router, t, toast]);
 
   const updateSetLog = (exIndex: number, setIndex: number, newSet: SetLog) => {
     const newLog = [...exerciseLog];
@@ -120,7 +120,6 @@ function WorkoutPageContent() {
 
   const handleStopwatchDone = (time: number) => {
     playSound('click');
-    // Update the reps for the current set with the stopwatch time
     const newLog = [...exerciseLog];
     newLog[currentExerciseIndex].sets[currentSetIndex].reps = time;
     setExerciseLog(newLog);
@@ -141,7 +140,6 @@ function WorkoutPageContent() {
       });
     });
 
-    // Save summary for chart
     const completedWorkoutSummary = {
       date: new Date().toISOString(),
       workout: day.title,
@@ -153,7 +151,6 @@ function WorkoutPageContent() {
     allCompletedSummaries.push(completedWorkoutSummary);
     localStorage.setItem('completedWorkouts', JSON.stringify(allCompletedSummaries));
 
-    // Save detailed log for adaptive progression
     const detailedWorkoutLog = {
       date: new Date().toISOString(),
       title: day.title,
