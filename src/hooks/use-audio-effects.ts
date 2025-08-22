@@ -55,7 +55,7 @@ const loadMusicBuffer = async (type: MusicType): Promise<AudioBuffer | null> => 
         return null;
     }
 
-    const musicFile = type === 'main' ? '/sounds/music-1.mp3' : '/sounds/music-2.mp3';
+    const musicFile = type === 'main' ? '/sounds/music-2.mp3' : '/sounds/music-1.mp3';
 
     try {
         const response = await fetch(musicFile);
