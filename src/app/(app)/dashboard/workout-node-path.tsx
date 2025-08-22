@@ -109,7 +109,7 @@ export function WorkoutNodePath() {
             <div
               key={day.day}
               className={cn(
-                'relative z-10 w-48 h-48 flex items-center justify-center workout-node',
+                'relative z-10 w-40 h-40 flex items-center justify-center workout-node',
                 index % 2 !== 0 ? 'self-start' : 'self-end'
               )}
             >
@@ -119,19 +119,19 @@ export function WorkoutNodePath() {
                     onClick={() => !isLocked && handleNodeClick(index)}
                     disabled={isLocked}
                     className={cn(
-                      'relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
+                      'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
                       // Base styles for active nodes
-                      'bg-card border-2 shadow-lg',
+                      'bg-card shadow-lg',
                       // Completed State
-                      isCompleted && 'bg-gradient-to-br from-green-400 to-green-600 border-green-700 text-white shadow-green-500/30',
+                      isCompleted && 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-green-500/30',
                       // Active State
-                      isActive && 'border-primary animate-pulse ring-4 ring-primary/50 shadow-primary/40',
+                      isActive && 'animate-pulse ring-4 ring-primary/50 shadow-primary/40',
                       // Locked State
-                      isLocked ? 'bg-muted/50 border-dashed border-muted-foreground/30 cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
+                      isLocked ? 'bg-muted/50 cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
                     )}
                   >
-                    {isCompleted && <Check className="w-16 h-16 stroke-3" />}
-                    {isLocked && <Lock className="w-12 h-12 text-muted-foreground/50" />}
+                    {isCompleted && <Check className="w-14 h-14 stroke-3" />}
+                    {isLocked && <Lock className="w-10 h-10 text-muted-foreground/50" />}
                     {!isCompleted && !isLocked && (
                         <span className="text-5xl font-bold text-primary font-headline">{day.day}</span>
                     )}
@@ -148,7 +148,7 @@ export function WorkoutNodePath() {
         })}
 
         <div className={cn(
-            'relative z-10 w-48 h-48 flex items-center justify-center',
+            'relative z-10 w-40 h-40 flex items-center justify-center',
              routine.length % 2 !== 0 ? 'self-start' : 'self-end'
         )}>
             <AdaptiveProgressionDialog className="w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
