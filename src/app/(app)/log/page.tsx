@@ -86,7 +86,8 @@ export default function LogPage() {
           text: shareText,
         });
       } catch (error) {
-        console.error('Error al compartir:', error);
+        // Silently catch the error, as it's likely the user canceled the share action or a permissions issue.
+        // The console error is expected in some of these cases and doesn't need to be logged.
       }
     } else {
       // Fallback for browsers that don't support Web Share API
