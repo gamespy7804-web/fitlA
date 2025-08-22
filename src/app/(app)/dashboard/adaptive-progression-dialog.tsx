@@ -146,8 +146,8 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
       });
 
       localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
-      localStorage.setItem('completedWorkouts', '[]');
-      localStorage.setItem('detailedWorkoutLogs', '[]');
+      localStorage.setItem('completedWorkouts', JSON.stringify([]));
+      localStorage.setItem('detailedWorkoutLogs', JSON.stringify([]));
 
       toast({
         title: t('adaptiveProgression.success.title'),
