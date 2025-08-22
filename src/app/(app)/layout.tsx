@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { WorkoutGeneratorDialog } from './dashboard/workout-generator-dialog';
@@ -19,6 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [themeClass, setThemeClass] = useState('theme-default');
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isReadyForTour, setIsReadyForTour] = useState(false);
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
   const audioInitialized = useRef(false);
@@ -27,15 +28,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     // This check should only happen on the client
     if (typeof window !== 'undefined') {
       const hasInteracted = sessionStorage.getItem('userInteracted');
-      if (!hasInteracted) {
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (!hasInteracted && onboardingComplete) {
         setShowWelcome(true);
+      } else if (!hasInteracted && !onboardingComplete) {
+        // If they haven't onboarded, the welcome screen will show on the onboarding page
+        // But we still need to initialize audio if they come back to the main app
+        // so we don't force them through welcome again.
       } else {
         handleFirstInteraction();
+        setIsReadyForTour(true);
       }
     }
   }, []);
 
-  useEffect(() => {
+  const updateTheme = useCallback(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
     let currentTheme = 'theme-default';
     if (storedRoutine) {
@@ -43,13 +50,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
         if (parsedRoutine.structuredRoutine && parsedRoutine.sport) {
           currentTheme = getThemeForSport(parsedRoutine.sport);
+        } else if (parsedRoutine.sport) {
+          currentTheme = getThemeForSport(parsedRoutine.sport);
         }
       } catch (e) {
         console.error("Failed to parse workout routine for theming");
       }
     }
     setThemeClass(currentTheme);
-  }, [pathname]); // Recalculate theme if path changes, e.g., after new routine.
+  }, []);
+
+  useEffect(() => {
+    updateTheme();
+    window.addEventListener('storage', updateTheme);
+
+    return () => {
+      window.removeEventListener('storage', updateTheme);
+    }
+
+  }, [pathname, updateTheme]); 
   
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
@@ -63,6 +82,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     handleFirstInteraction();
     sessionStorage.setItem('userInteracted', 'true');
     setShowWelcome(false);
+    setIsReadyForTour(true);
   };
 
   return (
@@ -83,7 +103,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           }} 
         />
         <Toaster />
-        <OnboardingTour />
+        <OnboardingTour isReady={isReadyForTour} />
     </div>
   );
 }

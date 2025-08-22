@@ -55,21 +55,22 @@ Review all the user's provided information.
 {{#if trainingDuration}}- Training duration per session: {{{trainingDuration}}} minutes{{/if}}
 
 **Step 2: Decide Action - Ask or Generate**
-- **If the information is too generic** (e.g., fitnessLevel is just "intermediate" without concrete data), you MUST ask a clarifying question.
-- The question should be specific to the sport to quantify the user's ability.
-- Frame the question in the \`clarificationQuestion\` field. Provide 3-4 multiple-choice options.
+- **If the information is too generic** (e.g., fitnessLevel is just "intermediate" without concrete data from a fitness assessment), you MUST ask a clarifying question to quantify the user's ability.
+- The question must be specific to the sport. It should be a multiple-choice question to make it easy for the user to answer.
+- Frame the question and options in the \`clarificationQuestion\` field as a JSON string.
 - Example for "Calisthenics": \`{"question": "How many consecutive push-ups can you do?", "options": ["Fewer than 5", "5-15", "16-30", "More than 30"]}\`
 - Example for "Running": \`{"question": "What is your best time for a 5km run?", "options": ["I haven't run a 5k", "More than 30 minutes", "25-30 minutes", "Under 25 minutes"]}\`
-- If you ask a question, DO NOT generate a routine. The other fields in the output should be empty.
+- Example for "Weightlifting": \`{"question": "What is your estimated one-rep max for the squat compared to your bodyweight?", "options": ["Less than my bodyweight", "Around my bodyweight", "1.5x my bodyweight", "More than 1.5x my bodyweight"]}\`
+- If you ask a question, DO NOT generate a routine. The other fields in the output must be empty.
 
 - **If you have enough information** (either from the initial assessment or previous answers), generate a full routine.
 - The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'.
-- For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts).
+- For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts, Olympic Lifts).
 - For EACH exercise, set 'requiresWeight' to true for weightlifting exercises and false for bodyweight ones.
 - For EACH exercise, generate a 'youtubeQuery' for a tutorial video.
 - Determine if the sport is primarily weight training.
-  - If YES (e.g., Weightlifting, Powerlifting): Set 'isWeightTraining' to true and provide the routine as a simple text string in the 'routine' field.
-  - If NO: Set 'isWeightTraining' to false and generate a detailed, structured plan in the 'structuredRoutine' field.
+  - If YES (e.g., Weightlifting, Powerlifting, Bodybuilding): Set 'isWeightTraining' to true and provide the routine as a simple text string in the 'routine' field. This is for sports where the structure is very specific and less about daily variety.
+  - If NO (e.g., Calisthenics, Running, general fitness): Set 'isWeightTraining' to false and generate a detailed, structured plan in the 'structuredRoutine' field, with varied days.
   `,
 });
 
@@ -84,5 +85,3 @@ const workoutRoutineFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

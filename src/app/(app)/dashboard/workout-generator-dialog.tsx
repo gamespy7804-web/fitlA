@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
-import { type WorkoutRoutineOutput } from '@/ai/flows/types';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -53,7 +52,7 @@ type ClarificationQuestion = {
     options: string[];
 }
 
-const createFormSchema = (t: (key: string, ...args: any[]) => string) => z.object({
+const createFormSchema = (t: (key: string) => string) => z.object({
   goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
   sport: z.string().min(3, t('workoutGenerator.form.validations.sport.min')),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
@@ -77,7 +76,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const [assessmentHistory, setAssessmentHistory] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const formSchema = createFormSchema(t);
+  const formSchema = createFormSchema((key: string) => t(key as any));
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -85,6 +84,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       sport: '',
       trainingDays: 3,
       trainingDuration: 60,
+      fitnessLevel: undefined,
     }
   });
 
@@ -111,7 +111,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
         }
       } else {
         setResult(routine);
-        localStorage.setItem('workoutRoutine', JSON.stringify(routine));
+        localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
         setStep(3);
       }
     } catch (error) {
@@ -119,6 +119,26 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  const handleFinalSubmit = async () => {
+    setIsLoading(true);
+    try {
+        const values = form.getValues();
+        const routine = await generateWorkoutRoutine({
+            ...values,
+            language: locale,
+            fitnessAssessment: assessmentHistory.join('\n')
+        });
+        setResult(routine);
+        localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
+        setStep(3);
+    } catch (error) {
+        console.error(error);
+        toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
+    } finally {
+        setIsLoading(false);
     }
   }
 
@@ -140,7 +160,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
             setClarificationQuestion(parsedQuestion);
         } else {
             setResult(routine);
-            localStorage.setItem('workoutRoutine', JSON.stringify(routine));
+            localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
             setStep(3);
         }
     } catch (error) {

@@ -7,11 +7,15 @@ import 'driver.js/dist/driver.css';
 import { useI18n } from '@/i18n/client';
 import { usePathname } from 'next/navigation';
 
-export function OnboardingTour() {
+export function OnboardingTour({ isReady }: { isReady: boolean }) {
   const { t } = useI18n();
   const pathname = usePathname();
 
   useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+
     const runOnboardingTour = () => {
       // Only run the main tour on the dashboard
       if (pathname !== '/dashboard') {
@@ -136,7 +140,7 @@ export function OnboardingTour() {
     if (onboardingComplete) {
       runOnboardingTour();
     }
-  }, [t, pathname]);
+  }, [t, pathname, isReady]);
 
   return null;
 }

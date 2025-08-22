@@ -6,7 +6,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Bot } from 'lucide-react';
+import { Loader2, Sparkles, Bot, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -42,21 +42,29 @@ type ClarificationQuestion = {
     options: string[];
 }
 
-const onboardingSchema = z.object({
-  sport: z.string().min(1),
-  goals: z.string().min(1),
-  fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  trainingDays: z.coerce.number().int().min(1).max(7),
-  trainingDuration: z.coerce.number().int().min(15).max(240),
+// Step 1: Initial info
+const step1Schema = z.object({
+  sport: z.string().min(1, 'onboarding.validation.sport.min'),
+  goals: z.string().min(1, 'onboarding.validation.goals.min'),
+  fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: 'workoutGenerator.form.validations.fitnessLevel.required' }),
   age: z.coerce.number().min(10).max(100).optional(),
   weight: z.coerce.number().min(30).max(200).optional(),
   gender: z.enum(['male', 'female', 'other']).optional(),
 });
 
-type OnboardingData = z.infer<typeof onboardingSchema>;
+// Step 2: Training preferences
+const step2Schema = z.object({
+    trainingDays: z.coerce.number({invalid_type_error: 'onboarding.validation.trainingDays.required'}).int().min(1, 'onboarding.validation.trainingDays.min').max(7, 'onboarding.validation.trainingDays.max'),
+    trainingDuration: z.coerce.number({invalid_type_error: 'onboarding.validation.trainingDuration.required'}).int().min(15, 'onboarding.validation.trainingDuration.min').max(240, 'onboarding.validation.trainingDuration.max')),
+});
+
+const formSchema = step1Schema.merge(step2Schema);
+
+type OnboardingData = z.infer<typeof formSchema>;
 
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState<ClarificationQuestion | null>(null);
@@ -66,15 +74,17 @@ export default function OnboardingPage() {
   const { user, loading: authLoading } = useAuth();
 
   const form = useForm<OnboardingData>({
-    resolver: zodResolver(onboardingSchema),
+    resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
       sport: '',
       goals: '',
+      fitnessLevel: undefined,
       trainingDays: 3,
       trainingDuration: 60,
       age: undefined,
       weight: undefined,
+      gender: undefined,
     }
   });
   const { watch, setValue, trigger } = form;
@@ -107,7 +117,16 @@ export default function OnboardingPage() {
   };
   
   const handleInitialSubmit = async () => {
-    const isValid = await trigger();
+    const isValid = await trigger(['sport', 'goals', 'fitnessLevel', 'age', 'weight', 'gender']);
+    if (!isValid) {
+        toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
+        return;
+    }
+    setStep(2);
+  }
+  
+  const handlePreferencesSubmit = async () => {
+    const isValid = await trigger(['trainingDays', 'trainingDuration']);
     if (!isValid) {
         toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
         return;
@@ -119,12 +138,13 @@ export default function OnboardingPage() {
     try {
         const values = form.getValues();
         const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
-
+        
         if(response.routine || response.structuredRoutine) {
             handleFinish(response);
         } else if (response.clarificationQuestion) {
             const parsedQuestion = JSON.parse(response.clarificationQuestion);
             setClarificationQuestion(parsedQuestion);
+            setStep(3); // Go to clarification step
         } else {
              toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
         }
@@ -165,8 +185,8 @@ export default function OnboardingPage() {
     }
   }
   
-  const handleFinish = (result: any) => {
-      localStorage.setItem('workoutRoutine', JSON.stringify(result));
+  const handleFinish = (result: WorkoutRoutineOutput) => {
+      localStorage.setItem('workoutRoutine', JSON.stringify({...result, sport: form.getValues('sport')}));
       localStorage.setItem('onboardingComplete', 'true');
       toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
       router.push('/dashboard');
@@ -187,17 +207,17 @@ export default function OnboardingPage() {
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-center">{t('onboarding.title')}</CardTitle>
           <CardDescription className="text-center">
-            {clarificationQuestion ? t('onboarding.aiThinking') : t('onboarding.description')}
+            {step === 3 ? t('onboarding.aiThinking') : t('onboarding.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <AnimatePresence mode="wait">
-            {!clarificationQuestion ? (
+            {step === 1 && (
               <motion.div
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                key="step1"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
               >
                 <FormProvider {...form}>
                   <form onSubmit={(e) => { e.preventDefault(); handleInitialSubmit(); }} className="space-y-4">
@@ -240,32 +260,6 @@ export default function OnboardingPage() {
                         </FormItem>
                       )}
                     />
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="trainingDays"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="trainingDuration"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                    </div>
-                    
                      <FormField
                       control={form.control}
                       name="fitnessLevel"
@@ -286,19 +280,66 @@ export default function OnboardingPage() {
                     />
 
                     <div className="pt-4">
-                      <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                        {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next')}
+                      <Button type="submit" className="w-full" size="lg">
+                        {t('onboarding.buttons.next')}
                       </Button>
                     </div>
                   </form>
                 </FormProvider>
               </motion.div>
-            ) : (
+            )}
+
+            {step === 2 && (
+                 <motion.div
+                    key="step2"
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 50 }}
+                    className="space-y-4"
+                >
+                    <FormProvider {...form}>
+                     <form onSubmit={(e) => { e.preventDefault(); handlePreferencesSubmit(); }} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="trainingDays"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
+                                <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        <FormField
+                            control={form.control}
+                            name="trainingDuration"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
+                                <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <div className="pt-4 flex items-center gap-4">
+                            <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
+                                <ChevronLeft /> {t('onboarding.buttons.back')}
+                            </Button>
+                            <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                                {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
+                            </Button>
+                        </div>
+                     </form>
+                    </FormProvider>
+                </motion.div>
+            )}
+
+            {step === 3 && (
                <motion.div
                 key="clarification"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 50 }}
                 className="space-y-4 text-center"
                >
                  {isLoading ? (
@@ -317,6 +358,11 @@ export default function OnboardingPage() {
                                     {option}
                                 </Button>
                             ))}
+                        </div>
+                         <div className="pt-4 flex justify-start">
+                            <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={isLoading}>
+                                <ChevronLeft /> {t('onboarding.buttons.back')}
+                            </Button>
                         </div>
                     </>
                  )}
