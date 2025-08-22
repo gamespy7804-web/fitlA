@@ -29,6 +29,30 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
       
       // We need to wait a bit for the page to be fully rendered
       setTimeout(() => {
+        const driverObj = driver({
+          showProgress: true,
+          nextBtnText: t('onboardingTour.next'),
+          prevBtnText: t('onboardingTour.prev'),
+          doneBtnText: t('onboardingTour.done'),
+          onCloseClick: () => {
+            localStorage.setItem('hasSeenOnboardingTour', 'true');
+            driverObj.destroy();
+          },
+          onDestroyStarted: () => {
+            const actionButton = document.getElementById('nav-actions');
+            if (actionButton?.getAttribute('aria-expanded') === 'true') {
+              actionButton.click();
+            }
+            if (!driverObj.isLastStep()) {
+                localStorage.setItem('hasSeenOnboardingTour', 'true');
+                driverObj.destroy();
+            }
+          },
+          onDestroyed: () => {
+            localStorage.setItem('hasSeenOnboardingTour', 'true');
+          }
+        });
+
         const steps: DriveStep[] = [
           { 
             element: '#app-content',
@@ -49,12 +73,12 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
             popover: { 
               title: t('onboardingTour.actions.title'),
               description: t('onboardingTour.actions.description'),
-              onNextClick: ({ tour }) => {
+              onNextClick: () => {
                 const actionButton = document.getElementById('nav-actions');
                 if (actionButton) {
                     actionButton.click();
                 }
-                tour.moveNext();
+                driverObj.moveNext();
               }
             } 
           },
@@ -90,7 +114,7 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
         
         const firstWorkoutNode = document.querySelector('.workout-node');
         if (firstWorkoutNode) {
-            steps.push({
+            steps.splice(steps.length -1, 0, { // Insert before the last element
                 element: firstWorkoutNode as HTMLElement,
                 popover: {
                   title: t('onboardingTour.startWorkout.title'),
@@ -106,32 +130,8 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
               description: t('onboardingTour.end.description')
             } 
         })
-
-        const driverObj = driver({
-          showProgress: true,
-          nextBtnText: t('onboardingTour.next'),
-          prevBtnText: t('onboardingTour.prev'),
-          doneBtnText: t('onboardingTour.done'),
-          steps: steps,
-          onCloseClick: () => {
-            localStorage.setItem('hasSeenOnboardingTour', 'true');
-            driverObj.destroy();
-          },
-          onDestroyStarted: () => {
-            const actionButton = document.getElementById('nav-actions');
-            if (actionButton && actionButton.ariaExpanded === 'true') {
-                actionButton.click();
-            }
-            if (!driverObj.isLastStep()) {
-                localStorage.setItem('hasSeenOnboardingTour', 'true');
-                driverObj.destroy();
-            }
-          },
-          onDestroyed: () => {
-            localStorage.setItem('hasSeenOnboardingTour', 'true');
-          }
-        });
-
+        
+        driverObj.setSteps(steps);
         driverObj.drive();
       }, 1000);
     };
@@ -144,3 +144,4 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
 
   return null;
 }
+
