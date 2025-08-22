@@ -129,13 +129,9 @@ export function WorkoutNodePath() {
                     disabled={isLocked}
                     className={cn(
                       'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
-                      // Base styles
-                      'bg-card shadow-lg',
-                      // Completed State
-                      isCompleted && 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-green-500/30',
-                      // Active State
+                      'shadow-lg bg-card',
+                      isCompleted && 'bg-green-500 text-white shadow-green-500/50',
                       isActive && 'animate-pulse ring-4 ring-primary/50 shadow-primary/40',
-                      // Locked State
                       isLocked ? 'bg-muted cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
                     )}
                   >
@@ -157,10 +153,10 @@ export function WorkoutNodePath() {
         })}
 
         <div className={cn(
-            'relative z-10 w-32 h-32 flex items-center justify-center',
-             routine.length % 2 !== 0 ? 'self-start' : 'self-end'
+            'relative z-10 w-full flex items-center justify-center mt-4',
+             routine.length % 2 !== 0 ? 'self-start pl-8' : 'self-end pr-8'
         )}>
-            <AdaptiveProgressionDialog className="w-24 h-24 rounded-full text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
+            <AdaptiveProgressionDialog className="w-full h-16 rounded-lg text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
                 {t('workoutNodePath.generateNextWeek')}
             </AdaptiveProgressionDialog>
         </div>
