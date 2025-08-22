@@ -47,15 +47,12 @@ const step1Schema = z.object({
   sport: z.string().min(1, 'onboarding.validation.sport.min'),
   goals: z.string().min(1, 'onboarding.validation.goals.min'),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: 'workoutGenerator.form.validations.fitnessLevel.required' }),
-  age: z.coerce.number().min(10).max(100).optional(),
-  weight: z.coerce.number().min(30).max(200).optional(),
-  gender: z.enum(['male', 'female', 'other']).optional(),
 });
 
 // Step 2: Training preferences
 const step2Schema = z.object({
     trainingDays: z.coerce.number({invalid_type_error: 'onboarding.validation.trainingDays.required'}).int().min(1, 'onboarding.validation.trainingDays.min').max(7, 'onboarding.validation.trainingDays.max'),
-    trainingDuration: z.coerce.number({invalid_type_error: 'onboarding.validation.trainingDuration.required'}).int().min(15, 'onboarding.validation.trainingDuration.min').max(240, 'onboarding.validation.trainingDuration.max')),
+    trainingDuration: z.coerce.number({invalid_type_error: 'onboarding.validation.trainingDuration.required'}).int().min(15, 'onboarding.validation.trainingDuration.min').max(240, 'onboarding.validation.trainingDuration.max'),
 });
 
 const formSchema = step1Schema.merge(step2Schema);
@@ -82,15 +79,14 @@ export default function OnboardingPage() {
       fitnessLevel: undefined,
       trainingDays: 3,
       trainingDuration: 60,
-      age: undefined,
-      weight: undefined,
-      gender: undefined,
     }
   });
   const { watch, setValue, trigger } = form;
   const sportValue = watch('sport');
 
   useEffect(() => {
+    // This logic is now handled by the root page.tsx to avoid flickering.
+    // Kept here in case the user navigates directly to /onboarding.
     if (!authLoading && user) {
         const onboardingComplete = localStorage.getItem('onboardingComplete');
         if (onboardingComplete === 'true') {
@@ -117,7 +113,7 @@ export default function OnboardingPage() {
   };
   
   const handleInitialSubmit = async () => {
-    const isValid = await trigger(['sport', 'goals', 'fitnessLevel', 'age', 'weight', 'gender']);
+    const isValid = await trigger(['sport', 'goals', 'fitnessLevel']);
     if (!isValid) {
         toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
         return;
