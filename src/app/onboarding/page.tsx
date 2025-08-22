@@ -37,6 +37,7 @@ import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
 import { useAuth } from '@/hooks/use-auth';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 // Step 1: Initial info
 const step1Schema = z.object({
@@ -73,8 +74,8 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: undefined,
-      trainingDays: undefined,
-      trainingDuration: undefined,
+      trainingDays: 3,
+      trainingDuration: 60,
     }
   });
   const { watch, setValue, trigger } = form;
