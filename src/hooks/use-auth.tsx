@@ -44,19 +44,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // onAuthStateChanged will handle the user state update and redirection
+      // After successful sign-in, onAuthStateChanged will fire.
+      // We explicitly check for onboarding and redirect here to make it robust.
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (onboardingComplete === 'true') {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/onboarding');
+      }
     } catch (error: any) {
-      // Gracefully handle the case where the user closes the sign-in popup.
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-         // No need to log error, this is expected user behavior
+         // This is expected user behavior, no need to log or toast.
       } else {
         console.error('Error signing in with Google', error);
+        toast({ variant: 'destructive', title: 'Sign-in Error', description: 'Could not sign in with Google. Please try again.'});
       }
-    } finally {
-      // Set loading to false if user cancels, so UI becomes responsive again
-      if (!auth.currentUser) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 

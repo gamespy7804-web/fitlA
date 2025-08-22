@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { useI18n } from '@/i18n/client';
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const GoogleIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -17,8 +19,20 @@ const GoogleIcon = (props: any) => (
 
 
 export default function LoginPage() {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, loading: authLoading } = useAuth();
   const { t } = useI18n();
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  
+  const handleSignIn = async () => {
+    setIsSigningIn(true);
+    await signInWithGoogle();
+    // No need to set isSigningIn to false here, as the page will redirect on success.
+    // If it fails (e.g., user closes popup), the auth hook will set its own loading state,
+    // but we can set our local state to false to re-enable the button.
+    setIsSigningIn(false);
+  }
+
+  const isLoading = authLoading || isSigningIn;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -31,8 +45,12 @@ export default function LoginPage() {
           <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={signInWithGoogle}>
-            <GoogleIcon className="mr-2" />
+          <Button className="w-full" onClick={handleSignIn} disabled={isLoading}>
+            {isLoading ? (
+                <Loader2 className="mr-2 animate-spin" />
+            ) : (
+                <GoogleIcon className="mr-2" />
+            )}
             {t('login.button')}
           </Button>
         </CardContent>
