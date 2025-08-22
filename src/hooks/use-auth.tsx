@@ -42,14 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // After successful sign-in, onAuthStateChanged will fire.
-      // We explicitly check for onboarding and redirect here to make it robust.
-      const onboardingComplete = localStorage.getItem('onboardingComplete');
-      if (onboardingComplete === 'true') {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/onboarding');
-      }
+      // After successful sign-in, onAuthStateChanged will fire and the root page.tsx
+      // will handle the redirection logic.
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
          // This is expected user behavior, no need to log or toast.
@@ -57,7 +51,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error signing in with Google', error);
         toast({ variant: 'destructive', title: 'Sign-in Error', description: 'Could not sign in with Google. Please try again.'});
       }
-      setLoading(false);
+    } finally {
+        setLoading(false);
     }
   };
 

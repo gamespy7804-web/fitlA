@@ -134,7 +134,7 @@ export default function OnboardingPage() {
         
         if (response.assessmentQuestions && response.assessmentQuestions.length > 0) {
             setAssessmentQuestions(response.assessmentQuestions);
-            setStep(3); // Go to assessment step
+            setStep(3);
         } else {
              toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
         }
