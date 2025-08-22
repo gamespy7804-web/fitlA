@@ -12,12 +12,17 @@ export default function Home() {
 
   useEffect(() => {
     if (loading) {
-      return; // Wait until loading is false
+      return; // Wait until auth state is confirmed
     }
 
     if (user) {
-      // User is logged in, let the onboarding page handle the next step.
-      router.replace('/onboarding');
+      // User is logged in, check if onboarding is complete
+      const onboardingComplete = localStorage.getItem('onboardingComplete');
+      if (onboardingComplete === 'true') {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/onboarding');
+      }
     } else {
       // No user, send to login.
       router.replace('/login');

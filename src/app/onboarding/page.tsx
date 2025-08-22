@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,8 +49,8 @@ const createOnboardingSchema = (t: (key: string, ...args: any[]) => string) => z
     z.coerce.number().min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')).optional()
   ),
   gender: z.enum(['male', 'female', 'other']).optional(),
-  trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
-  trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
+  trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+  trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
   fitnessAssessment: z.string().min(1, t('onboarding.validation.clarification.min')),
 });
 
@@ -81,13 +81,6 @@ export default function OnboardingPage() {
     mode: 'onChange'
   });
   
-  useEffect(() => {
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (onboardingComplete === 'true') {
-      router.replace('/dashboard');
-    }
-  }, [router]);
-
   const sportValue = form.watch('sport');
 
   const popularSports = [
@@ -303,7 +296,7 @@ export default function OnboardingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -314,7 +307,7 @@ export default function OnboardingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -327,7 +320,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="25" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder="25" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -338,7 +331,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="70" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder="70" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
