@@ -57,15 +57,11 @@ function FeedbackToolContent() {
   }, [loadPendingExercises]);
 
   useEffect(() => {
-    let stream: MediaStream | null = null;
     const getCameraPermission = async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setHasCameraPermission(false);
-        return;
-      }
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({video: true});
         setHasCameraPermission(true);
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -79,16 +75,13 @@ function FeedbackToolContent() {
         });
       }
     };
+
     getCameraPermission();
 
     return () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-        }
         if (videoRef.current && videoRef.current.srcObject) {
-            const currentStream = videoRef.current.srcObject as MediaStream;
-            currentStream.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
         }
     }
   }, [toast, t]);
@@ -182,14 +175,15 @@ function FeedbackToolContent() {
         <CardContent>
           <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
             <video ref={videoRef} className="w-full h-full rounded-md" autoPlay muted playsInline />
-            {!hasCameraPermission && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white p-4">
-                  <Camera className="h-12 w-12 mb-2" />
-                  <p className="font-semibold text-center">{t('feedbackTool.cameraPermissionNeeded')}</p>
-                </div>
-             )}
             {isRecording && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-red-500 animate-pulse" />}
           </div>
+           {!hasCameraPermission && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
+              <AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription>
+            </Alert>
+           )}
           <div className="mt-4 flex gap-4">
             <Select onValueChange={setSelectedExercise} value={selectedExercise} disabled={exercisesForFeedback.length === 0 || isLoading || isRecording}>
               <SelectTrigger>
@@ -214,13 +208,6 @@ function FeedbackToolContent() {
               {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
             </Button>
           </div>
-           {!hasCameraPermission && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
-              <AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription>
-            </Alert>
-           )}
         </CardContent>
       </Card>
       <Card>
