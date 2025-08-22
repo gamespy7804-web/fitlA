@@ -93,6 +93,7 @@
       "title": "AI Workout Generator",
       "descriptionInitial": "Describe your goals to get a personalized training routine.",
       "descriptionClarification": "Provide more details to fine-tune your routine.",
+      "aiThinking": "Just a moment, our AI is tailoring your next question...",
       "form": {
         "goals": {
           "label": "Your Goals",
@@ -308,7 +309,7 @@
     "onboarding": {
       "title": "Welcome to TrainSmart AI",
       "description": "Let's personalize your fitness journey.",
-      "aiThinking": "AI is thinking...",
+      "aiThinking": "Just a moment, our AI is tailoring your next question...",
       "questions": {
         "sport": { 
           "label": "What is your main sport or activity?", 
@@ -362,6 +363,10 @@
         "generation": {
           "title": "Error",
           "description": "Could not generate the workout routine."
+        },
+        "validation": {
+            "title": "Incomplete Form",
+            "description": "Please fill out all the required fields before continuing."
         }
       },
       "success": {
@@ -483,3 +488,5 @@
     }
   }
 }
+
+    

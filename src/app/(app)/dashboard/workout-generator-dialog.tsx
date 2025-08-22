@@ -48,13 +48,17 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useI18n } from '@/i18n/client';
 
+type ClarificationQuestion = {
+    question: string;
+    options: string[];
+}
+
 const createFormSchema = (t: (key: string, ...args: any[]) => string) => z.object({
   goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
   sport: z.string().min(3, t('workoutGenerator.form.validations.sport.min')),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
   trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
   trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
-  fitnessAssessment: z.string().min(1, t('onboarding.validation.clarification.min')),
 });
 
 
@@ -69,6 +73,8 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const [step, setStep] = useState(1);
+  const [clarificationQuestion, setClarificationQuestion] = useState<ClarificationQuestion | null>(null);
+  const [assessmentHistory, setAssessmentHistory] = useState<string[]>([]);
   const { toast } = useToast();
 
   const formSchema = createFormSchema(t);
@@ -76,32 +82,67 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     resolver: zodResolver(formSchema),
   });
 
-  const handleNextStep = async () => {
-    const isValid = await form.trigger(['goals', 'sport', 'fitnessLevel']);
-    if (isValid) {
-      setStep(2);
-    }
-  };
-  
-  const handleFinalSubmit = async () => {
-      const isValid = await form.trigger(['fitnessAssessment', 'trainingDays', 'trainingDuration']);
-      if(!isValid) return;
+  const handleInitialSubmit = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) return;
 
-      setIsLoading(true);
-      setResult(null);
+    setIsLoading(true);
+    setResult(null);
 
-      try {
-        const values = form.getValues();
-        const routine = await generateWorkoutRoutine({ ...values, language: locale });
+    try {
+      const values = form.getValues();
+      const routine = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: assessmentHistory.join('\n') });
+
+      if (routine.clarificationQuestion) {
+        try {
+            const parsedQuestion = JSON.parse(routine.clarificationQuestion);
+            setClarificationQuestion(parsedQuestion);
+            setStep(2);
+        } catch(e) {
+            console.error("Failed to parse clarification question:", e);
+            // If parsing fails, we'll just proceed to generate the routine with what we have.
+            await handleFinalSubmit();
+        }
+      } else {
         setResult(routine);
         localStorage.setItem('workoutRoutine', JSON.stringify(routine));
         setStep(3);
-      } catch (error) {
+      }
+    } catch (error) {
+      console.error(error);
+      toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handleClarificationSubmit = async (answer: string) => {
+    setIsLoading(true);
+    const newHistory = [...assessmentHistory, `Q: ${clarificationQuestion?.question} A: ${answer}`];
+    setAssessmentHistory(newHistory);
+
+    try {
+        const values = form.getValues();
+        const routine = await generateWorkoutRoutine({
+            ...values,
+            language: locale,
+            fitnessAssessment: newHistory.join('\n')
+        });
+
+        if (routine.clarificationQuestion) {
+            const parsedQuestion = JSON.parse(routine.clarificationQuestion);
+            setClarificationQuestion(parsedQuestion);
+        } else {
+            setResult(routine);
+            localStorage.setItem('workoutRoutine', JSON.stringify(routine));
+            setStep(3);
+        }
+    } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
-      } finally {
+    } finally {
         setIsLoading(false);
-      }
+    }
   }
 
 
@@ -112,6 +153,8 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       setResult(null);
       setIsLoading(false);
       setStep(1);
+      setClarificationQuestion(null);
+      setAssessmentHistory([]);
     }
   };
   
@@ -130,13 +173,13 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
           </DialogTitle>
           <DialogDescription>
             {step === 1 && t('workoutGenerator.descriptionInitial')}
-            {step === 2 && t('workoutGenerator.descriptionClarification')}
+            {step === 2 && t('onboarding.aiThinking')}
             {step === 3 && t('workoutGenerator.result.title')}
           </DialogDescription>
         </DialogHeader>
         {step === 1 && (
           <Form {...form}>
-            <form onSubmit={(e) => {e.preventDefault(); handleNextStep()}} className="space-y-4">
+            <form onSubmit={(e) => {e.preventDefault(); handleInitialSubmit()}} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="goals"
@@ -191,6 +234,34 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                       </FormItem>
                     )}
                   />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="trainingDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('workoutGenerator.form.trainingDays.label')}</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="trainingDuration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('workoutGenerator.form.trainingDuration.label')}</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
               <DialogFooter>
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -201,64 +272,29 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
           </Form>
         )}
         {step === 2 && (
-             <Form {...form}>
-                <form onSubmit={(e) => {e.preventDefault(); handleFinalSubmit()}} className="space-y-4">
-                     <div>
+             <div className="space-y-4">
+                {isLoading && <div className='flex justify-center items-center h-48'><Loader2 className='animate-spin text-primary size-10' /></div>}
+                {clarificationQuestion && !isLoading && (
+                    <>
                         <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                           <Bot className="text-primary size-8 shrink-0 mt-1" />
-                           <p className="text-secondary-foreground">{t('onboarding.questions.clarification.generic')}</p>
+                           <p className="text-secondary-foreground">{clarificationQuestion.question}</p>
                         </div>
-                        <FormField
-                          control={form.control}
-                          name="fitnessAssessment"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-lg">{t('onboarding.questions.clarification.label')}</FormLabel>
-                              <FormControl><Input placeholder={t('onboarding.questions.clarification.placeholder')} {...field} /></FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="trainingDays"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('workoutGenerator.form.trainingDays.label')}</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name="trainingDuration"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t('workoutGenerator.form.trainingDuration.label')}</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                     <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
-                            <ChevronLeft /> {t('onboarding.buttons.back')}
-                        </Button>
-                        <Button type="submit" disabled={isLoading} className="w-full">
-                          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          {t('onboarding.buttons.generate')}
-                        </Button>
-                    </DialogFooter>
-                </form>
-             </Form>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {clarificationQuestion.options.map(option => (
+                                <Button key={option} variant="outline" onClick={() => handleClarificationSubmit(option)}>
+                                    {option}
+                                </Button>
+                            ))}
+                        </div>
+                    </>
+                )}
+                 <DialogFooter className="pt-4">
+                    <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
+                        <ChevronLeft /> {t('onboarding.buttons.back')}
+                    </Button>
+                </DialogFooter>
+             </div>
         )}
         {step === 3 && result && (
           <div className="space-y-4">
@@ -315,3 +351,5 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     </Dialog>
   );
 }
+
+    
