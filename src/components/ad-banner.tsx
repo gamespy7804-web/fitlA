@@ -17,8 +17,6 @@ interface AdBannerProps {
 }
 
 export function AdBanner({ title, description, buttonText, imageUrl, className, ...props }: AdBannerProps) {
-  const aiHintProps = { 'data-ai-hint': props['data-ai-hint'] };
-  
   return (
     <Card className={cn("w-full overflow-hidden relative group", className)}>
       <CardContent className="p-0">
@@ -28,7 +26,7 @@ export function AdBanner({ title, description, buttonText, imageUrl, className, 
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            {...aiHintProps}
+            {...props}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
           <Badge variant="secondary" className="absolute top-2 left-2 text-xs">Ad</Badge>

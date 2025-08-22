@@ -136,22 +136,31 @@ export default function OnboardingPage() {
 
   const handleFinalSubmit = async (data: OnboardingData) => {
     setIsLoading(true);
-    try {
-      const response = await generateWorkoutRoutine({ ...data, language: locale });
-      if (response.structuredRoutine) {
-        localStorage.setItem('workoutRoutine', JSON.stringify({...response, sport: data.sport}));
-        localStorage.setItem('onboardingComplete', 'true');
-        toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
-        router.push('/dashboard');
-      } else {
-        toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
-      }
-    } catch(e) {
-      console.error(e);
-      toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
-    } finally {
-      setIsLoading(false);
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+        try {
+            const response = await generateWorkoutRoutine({ ...data, language: locale });
+            if (response.structuredRoutine && response.structuredRoutine.length > 0) {
+                localStorage.setItem('workoutRoutine', JSON.stringify({...response, sport: data.sport}));
+                localStorage.setItem('onboardingComplete', 'true');
+                toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
+                router.push('/dashboard');
+                return; // Success, exit the loop
+            } else {
+                // This case handles a successful API call that returns an empty/invalid routine
+                throw new Error("Generated routine is empty or invalid.");
+            }
+        } catch(e) {
+            attempts++;
+            console.error(`Attempt ${attempts} failed:`, e);
+            if (attempts >= maxAttempts) {
+                toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
+            }
+        }
     }
+    setIsLoading(false);
   }
   
 

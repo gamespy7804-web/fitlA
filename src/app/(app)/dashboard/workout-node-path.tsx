@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
-import useAudioEffects from '@/hooks/use-audio-effects';
+import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
 
 type CompletedDay = {
