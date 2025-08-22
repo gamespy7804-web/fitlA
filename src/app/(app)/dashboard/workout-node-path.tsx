@@ -77,7 +77,6 @@ export function WorkoutNodePath() {
       }
   }
   const activeDayIndex = lastCompletedIndex + 1;
-  const allDaysComplete = activeDayIndex >= routine.length;
 
 
   return (
