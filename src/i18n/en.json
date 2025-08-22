@@ -104,12 +104,12 @@
           "placeholder": "e.g., Soccer, Basketball"
         },
         "fitnessLevel": {
-          "label": "Fitness Level",
-          "placeholder": "Select your level",
+          "label": "How long have you been training?",
+          "placeholder": "Select your experience",
           "options": {
-            "beginner": "Beginner",
-            "intermediate": "Intermediate",
-            "advanced": "Advanced"
+            "beginner": "Less than 6 months",
+            "intermediate": "6 months to 2 years",
+            "advanced": "More than 2 years"
           }
         },
         "trainingDays": {
@@ -126,7 +126,7 @@
         "validations": {
           "goals": { "min": "Goals must be at least 3 characters." },
           "sport": { "min": "Sport must be at least 3 characters." },
-          "fitnessLevel": { "required": "Please select a fitness level." },
+          "fitnessLevel": { "required": "Please select your experience." },
           "trainingDays": { "required": "Required", "invalid": "Invalid number", "min": "At least 1 day", "max": "Maximum 7 days" },
           "trainingDuration": { "required": "Required", "invalid": "Invalid number", "min": "At least 15 minutes", "max": "Maximum 240 minutes" }
         }
@@ -324,25 +324,15 @@
         },
         "goals": { "label": "What are your main goals?", "placeholder": "e.g., Increase vertical jump, run a 5k" },
         "fitnessLevel": { 
-          "label": "What is your current fitness level?",
+          "label": "How long have you been training?",
           "options": {
-            "beginner": "Beginner",
-            "intermediate": "Intermediate",
-            "advanced": "Advanced"
+            "beginner": "Less than 6 months",
+            "intermediate": "6 months to 2 years",
+            "advanced": "More than 2 years"
           }
         },
-        "age": { "label": "Age" },
-        "weight": { "label": "Weight (kg)" },
-        "gender": {
-          "label": "Gender",
-          "options": {
-            "male": "Male",
-            "female": "Female",
-            "other": "Other"
-          }
-        },
-        "trainingDays": { "label": "How many days a week can you train?" },
-        "trainingDuration": { "label": "How much time per session (minutes)?" },
+        "trainingDays": { "label": "How many days a week can you train?", "placeholder": "e.g. 3" },
+        "trainingDuration": { "label": "How much time per session (minutes)?", "placeholder": "e.g. 60" },
         "clarification": {
             "label": "Your Answer",
             "placeholder": "e.g., I can do 10 push-ups, run a 5k in 30 min...",
@@ -488,5 +478,3 @@
     }
   }
 }
-
-    

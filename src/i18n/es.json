@@ -104,12 +104,12 @@
           "placeholder": "ej., Fútbol, Baloncesto"
         },
         "fitnessLevel": {
-          "label": "Nivel de Condición Física",
-          "placeholder": "Selecciona tu nivel",
+          "label": "¿Cuánto tiempo llevas entrenando?",
+          "placeholder": "Selecciona tu experiencia",
           "options": {
-            "beginner": "Principiante",
-            "intermediate": "Intermedio",
-            "advanced": "Avanzado"
+            "beginner": "Menos de 6 meses",
+            "intermediate": "Entre 6 meses y 2 años",
+            "advanced": "Más de 2 años"
           }
         },
         "trainingDays": {
@@ -126,7 +126,7 @@
         "validations": {
           "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
           "sport": { "min": "El deporte debe tener al menos 3 caracteres." },
-          "fitnessLevel": { "required": "Por favor, selecciona tu nivel." },
+          "fitnessLevel": { "required": "Por favor, selecciona tu experiencia." },
           "trainingDays": { "required": "Requerido", "invalid": "Número inválido", "min": "Al menos 1 día", "max": "Máximo 7 días" },
           "trainingDuration": { "required": "Requerido", "invalid": "Número inválido", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" }
         }
@@ -324,25 +324,15 @@
         },
         "goals": { "label": "¿Cuáles son tus metas principales?", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
         "fitnessLevel": { 
-          "label": "¿Cuál es tu nivel de condición física actual?",
+          "label": "¿Cuánto tiempo llevas entrenando?",
           "options": {
-            "beginner": "Principiante",
-            "intermediate": "Intermedio",
-            "advanced": "Avanzado"
+            "beginner": "Menos de 6 meses",
+            "intermediate": "Entre 6 meses y 2 años",
+            "advanced": "Más de 2 años"
           }
         },
-        "age": { "label": "Edad" },
-        "weight": { "label": "Peso (kg)" },
-        "gender": {
-          "label": "Género",
-          "options": {
-            "male": "Masculino",
-            "female": "Femenino",
-            "other": "Otro"
-          }
-        },
-        "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?" },
-        "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?" },
+        "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?", "placeholder": "ej. 3" },
+        "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?", "placeholder": "ej. 60" },
         "clarification": {
             "label": "Tu Respuesta",
             "placeholder": "ej., Puedo hacer 10 flexiones, corro 5km en 30 min...",
@@ -488,5 +478,3 @@
     }
   }
 }
-
-    

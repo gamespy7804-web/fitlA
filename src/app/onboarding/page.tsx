@@ -85,8 +85,6 @@ export default function OnboardingPage() {
   const sportValue = watch('sport');
 
   useEffect(() => {
-    // This logic is now handled by the root page.tsx to avoid flickering.
-    // Kept here in case the user navigates directly to /onboarding.
     if (!authLoading && user) {
         const onboardingComplete = localStorage.getItem('onboardingComplete');
         if (onboardingComplete === 'true') {
@@ -135,12 +133,13 @@ export default function OnboardingPage() {
         const values = form.getValues();
         const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
         
-        if(response.routine || response.structuredRoutine) {
-            handleFinish(response);
-        } else if (response.clarificationQuestion) {
+        if (response.clarificationQuestion) {
             const parsedQuestion = JSON.parse(response.clarificationQuestion);
             setClarificationQuestion(parsedQuestion);
             setStep(3); // Go to clarification step
+        } else if(response.routine || response.structuredRoutine) {
+            // This is a fallback in case the AI generates a routine directly
+            handleFinish(response);
         } else {
              toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
         }
@@ -301,7 +300,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="ej. 3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -312,7 +311,7 @@ export default function OnboardingPage() {
                             render={({ field }) => (
                                 <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                                <FormControl><Input type="number" placeholder="ej. 60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                <FormControl><Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                                 <FormMessage />
                                 </FormItem>
                             )}
@@ -322,7 +321,7 @@ export default function OnboardingPage() {
                                 <ChevronLeft /> {t('onboarding.buttons.back')}
                             </Button>
                             <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                                {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
+                                {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next')}
                             </Button>
                         </div>
                      </form>
