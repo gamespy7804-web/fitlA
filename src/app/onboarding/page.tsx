@@ -128,6 +128,7 @@ export default function OnboardingPage() {
       return; 
     }
     
+    // This is the last data input step before clarification or submission
     if (currentQuestionId === 'trainingDuration') {
        if (clarificationQuestion) {
          setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
@@ -144,6 +145,7 @@ export default function OnboardingPage() {
     }
     
     if (currentQuestionIndex < questions.length - 1) {
+       // This handles the case where there is no clarification question and we are at the end of the standard questions.
        if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
          handleSubmitForm(apiValues);
        } else {

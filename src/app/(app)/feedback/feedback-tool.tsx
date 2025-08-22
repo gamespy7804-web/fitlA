@@ -30,7 +30,7 @@ function FeedbackToolContent() {
   const [exercisesForFeedback, setExercisesForFeedback] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(false);
   
   const { toast } = useToast();
 
@@ -182,7 +182,7 @@ function FeedbackToolContent() {
         <CardContent>
           <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
             <video ref={videoRef} className="w-full h-full rounded-md" autoPlay muted playsInline />
-            {hasCameraPermission === false && (
+            {!hasCameraPermission && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white p-4">
                   <Camera className="h-12 w-12 mb-2" />
                   <p className="font-semibold text-center">{t('feedbackTool.cameraPermissionNeeded')}</p>
@@ -205,7 +205,7 @@ function FeedbackToolContent() {
                 )}
               </SelectContent>
             </Select>
-            <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-40" disabled={isLoading || hasCameraPermission !== true || !selectedExercise}>
+            <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-40" disabled={isLoading || !hasCameraPermission || !selectedExercise}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -214,7 +214,7 @@ function FeedbackToolContent() {
               {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
             </Button>
           </div>
-           {hasCameraPermission === false && (
+           {!hasCameraPermission && (
             <Alert variant="destructive" className="mt-4">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
