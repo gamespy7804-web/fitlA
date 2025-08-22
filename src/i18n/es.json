@@ -299,7 +299,7 @@
           "button": "Restablecer datos",
           "confirm": {
             "title": "¿Estás seguro?",
-            "description": "Esta acción borrará todo tu progreso (rutinas, registros, etc.) y no se puede deshacer. Tu cuenta no será eliminada.",
+            "description": "Esta acción borrará todo tu progreso en la aplicación (rutinas, registros, etc.) y no se puede deshacer. Tu sesión de Google no se cerrará.",
             "cancel": "Cancelar",
             "action": "Sí, restablecer datos"
           }
