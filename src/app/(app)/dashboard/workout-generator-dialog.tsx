@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateWorkoutRoutine, type WorkoutRoutineOutput, type AssessmentQuestion } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -69,8 +69,6 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const [step, setStep] = useState(1);
-  const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[] | null>(null);
-  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const formSchema = createFormSchema((key: string) => t(key as any));
@@ -85,24 +83,19 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     }
   });
 
-  const handleInitialSubmit = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
-
+  const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setResult(null);
 
     try {
-      const values = form.getValues();
-      const routine = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
+      const routine = await generateWorkoutRoutine({ ...values, language: locale });
 
-      if (routine.assessmentQuestions && routine.assessmentQuestions.length > 0) {
-        setAssessmentQuestions(routine.assessmentQuestions);
-        setStep(2);
-      } else {
+       if (routine.structuredRoutine && routine.structuredRoutine.length > 0) {
         setResult(routine);
         localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
-        setStep(3);
+        setStep(2);
+      } else {
+        toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
       }
     } catch (error) {
       console.error(error);
@@ -111,35 +104,6 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       setIsLoading(false);
     }
   }
-
-
-  const handleAssessmentSubmit = async () => {
-    if (!assessmentQuestions || Object.keys(assessmentAnswers).length < assessmentQuestions.length) {
-        toast({ variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.assessment') });
-        return;
-    }
-    setIsLoading(true);
-
-    const assessmentHistory = assessmentQuestions.map(q => `Q: ${q.question} A: ${assessmentAnswers[q.question]}`).join('\n');
-
-    try {
-        const values = form.getValues();
-        const routine = await generateWorkoutRoutine({
-            ...values,
-            language: locale,
-            fitnessAssessment: assessmentHistory
-        });
-        setResult(routine);
-        localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
-        setStep(3);
-    } catch (error) {
-        console.error(error);
-        toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
-    } finally {
-        setIsLoading(false);
-    }
-  }
-
 
   const handleOpenChange = (open: boolean) => {
     onOpenChange?.(open);
@@ -154,8 +118,6 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       setResult(null);
       setIsLoading(false);
       setStep(1);
-      setAssessmentQuestions(null);
-      setAssessmentAnswers({});
     }
   };
   
@@ -174,13 +136,12 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
           </DialogTitle>
           <DialogDescription>
             {step === 1 && t('workoutGenerator.descriptionInitial')}
-            {step === 2 && t('onboarding.aiThinking')}
-            {step === 3 && t('workoutGenerator.result.title')}
+            {step === 2 && t('workoutGenerator.result.title')}
           </DialogDescription>
         </DialogHeader>
         {step === 1 && (
           <Form {...form}>
-            <form onSubmit={(e) => {e.preventDefault(); handleInitialSubmit()}} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="goals"
@@ -266,58 +227,16 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
               <DialogFooter>
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t('onboarding.buttons.next')}
+                  {t('onboarding.buttons.generate')}
                 </Button>
               </DialogFooter>
             </form>
           </Form>
         )}
-        {step === 2 && (
-             <div className="space-y-4">
-                {isLoading && !assessmentQuestions && <div className='flex justify-center items-center h-48'><Loader2 className='animate-spin text-primary size-10' /></div>}
-                {assessmentQuestions && !isLoading && (
-                    <>
-                        <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
-                          <Bot className="text-primary size-10 shrink-0 mt-1" />
-                           <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
-                        </div>
-                        <ScrollArea className="h-72 pr-4">
-                            <div className='space-y-6'>
-                                {assessmentQuestions.map((q, index) => (
-                                    <div key={index}>
-                                        <Label className="font-semibold">{q.question}</Label>
-                                        <RadioGroup 
-                                            className="mt-2"
-                                            onValueChange={(value) => setAssessmentAnswers(prev => ({...prev, [q.question]: value}))}
-                                            value={assessmentAnswers[q.question]}
-                                        >
-                                            {q.options.map(opt => (
-                                                <div key={opt} className="flex items-center space-x-2">
-                                                    <RadioGroupItem value={opt} id={`dialog-${index}-${opt}`} />
-                                                    <Label htmlFor={`dialog-${index}-${opt}`}>{opt}</Label>
-                                                </div>
-                                            ))}
-                                        </RadioGroup>
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
-                         <DialogFooter className="pt-4 flex-col sm:flex-row gap-2">
-                            <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
-                                <ChevronLeft /> {t('onboarding.buttons.back')}
-                            </Button>
-                             <Button onClick={handleAssessmentSubmit} disabled={isLoading} className="w-full">
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : t('onboarding.buttons.generate')}
-                            </Button>
-                        </DialogFooter>
-                    </>
-                )}
-             </div>
-        )}
-        {step === 3 && result && (
+        {step === 2 && result && (
           <div className="space-y-4">
             <ScrollArea className="h-96">
-              {result.isWeightTraining === false && result.structuredRoutine ? (
+              {result.structuredRoutine ? (
                 <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
                   {result.structuredRoutine.map((day, index) => (
                     <AccordionItem value={`item-${index}`} key={day.day}>
@@ -354,7 +273,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                 </Accordion>
               ) : (
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap p-1">
-                  {result.routine}
+                  {t('workoutGenerator.errors.generationFailed.description')}
                 </p>
               )}
             </ScrollArea>

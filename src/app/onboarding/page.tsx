@@ -138,11 +138,11 @@ export default function OnboardingPage() {
     setIsLoading(true);
     try {
       const response = await generateWorkoutRoutine({ ...data, language: locale });
-      if (response.routine || response.structuredRoutine) {
+      if (response.structuredRoutine) {
         localStorage.setItem('workoutRoutine', JSON.stringify({...response, sport: data.sport}));
         localStorage.setItem('onboardingComplete', 'true');
         toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
-        router.push('/');
+        router.push('/dashboard');
       } else {
         toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
       }
@@ -337,12 +337,11 @@ export default function OnboardingPage() {
         </CardContent>
         <CardFooter>
             <p className="text-xs text-muted-foreground w-full text-center">
-                Paso {step} de 2
+                {t('onboarding.step', { step })}
             </p>
         </CardFooter>
       </Card>
     </div>
   );
 }
-
-    
+`

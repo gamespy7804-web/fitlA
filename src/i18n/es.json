@@ -309,6 +309,7 @@
     "onboarding": {
       "title": "Bienvenido a TrainSmart AI",
       "description": "Vamos a personalizar tu viaje de fitness.",
+      "step": "Paso {{step}} de 2",
       "questions": {
         "sport": { 
           "label": "¿Cuál es tu deporte o actividad principal?", 
@@ -488,3 +489,4 @@
     }
   }
 }
+`
