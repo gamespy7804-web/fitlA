@@ -226,9 +226,9 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="beginner">{t('workoutGenerator.form.fitnessLevel.options.beginner')}</SelectItem>
-                            <SelectItem value="intermediate">{t('workoutGenerator.form.fitnessLevel.options.intermediate')}</SelectItem>
-                            <SelectItem value="advanced">{t('workoutGenerator.form.fitnessLevel.options.advanced')}</SelectItem>
+                            <SelectItem value="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</SelectItem>
+                            <SelectItem value="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</SelectItem>
+                            <SelectItem value="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

@@ -81,7 +81,7 @@ export default function OnboardingPage() {
       trainingDuration: 60,
     }
   });
-  const { watch, setValue, trigger } = form;
+  const { watch, setValue, trigger, handleSubmit } = form;
   const sportValue = watch('sport');
 
   useEffect(() => {
@@ -381,5 +381,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
