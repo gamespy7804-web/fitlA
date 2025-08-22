@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -46,11 +47,23 @@ const createFormSchema = (t: (key: string) => string) => {
     });
 
     const step2Schema = z.object({
-        age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
-        weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
+        age: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max'))
+        ),
+        weight: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max'))
+        ),
         gender: z.enum(['male', 'female', 'other'], { required_error: t('onboarding.validation.gender.required') }),
-        trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
-        trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
+        trainingDays: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max'))
+        ),
+        trainingDuration: z.preprocess(
+          (val) => (val === '' ? undefined : val),
+          z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max'))
+        ),
     });
     
     return step1Schema.merge(step2Schema);
@@ -126,7 +139,10 @@ export default function OnboardingPage() {
     try {
       const response = await generateWorkoutRoutine({ ...data, language: locale });
       if (response.routine || response.structuredRoutine) {
-        handleFinish(response);
+        localStorage.setItem('workoutRoutine', JSON.stringify({...response, sport: data.sport}));
+        localStorage.setItem('onboardingComplete', 'true');
+        toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
+        router.push('/');
       } else {
         toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
       }
@@ -138,13 +154,6 @@ export default function OnboardingPage() {
     }
   }
   
-  const handleFinish = (result: WorkoutRoutineOutput) => {
-      localStorage.setItem('workoutRoutine', JSON.stringify({...result, sport: form.getValues('sport')}));
-      localStorage.setItem('onboardingComplete', 'true');
-      toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
-      router.push('/');
-  }
-
 
   if (authLoading) {
       return (
@@ -326,7 +335,14 @@ export default function OnboardingPage() {
               </form>
             </Form>
         </CardContent>
+        <CardFooter>
+            <p className="text-xs text-muted-foreground w-full text-center">
+                Paso {step} de 2
+            </p>
+        </CardFooter>
       </Card>
     </div>
   );
 }
+
+    
