@@ -160,7 +160,7 @@
         "description": "Tu resumen de progreso ha sido copiado al portapapeles.",
         "error": {
           "title": "Error al Copiar",
-          "description": "No se pudo copiar el texto. Por favor, inténtalo manualmente."
+          "description": "No se pudo copiar el texto. Por favor, inténtalo manually."
         }
       },
       "na": "N/A",
@@ -295,7 +295,13 @@
         "delete": {
           "title": "Eliminar Cuenta",
           "description": "Esta acción es permanente y no se puede deshacer.",
-          "button": "Eliminar mi cuenta"
+          "button": "Eliminar mi cuenta",
+          "confirm": {
+            "title": "¿Estás seguro?",
+            "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y todos tus datos de nuestros servidores.",
+            "cancel": "Cancelar",
+            "action": "Sí, eliminar cuenta"
+          }
         }
       }
     },

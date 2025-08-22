@@ -295,7 +295,13 @@
         "delete": {
           "title": "Delete Account",
           "description": "This action is permanent and cannot be undone.",
-          "button": "Delete my account"
+          "button": "Delete my account",
+          "confirm": {
+            "title": "Are you sure?",
+            "description": "This action cannot be undone. This will permanently delete your account and all your data from our servers.",
+            "cancel": "Cancel",
+            "action": "Yes, delete account"
+          }
         }
       }
     },
@@ -426,7 +432,7 @@
         }
       }
     },
-    "onboardingTour": {
+     "onboardingTour": {
       "next": "Next",
       "prev": "Previous",
       "done": "Done",
@@ -458,7 +464,7 @@
         "title": "AI Assistant",
         "description": "Have any questions? Click here to chat with our AI assistant at any time."
       },
-       "startWorkout": {
+      "startWorkout": {
         "title": "Start Your Workout",
         "description": "Click here to start the first day of your routine. Inside you will find more tips about the features!"
       },

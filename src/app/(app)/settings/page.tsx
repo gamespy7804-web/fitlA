@@ -6,20 +6,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music, Volume2, ShieldAlert, Languages } from 'lucide-react';
+import { LogOut, Music, Volume2, ShieldAlert, Languages, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
 import { toggleMusic, setMusicVolume, setSfxVolume } from '@/hooks/use-audio-effects';
 import { useI18n, type Locale } from '@/i18n/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const { t, setLocale, locale } = useI18n();
 
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(50);
   const [sfxVolume, setSfxVolumeState] = useState(50);
+  const [isDeleting, setIsDeleting] = useState(false);
 
 
   useEffect(() => {
@@ -59,6 +71,14 @@ export default function SettingsPage() {
     setSfxVolumeState(newVolume);
     setSfxVolume(newVolume / 100);
   };
+  
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    await deleteAccount();
+    // The deleteAccount function will handle redirection on success/failure.
+    // We can set isDeleting to false in case of failure, which will be handled in the hook.
+    setIsDeleting(false);
+  }
 
 
   return (
@@ -183,10 +203,29 @@ export default function SettingsPage() {
                 <h3 className="font-medium text-destructive">{t('settings.account.delete.title')}</h3>
                 <p className="text-sm text-muted-foreground">{t('settings.account.delete.description')}</p>
              </div>
-             <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
-                <ShieldAlert className="mr-2" />
-                {t('settings.account.delete.button')}
-             </Button>
+             <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
+                  <ShieldAlert className="mr-2" />
+                  {t('settings.account.delete.button')}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t('settings.account.delete.confirm.title')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('settings.account.delete.confirm.description')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>{t('settings.account.delete.confirm.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {t('settings.account.delete.confirm.action')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
            </div>
         </CardContent>
       </Card>
