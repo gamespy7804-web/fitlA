@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -68,6 +68,14 @@ export default function OnboardingPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  useEffect(() => {
+    // This effect runs on the client after hydration
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    if (onboardingComplete === 'true') {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
   const questions = [
     { id: 'sport', label: t('onboarding.questions.sport.label'), placeholder: t('onboarding.questions.sport.placeholder'), type: 'text' },
     { id: 'goals', label: t('onboarding.questions.goals.label'), placeholder: t('onboarding.questions.goals.placeholder'), type: 'text' },
@@ -128,7 +136,6 @@ export default function OnboardingPage() {
       return; 
     }
     
-    // This is the last data input step before clarification or submission
     if (currentQuestionId === 'trainingDuration') {
        if (clarificationQuestion) {
          setCurrentQuestionIndex(questions.findIndex(q => q.id === 'clarificationAnswers'));
@@ -145,7 +152,6 @@ export default function OnboardingPage() {
     }
     
     if (currentQuestionIndex < questions.length - 1) {
-       // This handles the case where there is no clarification question and we are at the end of the standard questions.
        if (questions[currentQuestionIndex + 1].id === 'clarificationAnswers' && !clarificationQuestion) {
          handleSubmitForm(apiValues);
        } else {

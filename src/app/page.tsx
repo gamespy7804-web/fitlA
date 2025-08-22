@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -10,17 +11,16 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (user) {
-        const onboardingComplete = localStorage.getItem('onboardingComplete');
-        if (onboardingComplete === 'true') {
-          router.replace('/dashboard');
-        } else {
-          router.replace('/onboarding');
-        }
-      } else {
-        router.replace('/login');
-      }
+    if (loading) {
+      return; // Wait until loading is false
+    }
+
+    if (user) {
+      // User is logged in, let the onboarding page handle the next step.
+      router.replace('/onboarding');
+    } else {
+      // No user, send to login.
+      router.replace('/login');
     }
   }, [user, loading, router]);
 
