@@ -54,7 +54,7 @@ const createFormSchema = (t: (key: string, ...args: any[]) => string) => z.objec
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
   trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
   trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
-  clarificationAnswers: z.string().min(1, t('onboarding.validation.clarification.min')),
+  fitnessAssessment: z.string().min(1, t('onboarding.validation.clarification.min')),
 });
 
 
@@ -67,7 +67,6 @@ interface WorkoutGeneratorDialogProps {
 export function WorkoutGeneratorDialog({ children, open, onOpenChange }: WorkoutGeneratorDialogProps) {
   const { t, locale } = useI18n();
   const [isLoading, setIsLoading] = useState(false);
-  const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const [step, setStep] = useState(1);
   const { toast } = useToast();
@@ -77,30 +76,15 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     resolver: zodResolver(formSchema),
   });
 
-  const handleStep1Submit = async () => {
+  const handleNextStep = async () => {
     const isValid = await form.trigger(['goals', 'sport', 'fitnessLevel']);
-    if (!isValid) return;
-    
-    setIsLoading(true);
-    try {
-      const { sport, goals, fitnessLevel } = form.getValues();
-      const initialResult = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
-      if (initialResult.clarificationQuestion) {
-        setClarificationQuestion(initialResult.clarificationQuestion);
-        setStep(2);
-      } else {
-        toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title') });
-      }
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
-    } finally {
-      setIsLoading(false);
+    if (isValid) {
+      setStep(2);
     }
   };
   
-  const handleStep2Submit = async () => {
-      const isValid = await form.trigger(['clarificationAnswers', 'trainingDays', 'trainingDuration']);
+  const handleFinalSubmit = async () => {
+      const isValid = await form.trigger(['fitnessAssessment', 'trainingDays', 'trainingDuration']);
       if(!isValid) return;
 
       setIsLoading(true);
@@ -126,7 +110,6 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     if (!open) {
       form.reset();
       setResult(null);
-      setClarificationQuestion('');
       setIsLoading(false);
       setStep(1);
     }
@@ -153,7 +136,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
         </DialogHeader>
         {step === 1 && (
           <Form {...form}>
-            <form onSubmit={(e) => {e.preventDefault(); handleStep1Submit()}} className="space-y-4">
+            <form onSubmit={(e) => {e.preventDefault(); handleNextStep()}} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="goals"
@@ -219,15 +202,15 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
         )}
         {step === 2 && (
              <Form {...form}>
-                <form onSubmit={(e) => {e.preventDefault(); handleStep2Submit()}} className="space-y-4">
+                <form onSubmit={(e) => {e.preventDefault(); handleFinalSubmit()}} className="space-y-4">
                      <div>
                         <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                           <Bot className="text-primary size-8 shrink-0 mt-1" />
-                          <p className="text-secondary-foreground">{clarificationQuestion || t('onboarding.aiThinking')}</p>
+                           <p className="text-secondary-foreground">{t('onboarding.questions.clarification.generic')}</p>
                         </div>
                         <FormField
                           control={form.control}
-                          name="clarificationAnswers"
+                          name="fitnessAssessment"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-lg">{t('onboarding.questions.clarification.label')}</FormLabel>

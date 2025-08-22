@@ -336,7 +336,11 @@
         },
         "trainingDays": { "label": "How many days a week can you train?" },
         "trainingDuration": { "label": "How much time per session (minutes)?" },
-        "clarification": { "label": "Your Answer", "placeholder": "e.g., I can do 10 push-ups..." },
+        "clarification": {
+            "label": "Your Answer",
+            "placeholder": "e.g., I can do 10 push-ups, run a 5k in 30 min...",
+            "generic": "To create the best plan for you, please describe your current fitness level with concrete data. For example: number of push-ups/pull-ups you can do, your best time for a 1k/5k, or your max lifts in exercises like squat or bench press."
+        },
         "optionalDetails": "Optional Details"
       },
       "buttons": {

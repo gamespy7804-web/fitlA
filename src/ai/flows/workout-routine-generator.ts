@@ -22,9 +22,9 @@ const WorkoutRoutineInputSchema = z.object({
   age: z.coerce.number().optional().describe("The user's age."),
   weight: z.coerce.number().optional().describe("The user's weight in kg."),
   gender: z.string().optional().describe("The user's gender."),
-  trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
-  trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  clarificationAnswers: z.string().optional().describe("The user's answers to the clarification questions."),
+  trainingDays: z.coerce.number().describe("How many days per week the user wants to train."),
+  trainingDuration: z.coerce.number().describe("How long each training session should be in minutes."),
+  fitnessAssessment: z.string().describe("The user's answer to a question that helps quantify their fitness level."),
   language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
@@ -40,22 +40,12 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert sports trainer, specializing in generating personalized training routines.
 Your responses MUST be in the user's selected language: {{language}}.
 
-**Step 1: Evaluate Information and Ask for Clarification (ALWAYS)**
-- Examine the user's sport, goals, and fitness level.
-- You MUST ALWAYS ask a single, specific clarifying question to better understand and quantify their current fitness level in the context of their chosen sport. Your goal is to get a concrete metric, not a subjective feeling.
-- **This is not optional. If 'clarificationAnswers' is not provided, you must ask a question.**
-- Examples of good questions:
-  - For 'Soccer': "What distance can you currently run in 20 minutes?"
-  - For 'Calisthenics': "How many consecutive push-ups and pull-ups can you do?"
-  - For 'Swimming': "What is your best time for a 100-meter freestyle?"
-  - For 'Weightlifting': "What are your current max lifts (or estimated max) for squat, bench press, and deadlift?"
-- Return ONLY this question in the 'clarificationQuestion' field and nothing else.
+Your task is to generate a detailed and structured training plan based on the user's provided information.
+The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'. The sum of exercise durations plus rest times for each day should approximate the 'trainingDuration'.
 
-**Step 2: Generate Training Plan (ONLY if you have answers)**
-- This step is ONLY executed if 'clarificationAnswers', 'trainingDays', and 'trainingDuration' are provided.
-- If they are provided, generate a detailed and structured training plan.
-- The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'. The sum of exercise durations plus rest times for each day should approximate the 'trainingDuration'.
-- Consider all user parameters: sport, goals, fitness level, age, weight, gender, and their answers to clarifying questions.
+Consider all user parameters: sport, goals, fitness level, age, weight, gender, and their fitness assessment.
+The 'fitnessAssessment' is a key piece of information to accurately gauge the user's current capabilities. Use it to create a challenging but achievable routine.
+
 - For EACH exercise, determine if it would benefit from video technique analysis for form correction. Set 'requiresFeedback' to true **only** for complex, high-injury-risk, or technique-critical exercises, such as Squats, Deadlifts, Bench Press, Box Jumps, etc. For simpler, isolation, or stretching exercises (like planks, bicep curls, stretches), set it to false.
 - For EACH exercise, determine if weight should be logged. Set 'requiresWeight' to true for exercises that typically involve weightlifting (e.g., Squats, Bench Press, Deadlift) and false for bodyweight exercises (e.g., Push-ups, Planks, Stretches).
 - For EACH exercise, the 'reps' field MUST contain a number of repetitions (e.g., "8-12") OR a duration (e.g., "30 sec"). It should NEVER contain both.
@@ -75,12 +65,12 @@ Your responses MUST be in the user's selected language: {{language}}.
 - Sport: {{{sport}}}
 - Goals: {{{goals}}}
 - Stated Fitness Level: {{{fitnessLevel}}}
+- Fitness Assessment: {{{fitnessAssessment}}}
+- Training days per week: {{{trainingDays}}}
+- Training duration per session: {{{trainingDuration}}} minutes
 {{#if age}}- Age: {{{age}}}{{/if}}
 {{#if weight}}- Weight: {{{weight}}} kg{{/if}}
 {{#if gender}}- Gender: {{{gender}}}{{/if}}
-{{#if trainingDays}}- Training days per week: {{{trainingDays}}}{{/if}}
-{{#if trainingDuration}}- Training duration per session: {{{trainingDuration}}} minutes{{/if}}
-{{#if clarificationAnswers}}- Fitness Details: {{{clarificationAnswers}}}{{/if}}
   `,
 });
 
@@ -92,6 +82,10 @@ const workoutRoutineFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
+    // Ensure clarificationQuestion is not part of the final output
+    if (output?.clarificationQuestion) {
+        output.clarificationQuestion = undefined;
+    }
     return output!;
   }
 );

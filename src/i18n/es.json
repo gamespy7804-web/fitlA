@@ -336,7 +336,11 @@
         },
         "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?" },
         "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?" },
-        "clarification": { "label": "Tu Respuesta", "placeholder": "ej., Puedo hacer 10 flexiones..." },
+        "clarification": {
+            "label": "Tu Respuesta",
+            "placeholder": "ej., Puedo hacer 10 flexiones, corro 5km en 30 min...",
+            "generic": "Para crear el mejor plan para ti, por favor describe tu nivel de condición física actual con datos concretos. Por ejemplo: número de flexiones/dominadas que puedes hacer, tu mejor tiempo en 1km/5km, o tus pesos máximos en ejercicios como sentadilla o press de banca."
+         },
         "optionalDetails": "Detalles Opcionales"
       },
       "buttons": {
@@ -365,7 +369,7 @@
         "weight": { "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
         "trainingDays": { "required": "Los días son requeridos", "min": "Al menos 1 día", "max": "Máximo 7 días" },
         "trainingDuration": { "required": "La duración es requerida", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" },
-        "clarification": { "min": "Por favor, responde la pregunta para continuar." }
+        "clarification": { "min": "Por favor, responde la pregunta para continuar."}
       }
     },
     "workoutPage": {

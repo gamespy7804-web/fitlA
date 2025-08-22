@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
-import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -52,18 +51,17 @@ const createOnboardingSchema = (t: (key: string, ...args: any[]) => string) => z
   gender: z.enum(['male', 'female', 'other']).optional(),
   trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
   trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
-  clarificationAnswers: z.string().min(1, t('onboarding.validation.clarification.min')),
+  fitnessAssessment: z.string().min(1, t('onboarding.validation.clarification.min')),
 });
 
 type OnboardingData = z.infer<ReturnType<typeof createOnboardingSchema>>;
 
-type StepId = 'sport' | 'goals' | 'fitnessLevel' | 'clarification' | 'details';
+type StepId = 'sport' | 'goals' | 'fitnessLevel' | 'details' | 'assessment';
 
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
   const [currentStep, setCurrentStep] = useState<StepId>('sport');
   const [isLoading, setIsLoading] = useState(false);
-  const [clarificationQuestion, setClarificationQuestion] = useState('');
   const [direction, setDirection] = useState(1);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
   const { toast } = useToast();
@@ -78,7 +76,7 @@ export default function OnboardingPage() {
       age: undefined,
       weight: undefined,
       gender: 'male',
-      clarificationAnswers: '',
+      fitnessAssessment: '',
     },
     mode: 'onChange'
   });
@@ -110,30 +108,13 @@ export default function OnboardingPage() {
         if (await form.trigger('goals')) setCurrentStep('fitnessLevel');
         break;
       case 'fitnessLevel':
-        if (await form.trigger('fitnessLevel')) {
-          setIsLoading(true);
-          try {
-            const { sport, goals, fitnessLevel } = form.getValues();
-            const result = await generateWorkoutRoutine({ sport, goals, fitnessLevel, language: locale });
-            if (result.clarificationQuestion) {
-              setClarificationQuestion(result.clarificationQuestion);
-              setCurrentStep('clarification');
-            } else {
-              toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
-            }
-          } catch (error) {
-            console.error(error);
-            toast({ variant: 'destructive', title: t('onboarding.errors.clarification.title'), description: t('onboarding.errors.clarification.description') });
-          } finally {
-            setIsLoading(false);
-          }
-        }
-        break;
-      case 'clarification':
-        if(await form.trigger('clarificationAnswers')) setCurrentStep('details');
+        if (await form.trigger('fitnessLevel')) setCurrentStep('details');
         break;
       case 'details':
-        if (await form.trigger(['trainingDays', 'trainingDuration', 'age', 'weight', 'gender'])) {
+        if(await form.trigger(['trainingDays', 'trainingDuration', 'age', 'weight', 'gender'])) setCurrentStep('assessment');
+        break;
+      case 'assessment':
+        if (await form.trigger(['fitnessAssessment'])) {
           handleSubmitForm();
         }
         break;
@@ -143,10 +124,10 @@ export default function OnboardingPage() {
   const handleBack = () => {
     setDirection(-1);
     switch (currentStep) {
-      case 'details':
-        setCurrentStep('clarification');
+      case 'assessment':
+        setCurrentStep('details');
         break;
-      case 'clarification':
+      case 'details':
         setCurrentStep('fitnessLevel');
         break;
       case 'fitnessLevel':
@@ -190,8 +171,8 @@ export default function OnboardingPage() {
       { id: 'sport', isCompleted: form.formState.dirtyFields.sport || false },
       { id: 'goals', isCompleted: form.formState.dirtyFields.goals || false },
       { id: 'fitnessLevel', isCompleted: form.formState.dirtyFields.fitnessLevel || false },
-      { id: 'clarification', isCompleted: form.formState.dirtyFields.clarificationAnswers || false },
-      { id: 'details', isCompleted: form.formState.dirtyFields.trainingDays && form.formState.dirtyFields.trainingDuration || false },
+      { id: 'details', isCompleted: (form.formState.dirtyFields.trainingDays && form.formState.dirtyFields.trainingDuration) || false },
+      { id: 'assessment', isCompleted: form.formState.dirtyFields.fitnessAssessment || false },
   ];
   const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
@@ -215,7 +196,7 @@ export default function OnboardingPage() {
             ))}
           </div>
         </CardHeader>
-        <CardContent className="overflow-hidden relative h-80">
+        <CardContent className="overflow-hidden relative h-96">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={currentStep}
@@ -294,15 +275,15 @@ export default function OnboardingPage() {
                     />
                   )}
                   
-                  {currentStep === 'clarification' && (
+                  {currentStep === 'assessment' && (
                       <div>
                         <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
                           <Bot className="text-primary size-8 shrink-0 mt-1" />
-                          <p className="text-secondary-foreground">{clarificationQuestion || t('onboarding.aiThinking')}</p>
+                          <p className="text-secondary-foreground">{t('onboarding.questions.clarification.generic')}</p>
                         </div>
                         <FormField
                           control={form.control}
-                          name="clarificationAnswers"
+                          name="fitnessAssessment"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-lg">{t('onboarding.questions.clarification.label')}</FormLabel>
@@ -371,7 +352,7 @@ export default function OnboardingPage() {
                       <ChevronLeft /> {t('onboarding.buttons.back')}
                     </Button>
                     
-                    {currentStep === 'details' ? (
+                    {currentStep === 'assessment' ? (
                        <Button type="submit" disabled={isLoading}>
                          {isLoading ? <Loader2 className="animate-spin" /> : <> <Sparkles className="mr-2" /> {t('onboarding.buttons.generate')}</>}
                        </Button>
