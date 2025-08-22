@@ -18,7 +18,7 @@ const GoogleIcon = (props: any) => (
 
 
 export default function LoginPage() {
-  const { signInWithGoogle, user } = useAuth();
+  const { signInWithGoogle } = useAuth();
   const { t } = useI18n();
 
   return (

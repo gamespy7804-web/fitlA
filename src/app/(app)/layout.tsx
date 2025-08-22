@@ -6,14 +6,13 @@ import { AppShell } from '@/components/layout/app-shell';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { WorkoutGeneratorDialog } from './dashboard/workout-generator-dialog';
 import { ChatbotSheet } from '@/components/chatbot/chatbot-sheet';
-import { AuthProvider } from '@/hooks/use-auth';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { initializeAudio, startMusic } from '@/hooks/use-audio-effects';
 import { WelcomeOverlay } from './welcome-overlay';
-import { I18nProvider } from '@/i18n/client';
+import { Toaster } from '@/components/ui/toaster';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -64,8 +63,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <I18nProvider>
-      <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+    <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
         <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
         <AppShell openChatbot={() => setIsChatbotOpen(true)}>
           <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
@@ -81,7 +79,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             setIsGeneratorOpen(true);
           }} 
         />
-      </div>
-    </I18nProvider>
+        <Toaster />
+    </div>
   );
 }
