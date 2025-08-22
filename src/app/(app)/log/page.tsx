@@ -18,6 +18,7 @@ import { es, enUS } from 'date-fns/locale';
 import { useEffect, useState, useCallback } from 'react';
 import { useI18n } from '@/i18n/client';
 import { useToast } from '@/hooks/use-toast';
+import { AdBanner } from '@/components/ad-banner';
 
 type LogEntry = {
   date: string;
@@ -166,6 +167,14 @@ export default function LogPage() {
       </Card>
 
       <ProgressChart />
+
+      <AdBanner
+        title="Equipamiento Profesional"
+        description="Encuentra las mejores herramientas y accesorios para llevar tu entrenamiento al siguiente nivel."
+        buttonText="Ver Tienda"
+        imageUrl="https://placehold.co/800x200"
+        data-ai-hint="fitness equipment"
+      />
     </div>
   );
 }

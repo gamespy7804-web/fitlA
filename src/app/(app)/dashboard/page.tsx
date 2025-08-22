@@ -6,6 +6,7 @@ import { PerformanceFeedback } from './performance-feedback';
 import { Zap } from 'lucide-react';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 import { useI18n } from '@/i18n/client';
+import { AdBanner } from '@/components/ad-banner';
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -23,6 +24,14 @@ export default function DashboardPage() {
       </div>
 
       <WorkoutNodePath />
+
+      <AdBanner
+        title="Potencia Tu Nutrición"
+        description="Descubre planes de comida personalizados para complementar tu entrenamiento y alcanzar tus metas más rápido."
+        buttonText="Obtener Plan"
+        imageUrl="https://placehold.co/800x200"
+        data-ai-hint="nutrition healthy food"
+      />
       
     </div>
   );
