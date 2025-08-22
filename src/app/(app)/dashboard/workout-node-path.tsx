@@ -128,7 +128,7 @@ export function WorkoutNodePath() {
                     onClick={() => !isLocked && handleNodeClick(index)}
                     disabled={isLocked}
                     className={cn(
-                      'relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
+                      'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
                       // Base styles
                       'bg-card shadow-lg',
                       // Completed State
@@ -140,9 +140,9 @@ export function WorkoutNodePath() {
                     )}
                   >
                     {isCompleted && <Check className="w-12 h-12 stroke-3" />}
-                    {isLocked && <Lock className="w-8 h-8 text-muted-foreground/50" />}
+                    {isLocked && <Lock className="w-10 h-10 text-muted-foreground/50" />}
                     {!isCompleted && !isLocked && (
-                        <span className="text-4xl font-bold text-primary font-headline">{day.day}</span>
+                        <span className="text-5xl font-bold text-primary font-headline">{day.day}</span>
                     )}
                      <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold shadow-md">{t('workoutNodePath.day')} {day.day}</div>
                   </button>
@@ -160,7 +160,7 @@ export function WorkoutNodePath() {
             'relative z-10 w-32 h-32 flex items-center justify-center',
              routine.length % 2 !== 0 ? 'self-start' : 'self-end'
         )}>
-            <AdaptiveProgressionDialog className="w-full md:w-auto text-xs text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
+            <AdaptiveProgressionDialog className="text-xs w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
                 {t('workoutNodePath.generateNextWeek')}
             </AdaptiveProgressionDialog>
         </div>
