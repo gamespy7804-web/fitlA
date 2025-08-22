@@ -424,7 +424,11 @@
       },
       "actions": {
         "title": "Acciones Principales",
-        "description": "Desde este botón podrás generar una nueva rutina desde cero o ir a la herramienta de análisis de técnica."
+        "description": "Desde este botón podrás generar una nueva rutina desde cero o ir a la herramienta de análisis de técnica. ¡Pruébalo!"
+      },
+      "feedback": {
+        "title": "Análisis de Forma",
+        "description": "Esta opción te lleva a la herramienta para grabar tus ejercicios y recibir correcciones de la IA. ¡Así aseguras una buena técnica!"
       },
       "log": {
         "title": "Registro de Entrenamiento",
@@ -438,9 +442,21 @@
         "title": "Asistente de IA",
         "description": "¿Tienes alguna duda? Haz clic aquí para chatear con nuestro asistente de IA en cualquier momento."
       },
+      "startWorkout": {
+        "title": "Comienza tu Entrenamiento",
+        "description": "Haz clic aquí para empezar el primer día de tu rutina. ¡Dentro encontrarás más consejos sobre las funciones!"
+      },
       "end": {
         "title": "¡Ya estás listo!",
         "description": "Ya conoces lo básico. Es hora de empezar a entrenar. ¡A por ello!"
+      },
+      "technique": {
+        "title": "Ver Técnica",
+        "description": "Haz clic aquí para buscar un video en YouTube sobre cómo realizar el ejercicio correctamente."
+      },
+      "formAnalysis": {
+        "title": "Análisis de Forma con IA",
+        "description": "Si un ejercicio tiene este ícono, puedes hacer clic para añadirlo a una lista. Luego, en la herramienta de Análisis de Forma, podrás grabarte para que la IA corrija tu técnica."
       }
     }
   }

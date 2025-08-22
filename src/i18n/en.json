@@ -424,7 +424,11 @@
       },
       "actions": {
         "title": "Main Actions",
-        "description": "From this button you can generate a new routine from scratch or go to the technique analysis tool."
+        "description": "From this button you can generate a new routine from scratch or go to the technique analysis tool. Give it a try!"
+      },
+      "feedback": {
+        "title": "Form Analysis",
+        "description": "This option takes you to the tool to record your exercises and receive AI corrections. This ensures good technique!"
       },
       "log": {
         "title": "Training Log",
@@ -438,9 +442,21 @@
         "title": "AI Assistant",
         "description": "Have any questions? Click here to chat with our AI assistant at any time."
       },
+       "startWorkout": {
+        "title": "Start Your Workout",
+        "description": "Click here to start the first day of your routine. Inside you will find more tips about the features!"
+      },
       "end": {
         "title": "You're Ready!",
         "description": "You now know the basics. It's time to start training. Let's go for it!"
+      },
+      "technique": {
+        "title": "View Technique",
+        "description": "Click here to search for a YouTube video on how to perform the exercise correctly."
+      },
+      "formAnalysis": {
+        "title": "AI Form Analysis",
+        "description": "If an exercise has this icon, you can click it to add it to a list. Then, in the Form Analysis tool, you can record yourself for the AI to correct your technique."
       }
     }
   }

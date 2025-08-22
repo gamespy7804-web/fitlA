@@ -93,7 +93,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10" onClick={handleAddToFeedbackQueue}>
+                        <Button id="add-to-feedback-btn" variant="ghost" size="icon" className="text-primary hover:bg-primary/10" onClick={handleAddToFeedbackQueue}>
                             <Video />
                         </Button>
                     </TooltipTrigger>
@@ -153,7 +153,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
               </Button>
           )}
           {exercise.originalExercise.youtubeQuery && (
-            <a href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-red-500 border border-red-500/50 hover:bg-red-500/10 hover:text-red-500 h-10 px-4 py-2">
+            <a id="view-technique-btn" href={youtubeSearchUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-red-500 border border-red-500/50 hover:bg-red-500/10 hover:text-red-500 h-10 px-4 py-2">
                 <Youtube className="mr-2" />
                 {t('workoutExerciseCard.viewTechnique')}
             </a>

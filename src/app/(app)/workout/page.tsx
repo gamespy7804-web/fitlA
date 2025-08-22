@@ -17,6 +17,7 @@ import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { WorkoutTour } from './workout-tour';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
@@ -215,6 +216,7 @@ function WorkoutPageContent() {
 
   return (
     <div className="space-y-6">
+       <WorkoutTour />
        <div>
         <h1 className="text-2xl text-center font-bold tracking-tight font-headline">
           {t('workoutPage.exercise')} {currentExerciseIndex + 1} {t('workoutPage.of')} {exerciseLog.length}

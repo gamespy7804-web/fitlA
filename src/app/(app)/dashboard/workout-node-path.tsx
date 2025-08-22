@@ -109,7 +109,7 @@ export function WorkoutNodePath() {
             <div
               key={day.day}
               className={cn(
-                'relative z-10 w-48 h-48 flex items-center justify-center',
+                'relative z-10 w-48 h-48 flex items-center justify-center workout-node',
                 index % 2 !== 0 ? 'self-start' : 'self-end'
               )}
             >
