@@ -65,7 +65,7 @@ function WorkoutPageContent() {
       router.push('/dashboard');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams.get('day')]);
 
   const initializeWorkoutLog = (dayData: DaySchema) => {
     const newLog = dayData.exercises.map((exercise) => ({

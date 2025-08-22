@@ -33,18 +33,19 @@ function FeedbackToolContent() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(false);
   
   const { toast } = useToast();
+  
+  const exerciseFromParam = searchParams.get('exercise');
 
   const loadPendingExercises = useCallback(() => {
     const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
     setExercisesForFeedback(pending);
 
-    const exerciseFromParam = searchParams.get('exercise');
     if (exerciseFromParam && pending.includes(exerciseFromParam)) {
         setSelectedExercise(exerciseFromParam);
     } else if (pending.length > 0 && !selectedExercise) {
         setSelectedExercise(pending[0]);
     }
-  }, [searchParams, selectedExercise]);
+  }, [exerciseFromParam, selectedExercise]);
 
 
   useEffect(() => {
