@@ -203,7 +203,6 @@ export default function OnboardingPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div
@@ -212,6 +211,7 @@ export default function OnboardingPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 50 }}
                 >
+                    <Form {...form}>
                     <form onSubmit={(e) => { e.preventDefault(); handleStep1Submit(); }} className="space-y-4">
                       <FormField
                         control={form.control}
@@ -277,6 +277,7 @@ export default function OnboardingPage() {
                         </Button>
                       </div>
                     </form>
+                    </Form>
                 </motion.div>
               )}
 
@@ -288,6 +289,7 @@ export default function OnboardingPage() {
                       exit={{ opacity: 0, x: 50 }}
                       className="space-y-4"
                   >
+                      <Form {...form}>
                       <form onSubmit={(e) => { e.preventDefault(); handleStep2Submit(); }} className="space-y-4">
                           <FormField
                               control={form.control}
@@ -320,6 +322,7 @@ export default function OnboardingPage() {
                               </Button>
                           </div>
                       </form>
+                      </Form>
                   </motion.div>
               )}
 
@@ -331,7 +334,7 @@ export default function OnboardingPage() {
                   exit={{ opacity: 0, x: 50 }}
                   className="space-y-6"
                 >
-                    <form onSubmit={(e) => { e.preventDefault(); handleAssessmentSubmit(); }}>
+                    <form onSubmit={handleSubmit(handleAssessmentSubmit)}>
                         {isLoading && assessmentQuestions.length === 0 ? (
                             <div className="flex justify-center items-center h-48">
                                 <Loader2 className="animate-spin text-primary size-10" />
@@ -375,7 +378,6 @@ export default function OnboardingPage() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </Form>
         </CardContent>
       </Card>
     </div>
