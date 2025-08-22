@@ -57,8 +57,8 @@ const createFormSchema = (t: (key: string, ...args: any[]) => string) => z.objec
   goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
   sport: z.string().min(3, t('workoutGenerator.form.validations.sport.min')),
   fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
-  trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
-  trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
+  trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+  trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
 });
 
 
@@ -80,6 +80,12 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const formSchema = createFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      goals: '',
+      sport: '',
+      trainingDays: 3,
+      trainingDuration: 60,
+    }
   });
 
   const handleInitialSubmit = async () => {
@@ -149,7 +155,13 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const handleOpenChange = (open: boolean) => {
     onOpenChange?.(open);
     if (!open) {
-      form.reset();
+      form.reset({
+        goals: '',
+        sport: '',
+        trainingDays: 3,
+        trainingDuration: 60,
+        fitnessLevel: undefined,
+      });
       setResult(null);
       setIsLoading(false);
       setStep(1);
@@ -351,5 +363,3 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     </Dialog>
   );
 }
-
-    

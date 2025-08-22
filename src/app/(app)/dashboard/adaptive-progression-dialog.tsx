@@ -64,9 +64,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     resolver: zodResolver(formSchema),
     defaultValues: {
       selfReportedFitness: 'just-right',
+      userFeedback: '',
       trainingDays: undefined,
       trainingDuration: undefined,
-      userFeedback: '',
     },
   });
 
@@ -113,7 +113,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     if (isOpen && originalRoutine?.structuredRoutine && originalRoutine.structuredRoutine.length > 0) {
       form.setValue('trainingDays', originalRoutine.structuredRoutine.length);
       const totalDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0);
-      const avgDuration = totalDuration / originalRoutine.structuredRoutine.length;
+      const avgDuration = totalDuration > 0 ? totalDuration / originalRoutine.structuredRoutine.length : 0;
       form.setValue('trainingDuration', Math.round(avgDuration));
     }
   }, [originalRoutine, form, isOpen]);
@@ -171,7 +171,12 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      form.reset({ selfReportedFitness: 'just-right', userFeedback: ''});
+      form.reset({
+        selfReportedFitness: 'just-right',
+        userFeedback: '',
+        trainingDays: undefined,
+        trainingDuration: undefined,
+      });
       setIsLoading(false);
     }
   };
@@ -228,7 +233,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                   <FormControl>
                     <Textarea
                       placeholder={t('adaptiveProgression.feedbackPlaceholder')}
-                      className="resize-y min-h-24"
+                      className="resize-y min-h-32"
                       {...field}
                     />
                   </FormControl>
@@ -247,7 +252,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                         <FormItem>
                           <FormLabel>{t('adaptiveProgression.daysPerWeek')}</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder={t('adaptiveProgression.daysPlaceholder')} {...field} value={field.value ?? ''} />
+                            <Input type="number" placeholder={t('adaptiveProgression.daysPlaceholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -260,7 +265,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                         <FormItem>
                           <FormLabel>{t('adaptiveProgression.minPerSession')}</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder={t('adaptiveProgression.durationPlaceholder')} {...field} value={field.value ?? ''} />
+                            <Input type="number" placeholder={t('adaptiveProgression.durationPlaceholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

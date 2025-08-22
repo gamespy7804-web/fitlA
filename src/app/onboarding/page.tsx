@@ -68,6 +68,14 @@ export default function OnboardingPage() {
   const form = useForm<OnboardingData>({
     resolver: zodResolver(onboardingSchema),
     mode: 'onChange',
+    defaultValues: {
+      sport: '',
+      goals: '',
+      trainingDays: 3,
+      trainingDuration: 60,
+      age: undefined,
+      weight: undefined,
+    }
   });
   const { watch, setValue, trigger } = form;
   const sportValue = watch('sport');
@@ -240,7 +248,7 @@ export default function OnboardingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
+                              <FormControl><Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -251,7 +259,7 @@ export default function OnboardingPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} value={field.value ?? ''} /></FormControl>
+                              <FormControl><Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -265,7 +273,7 @@ export default function OnboardingPage() {
                         <FormItem>
                           <FormLabel>{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder={t('workoutGenerator.form.fitnessLevel.placeholder')} /></SelectTrigger></FormControl>
                             <SelectContent>
                               <SelectItem value="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</SelectItem>
                               <SelectItem value="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</SelectItem>
@@ -320,5 +328,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
