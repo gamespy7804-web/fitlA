@@ -131,17 +131,16 @@ export default function OnboardingPage() {
 
     try {
         const values = form.getValues();
+        // The goal here is to get the first clarification question.
         const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
         
         if (response.clarificationQuestion) {
             const parsedQuestion = JSON.parse(response.clarificationQuestion);
             setClarificationQuestion(parsedQuestion);
             setStep(3); // Go to clarification step
-        } else if(response.routine || response.structuredRoutine) {
-            // This is a fallback in case the AI generates a routine directly
-            handleFinish(response);
         } else {
-             toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
+             // This case should ideally not happen with the new prompt, but as a fallback, we finish.
+             handleFinish(response);
         }
     } catch (e) {
         console.error(e);

@@ -55,7 +55,7 @@ Review all the user's provided information.
 {{#if trainingDuration}}- Training duration per session: {{{trainingDuration}}} minutes{{/if}}
 
 **Step 2: Decide Action - Ask or Generate**
-- **If the information is too generic** (e.g., fitnessLevel is just "intermediate" without concrete data from a fitness assessment), you MUST ask a clarifying question to quantify the user's ability.
+- **If the information is too generic OR the 'fitnessAssessment' field is empty**, you MUST ask a clarifying question to quantify the user's ability. This is your primary action. Do NOT generate a routine on the first pass.
 - The question must be specific to the sport. It should be a multiple-choice question to make it easy for the user to answer.
 - Frame the question and options in the \`clarificationQuestion\` field as a JSON string.
 - Example for "Calisthenics": \`{"question": "How many consecutive push-ups can you do?", "options": ["Fewer than 5", "5-15", "16-30", "More than 30"]}\`
@@ -63,7 +63,7 @@ Review all the user's provided information.
 - Example for "Weightlifting": \`{"question": "What is your estimated one-rep max for the squat compared to your bodyweight?", "options": ["Less than my bodyweight", "Around my bodyweight", "1.5x my bodyweight", "More than 1.5x my bodyweight"]}\`
 - If you ask a question, DO NOT generate a routine. The other fields in the output must be empty.
 
-- **If you have enough information** (either from the initial assessment or previous answers), generate a full routine.
+- **If you have enough information** (from the fitnessAssessment history), generate a full routine.
 - The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'.
 - For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts, Olympic Lifts).
 - For EACH exercise, set 'requiresWeight' to true for weightlifting exercises and false for bodyweight ones.
