@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { Check, Dumbbell, Lock, Flag } from 'lucide-react';
+import { Check, Dumbbell, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
