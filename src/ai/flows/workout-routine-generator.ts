@@ -40,29 +40,16 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert sports trainer, specializing in generating personalized training routines.
 Your responses MUST be in the user's selected language: {{language}}.
 
-Your task is to act as a personal trainer. You will either generate a detailed training plan or, more importantly, generate a set of assessment questions to accurately gauge the user's fitness level before creating a routine.
+Your task is to act as a personal trainer and generate a detailed training plan based on the user's provided information.
 
-**Step 1: Assess Information**
-Review all the user's provided information.
+**User Information:**
 - Sport: {{{sport}}}
 - Goals: {{{goals}}}
 - Stated Fitness Level: {{{fitnessLevel}}}
-- Fitness Assessment History: {{#if fitnessAssessment}}{{{fitnessAssessment}}}{{else}}No history yet.{{/if}}
 - Training days per week: {{{trainingDays}}}
 - Training duration per session: {{{trainingDuration}}} minutes
 
-**Step 2: Decide Action - Ask or Generate**
-
-- **IF the 'fitnessAssessment' field is empty or contains fewer than 5 questions, your PRIMARY action is to generate a new set of diagnostic questions.** Do NOT generate a routine.
-- You MUST generate a set of exactly 5 multiple-choice questions.
-- These questions must be designed to evaluate different skills and abilities relevant to the user's SPECIFIC SPORT AND GOALS.
-  - For example, if the sport is "Calisthenics" and goals are "learn planche", you must ask about pushing strength (dips), pulling strength (pull-ups), core strength, and a specific question about their current planche progression (e.g., "How long can you hold a tuck planche?").
-  - For "Running" with a goal of "run a 10k", ask about their best 5k time, weekly mileage, and leg strength (e.g., "How many squats can you do?").
-- The questions MUST be returned in the \`assessmentQuestions\` field as an array of JSON objects, each with a "question" and an array of "options".
-- Example for "Calisthenics": \`[{"question": "How many consecutive PULL-UPS can you do?", "options": ["0", "1-5", "6-10", "More than 10"]}, {"question": "How many consecutive DIPS can you do?", "options": ["0-5", "6-15", "16-25", "More than 25"]}, ...]\`
-- If you generate questions, DO NOT generate a routine. The 'routine' and 'structuredRoutine' fields must be empty.
-
-- **IF the 'fitnessAssessment' field contains answers to your previously generated questions, you have enough information. Generate a full, detailed routine.**
+**Action: Generate a full, detailed routine.**
 - The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'.
 - For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts, Olympic Lifts).
 - For EACH exercise, set 'requiresWeight' to true for weightlifting exercises and false for bodyweight ones.
@@ -84,7 +71,3 @@ const workoutRoutineFlow = ai.defineFlow(
     return output!;
   }
 );
-
-
-
-

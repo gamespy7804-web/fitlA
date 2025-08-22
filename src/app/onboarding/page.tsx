@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { generateWorkoutRoutine, type WorkoutRoutineOutput, type AssessmentQuestion } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,12 +32,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Bot, ChevronLeft } from 'lucide-react';
+import { Loader2, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
 import { useAuth } from '@/hooks/use-auth';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 
 
 const createFormSchema = (t: (key: string) => string) => {
@@ -61,8 +59,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
-  const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[]>([]);
-  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -110,70 +106,29 @@ export default function OnboardingPage() {
     setShowOtherSportInput(true);
   };
   
-  const handleStep1Submit = async () => {
-    const isValid = await trigger(['sport', 'goals', 'fitnessLevel']);
+  const handleNextStep = async () => {
+    const isValid = await trigger(step === 1 ? ['sport', 'goals', 'fitnessLevel'] : ['trainingDays', 'trainingDuration']);
     if (!isValid) {
         toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
         return;
     }
-    setStep(2);
+    setStep(s => s + 1);
   }
-  
-  const handleStep2Submit = async () => {
-    const isValid = await trigger(['trainingDays', 'trainingDuration']);
-     if (!isValid) {
-        toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
-        return;
-    }
 
+  const handleFinalSubmit = async (data: OnboardingData) => {
     setIsLoading(true);
-    
     try {
-        const values = form.getValues();
-        const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
-        
-        if (response.assessmentQuestions && response.assessmentQuestions.length > 0) {
-            setAssessmentQuestions(response.assessmentQuestions);
-            setStep(3);
-        } else {
-             toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
-        }
-    } catch (e) {
-        console.error(e);
+      const response = await generateWorkoutRoutine({ ...data, language: locale });
+      if (response.routine || response.structuredRoutine) {
+        handleFinish(response);
+      } else {
         toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
-    } finally {
-        setIsLoading(false);
-    }
-  }
-
-  const handleAssessmentSubmit = async () => {
-    if (Object.keys(assessmentAnswers).length < assessmentQuestions.length) {
-      toast({ variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.assessment') });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    const assessmentHistory = assessmentQuestions.map(q => `Q: ${q.question} A: ${assessmentAnswers[q.question]}`).join('\n');
-
-    try {
-        const values = form.getValues();
-        const response = await generateWorkoutRoutine({ 
-            ...values, 
-            language: locale, 
-            fitnessAssessment: assessmentHistory
-        });
-
-        if(response.routine || response.structuredRoutine) {
-            handleFinish(response);
-        } else {
-            toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
-        }
+      }
     } catch(e) {
-        console.error(e);
-        toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
+      console.error(e);
+      toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }
   
@@ -181,7 +136,7 @@ export default function OnboardingPage() {
       localStorage.setItem('workoutRoutine', JSON.stringify({...result, sport: form.getValues('sport')}));
       localStorage.setItem('onboardingComplete', 'true');
       toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
-      router.push('/'); // Redirect to the root, which will handle the final redirection.
+      router.push('/');
   }
 
 
@@ -199,98 +154,94 @@ export default function OnboardingPage() {
         <CardHeader>
           <CardTitle className="font-headline text-2xl text-center">{t('onboarding.title')}</CardTitle>
           <CardDescription className="text-center">
-            {step === 3 ? t('onboarding.aiThinking') : t('onboarding.description')}
+            {t('onboarding.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                >
-                    <Form {...form}>
-                    <form onSubmit={(e) => { e.preventDefault(); handleStep1Submit(); }} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="sport"
-                        render={() => (
-                          <FormItem>
-                            <FormLabel className="text-base">{t('onboarding.questions.sport.label')}</FormLabel>
-                            <div className="space-y-2 pt-2">
-                              <div className="grid grid-cols-2 gap-2">
-                                {popularSports.map(sport => (
-                                  <Button key={sport.id} type="button" variant={sportValue === sport.name ? 'default' : 'outline'} onClick={() => handleSportSelect(sport.name)}>
-                                    {sport.name}
-                                  </Button>
-                                ))}
-                                <Button type="button" variant={showOtherSportInput ? 'default' : 'outline'} onClick={handleOtherSportClick}>
-                                  {t('onboarding.questions.sport.options.other')}
-                                </Button>
-                              </div>
-                              {(showOtherSportInput || (!popularSports.some(p => p.name === sportValue) && sportValue)) && (
-                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
-                                  <Input type="text" placeholder={t('onboarding.questions.sport.placeholder')} {...form.register('sport')} />
-                                </motion.div>
-                              )}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="goals"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base">{t('onboarding.questions.goals.label')}</FormLabel>
-                            <FormControl><Input placeholder={t('onboarding.questions.goals.placeholder')} {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="fitnessLevel"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder={t('workoutGenerator.form.fitnessLevel.placeholder')} /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                <SelectItem value="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</SelectItem>
-                                <SelectItem value="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</SelectItem>
-                                <SelectItem value="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="pt-4">
-                        <Button type="submit" className="w-full" size="lg">
-                          {t('onboarding.buttons.next')}
-                        </Button>
-                      </div>
-                    </form>
-                    </Form>
-                </motion.div>
-              )}
-
-              {step === 2 && (
-                  <motion.div
-                      key="step2"
+            <Form {...form}>
+              <form onSubmit={handleSubmit(handleFinalSubmit)} className="space-y-4">
+                <AnimatePresence mode="wait">
+                  {step === 1 && (
+                    <motion.div
+                      key="step1"
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 50 }}
                       className="space-y-4"
-                  >
-                      <Form {...form}>
-                      <form onSubmit={(e) => { e.preventDefault(); handleStep2Submit(); }} className="space-y-4">
+                    >
+                        <FormField
+                            control={form.control}
+                            name="sport"
+                            render={() => (
+                            <FormItem>
+                                <FormLabel className="text-base">{t('onboarding.questions.sport.label')}</FormLabel>
+                                <div className="space-y-2 pt-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    {popularSports.map(sport => (
+                                    <Button key={sport.id} type="button" variant={sportValue === sport.name ? 'default' : 'outline'} onClick={() => handleSportSelect(sport.name)}>
+                                        {sport.name}
+                                    </Button>
+                                    ))}
+                                    <Button type="button" variant={showOtherSportInput ? 'default' : 'outline'} onClick={handleOtherSportClick}>
+                                    {t('onboarding.questions.sport.options.other')}
+                                    </Button>
+                                </div>
+                                {(showOtherSportInput || (!popularSports.some(p => p.name === sportValue) && sportValue)) && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
+                                    <Input type="text" placeholder={t('onboarding.questions.sport.placeholder')} {...form.register('sport')} />
+                                    </motion.div>
+                                )}
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="goals"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-base">{t('onboarding.questions.goals.label')}</FormLabel>
+                                <FormControl><Input placeholder={t('onboarding.questions.goals.placeholder')} {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="fitnessLevel"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger><SelectValue placeholder={t('workoutGenerator.form.fitnessLevel.placeholder')} /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                    <SelectItem value="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</SelectItem>
+                                    <SelectItem value="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</SelectItem>
+                                    <SelectItem value="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</SelectItem>
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <div className="pt-4">
+                            <Button type="button" onClick={handleNextStep} className="w-full" size="lg">
+                                {t('onboarding.buttons.next')}
+                            </Button>
+                        </div>
+                    </motion.div>
+                  )}
+
+                  {step === 2 && (
+                      <motion.div
+                          key="step2"
+                          initial={{ opacity: 0, x: -50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 50 }}
+                          className="space-y-4"
+                      >
                           <FormField
                               control={form.control}
                               name="trainingDays"
@@ -318,66 +269,14 @@ export default function OnboardingPage() {
                                   <ChevronLeft /> {t('onboarding.buttons.back')}
                               </Button>
                               <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                                  {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.next')}
+                                  {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
                               </Button>
                           </div>
-                      </form>
-                      </Form>
-                  </motion.div>
-              )}
-
-              {step === 3 && (
-                <motion.div
-                  key="assessment"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                  className="space-y-6"
-                >
-                    <form onSubmit={handleSubmit(handleAssessmentSubmit)}>
-                        {isLoading && assessmentQuestions.length === 0 ? (
-                            <div className="flex justify-center items-center h-48">
-                                <Loader2 className="animate-spin text-primary size-10" />
-                            </div>
-                        ) : (
-                            <>
-                                <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
-                                    <Bot className="text-primary size-10 shrink-0 mt-1" />
-                                    <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
-                                </div>
-                                <div className='space-y-6'>
-                                    {assessmentQuestions.map((q, index) => (
-                                        <div key={index}>
-                                            <Label className="font-semibold">{q.question}</Label>
-                                            <RadioGroup
-                                                className="mt-2"
-                                                onValueChange={(value) => setAssessmentAnswers(prev => ({ ...prev, [q.question]: value }))}
-                                                value={assessmentAnswers[q.question]}
-                                            >
-                                                {q.options.map(opt => (
-                                                    <div key={opt} className="flex items-center space-x-2">
-                                                        <RadioGroupItem value={opt} id={`${index}-${opt}`} />
-                                                        <Label htmlFor={`${index}-${opt}`}>{opt}</Label>
-                                                    </div>
-                                                ))}
-                                            </RadioGroup>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="pt-4 flex items-center gap-4">
-                                    <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={isLoading}>
-                                        <ChevronLeft /> {t('onboarding.buttons.back')}
-                                    </Button>
-                                    <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                                        {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-                    </form>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
+            </Form>
         </CardContent>
       </Card>
     </div>
