@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { I18nProvider } from '@/i18n/client';
-import { AuthProvider } from '@/hooks/use-auth';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'TrainSmart AI',
@@ -24,11 +23,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-            <I18nProvider>
-                {children}
-            </I18nProvider>
-        </AuthProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
