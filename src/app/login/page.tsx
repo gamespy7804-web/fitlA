@@ -26,9 +26,8 @@ export default function LoginPage() {
   const handleSignIn = async () => {
     setIsSigningIn(true);
     await signInWithGoogle();
-    // No need to set isSigningIn to false here, as the page will redirect on success.
-    // If it fails (e.g., user closes popup), the auth hook will set its own loading state,
-    // but we can set our local state to false to re-enable the button.
+    // Setting state to false here is a fallback in case of sign-in failure.
+    // On success, the component unmounts, so this won't be called.
     setIsSigningIn(false);
   }
 

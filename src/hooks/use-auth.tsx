@@ -41,16 +41,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // After successful sign-in, onAuthStateChanged will fire and the root page.tsx
-      // will handle the redirection logic.
+        await signInWithPopup(auth, provider);
+        // After the popup closes, we need to ensure the onAuthStateChanged listener has fired
+        // and updated the user state before we proceed. We can wrap it in a promise.
+        await new Promise<void>((resolve, reject) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    unsubscribe();
+                    resolve();
+                }
+            });
+            // Add a timeout to prevent hanging indefinitely if something goes wrong
+            setTimeout(() => {
+                unsubscribe();
+                reject(new Error("Authentication timed out."));
+            }, 10000); // 10-second timeout
+        });
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-         // This is expected user behavior, no need to log or toast.
-      } else {
-        console.error('Error signing in with Google', error);
-        toast({ variant: 'destructive', title: 'Sign-in Error', description: 'Could not sign in with Google. Please try again.'});
-      }
+        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+           // This is expected user behavior, no need to log or toast.
+        } else {
+            console.error('Error signing in with Google', error);
+            toast({ variant: 'destructive', title: 'Sign-in Error', description: 'Could not sign in with Google. Please try again.'});
+        }
     } finally {
         setLoading(false);
     }
