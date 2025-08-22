@@ -24,11 +24,11 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const playSound = useAudioEffects();
 
   const navItems = [
-    { href: '/dashboard', icon: Home, label: t('nav.home') },
-    { href: '/log', icon: BarChart2, label: t('nav.log') },
-    { href: null, icon: Plus, label: 'Actions' }, // Placeholder for the action button
-    { href: '/games', icon: Gamepad2, label: t('nav.games') },
-    { href: '/settings', icon: User, label: t('nav.profile') },
+    { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
+    { href: '/log', icon: BarChart2, label: t('nav.log'), id: 'nav-log' },
+    { href: null, icon: Plus, label: 'Actions', id: 'nav-actions' }, // Placeholder for the action button
+    { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
+    { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
+    <div id="bottom-navbar" className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
       <div className="grid h-full grid-cols-5 mx-auto">
         {navItems.map((item, index) => {
           if (!item.href) {
@@ -53,21 +53,21 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
               <div key={index} className="flex items-center justify-center">
                  <DropdownMenu onOpenChange={(open) => open && playSound('click')}>
                   <DropdownMenuTrigger asChild>
-                    <button type="button" className="inline-flex items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none">
+                    <button type="button" id={item.id} className="inline-flex items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none">
                         <Plus className="w-8 h-8" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="top" align="center" className="mb-4 w-64 p-2 space-y-1">
                        <DropdownMenuItem asChild>
                          <WorkoutGeneratorDialog>
-                            <button className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted' onClick={() => playSound('swoosh')}>
+                            <button id="generate-workout-action" className='w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted' onClick={() => playSound('swoosh')}>
                                 <Sparkles />
                                 <span>{t('nav.actions.generate')}</span>
                             </button>
                         </WorkoutGeneratorDialog>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                          <Link href="/feedback" onClick={() => playSound('swoosh')} className="w-full flex items-center justify-between gap-2 text-left p-2 rounded-md hover:bg-muted">
+                          <Link href="/feedback" id="feedback-action" onClick={() => playSound('swoosh')} className="w-full flex items-center justify-between gap-2 text-left p-2 rounded-md hover:bg-muted">
                             <div className='flex items-center gap-2'>
                                 <Scan />
                                 <span>{t('nav.actions.feedback')}</span>
@@ -85,6 +85,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
 
           return (
             <Link
+              id={item.id}
               key={item.href}
               href={item.href!}
               onClick={() => playSound('click')}

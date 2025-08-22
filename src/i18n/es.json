@@ -409,6 +409,39 @@
           "description": "{{name}} ya está en la lista para ser analizado."
         }
       }
+    },
+     "onboardingTour": {
+      "next": "Siguiente",
+      "prev": "Anterior",
+      "done": "Terminar",
+      "welcome": {
+        "title": "¡Bienvenido a TrainSmart AI!",
+        "description": "Vamos a dar un rápido recorrido por las funciones principales de la app."
+      },
+      "dashboard": {
+        "title": "Tu Senda de Entrenamiento",
+        "description": "Esta es tu pantalla principal. Aquí verás tu plan de entrenamiento día a día. ¡Complétalos para avanzar!"
+      },
+      "actions": {
+        "title": "Acciones Principales",
+        "description": "Desde este botón podrás generar una nueva rutina desde cero o ir a la herramienta de análisis de técnica."
+      },
+      "log": {
+        "title": "Registro de Entrenamiento",
+        "description": "Aquí podrás ver un historial de todos tus entrenamientos completados y tu progreso en el tiempo."
+      },
+      "games": {
+        "title": "Zona de Juegos",
+        "description": "Pon a prueba tus conocimientos de fitness y diviértete con nuestros juegos educativos."
+      },
+      "chatbot": {
+        "title": "Asistente de IA",
+        "description": "¿Tienes alguna duda? Haz clic aquí para chatear con nuestro asistente de IA en cualquier momento."
+      },
+      "end": {
+        "title": "¡Ya estás listo!",
+        "description": "Ya conoces lo básico. Es hora de empezar a entrenar. ¡A por ello!"
+      }
     }
   }
 }

@@ -57,7 +57,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
     <TooltipProvider>
       <div className="flex flex-col h-screen">
        {!isGamePage && (
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+        <header id="app-header" className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
              <span className="font-bold text-primary font-headline">TrainSmart AI</span>
           </div>
@@ -65,7 +65,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
           <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Chatbot" onClick={openChatbot}>
+                  <Button variant="ghost" size="icon" aria-label="Chatbot" onClick={openChatbot} id="chatbot-button">
                       <MessageSquare className="w-5 h-5" />
                   </Button>
               </TooltipTrigger>

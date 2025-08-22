@@ -12,6 +12,7 @@ import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { initializeAudio, startMusic } from '@/hooks/use-audio-effects';
 import { WelcomeOverlay } from './welcome-overlay';
 import { Toaster } from '@/components/ui/toaster';
+import { OnboardingTour } from '@/components/onboarding-tour';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -68,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
         <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
         <AppShell openChatbot={() => setIsChatbotOpen(true)}>
-          <div className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
+          <div id="app-content" className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
           <BottomNavbar>
             <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
           </BottomNavbar>
@@ -82,6 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           }} 
         />
         <Toaster />
+        <OnboardingTour />
     </div>
   );
 }
