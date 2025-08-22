@@ -181,7 +181,7 @@ export default function OnboardingPage() {
       localStorage.setItem('workoutRoutine', JSON.stringify({...result, sport: form.getValues('sport')}));
       localStorage.setItem('onboardingComplete', 'true');
       toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
-      router.push('/dashboard');
+      router.push('/'); // Redirect to the root, which will handle the final redirection.
   }
 
 
