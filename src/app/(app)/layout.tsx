@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -9,7 +10,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { initializeAudio, startMusic } from '@/hooks/use-audio-effects';
+import { initializeAudio, startMusic, stopMusic } from '@/hooks/use-audio-effects';
 import { WelcomeOverlay } from './welcome-overlay';
 import { Toaster } from '@/components/ui/toaster';
 import { OnboardingTour } from '@/components/onboarding-tour';
@@ -64,16 +65,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     updateTheme();
     window.addEventListener('storage', updateTheme);
 
+    if (!isGamePage && audioInitialized.current) {
+      startMusic('main');
+    } else {
+      stopMusic();
+    }
+    
     return () => {
       window.removeEventListener('storage', updateTheme);
     }
 
-  }, [pathname, updateTheme]); 
+  }, [pathname, updateTheme, isGamePage]); 
   
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
       initializeAudio();
-      startMusic('main');
+      if (!isGamePage) {
+          startMusic('main');
+      }
       audioInitialized.current = true;
     }
   };

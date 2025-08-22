@@ -24,6 +24,25 @@ let sfxVolume = 0.5; // Default volume (50%)
 
 const FADE_TIME = 2; // seconds for crossfade
 
+const handleVisibilityChange = () => {
+    if (!audioContext) return;
+    if (document.hidden) {
+        if(currentMusicType) {
+            audioContext.suspend();
+        }
+    } else {
+        if(currentMusicType) {
+            audioContext.resume();
+        }
+    }
+}
+
+const handleBeforeUnload = () => {
+    if (audioContext) {
+        audioContext.close().catch(console.error);
+    }
+}
+
 // Must be called after a user interaction
 export const initializeAudio = () => {
     if (isInitialized || typeof window === 'undefined') return;
@@ -47,6 +66,11 @@ export const initializeAudio = () => {
         if (storedSfxVolume) {
             sfxVolume = parseFloat(storedSfxVolume);
         }
+        
+        // Add event listeners for page visibility
+        document.addEventListener('visibilitychange', handleVisibilityChange, false);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
     } catch (e) {
         console.error("AudioContext is not supported by this browser.", e);
     }
@@ -221,7 +245,7 @@ export const startMusic = (type: MusicType) => {
     if (!isInitialized || !isEnabled) {
         return;
     }
-    if (currentMusicType === type && currentSource) return;
+    if (currentMusicType === type && currentSource && audioContext && audioContext.state === 'running') return;
 
     playTrack(type);
 };
