@@ -119,18 +119,23 @@ export function WorkoutNodePath() {
                     onClick={() => !isLocked && handleNodeClick(index)}
                     disabled={isLocked}
                     className={cn(
-                      'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
-                      isCompleted ? 'bg-green-500 text-white shadow-lg' : 'bg-card border-2 border-primary shadow-md',
-                      isActive && 'animate-pulse ring-4 ring-primary/50',
-                      isLocked ? 'bg-muted border-dashed border-muted-foreground/50 cursor-not-allowed' : 'focus:ring-primary',
+                      'relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
+                      // Base styles for active nodes
+                      'bg-card border-2 shadow-lg',
+                      // Completed State
+                      isCompleted && 'bg-gradient-to-br from-green-400 to-green-600 border-green-700 text-white shadow-green-500/30',
+                      // Active State
+                      isActive && 'border-primary animate-pulse ring-4 ring-primary/50 shadow-primary/40',
+                      // Locked State
+                      isLocked ? 'bg-muted/50 border-dashed border-muted-foreground/30 cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
                     )}
                   >
-                    {isCompleted && <Check className="w-12 h-12" />}
-                    {isLocked && <Lock className="w-10 h-10 text-muted-foreground" />}
+                    {isCompleted && <Check className="w-16 h-16 stroke-3" />}
+                    {isLocked && <Lock className="w-12 h-12 text-muted-foreground/50" />}
                     {!isCompleted && !isLocked && (
-                        <span className="text-3xl font-bold text-primary">{day.day}</span>
+                        <span className="text-5xl font-bold text-primary font-headline">{day.day}</span>
                     )}
-                     <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold">{t('workoutNodePath.day')} {day.day}</div>
+                     <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold shadow-md">{t('workoutNodePath.day')} {day.day}</div>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
