@@ -47,4 +47,3 @@ export const ChatOutputSchema = z.object({
   answer: z.string().describe('The AI-generated answer.'),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
-`
