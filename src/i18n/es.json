@@ -154,6 +154,15 @@
       "title": "Registro de Entrenamiento",
       "description": "Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.",
       "shareProgress": "Compartir Mi Progreso",
+      "shareTitle": "Mi Progreso en TrainSmart AI",
+      "shareFallback": {
+        "title": "Progreso Copiado",
+        "description": "Tu resumen de progreso ha sido copiado al portapapeles.",
+        "error": {
+          "title": "Error al Copiar",
+          "description": "No se pudo copiar el texto. Por favor, inténtalo manualmente."
+        }
+      },
       "na": "N/A",
       "history": {
         "title": "Historial de Entrenamiento",

@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useEffect, useState, useCallback } from 'react';
 import { useI18n } from '@/i18n/client';
+import { useToast } from '@/hooks/use-toast';
 
 type LogEntry = {
   date: string;
@@ -27,6 +28,7 @@ type LogEntry = {
 
 export default function LogPage() {
   const { t, locale } = useI18n();
+  const { toast } = useToast();
   const [logData, setLogData] = useState<LogEntry[]>([]);
   const dateLocale = locale === 'es' ? es : enUS;
   
@@ -59,6 +61,53 @@ export default function LogPage() {
     };
   }, [loadLogData]);
 
+  const handleShareProgress = async () => {
+    if (logData.length === 0) return;
+
+    const totalWorkouts = logData.length;
+    const totalDuration = logData.reduce((acc, log) => acc + parseInt(log.duration), 0);
+    const totalVolume = logData.reduce((acc, log) => {
+        const volumeNumber = parseInt(log.volume.replace(/\D/g, ''));
+        return acc + (isNaN(volumeNumber) ? 0 : volumeNumber);
+    }, 0);
+    
+    let shareText = `¡Mi progreso en TrainSmart AI!\n\n`;
+    shareText += `🏋️ Entrenamientos completados: ${totalWorkouts}\n`;
+    shareText += `⏱️ Tiempo total entrenando: ${totalDuration} minutos\n`;
+    if (totalVolume > 0) {
+      shareText += `💪 Volumen total levantado: ${totalVolume.toLocaleString()} kg\n`;
+    }
+    shareText += `\n¡Sigue mi progreso! #TrainSmartAI`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: t('log.shareTitle'),
+          text: shareText,
+        });
+      } catch (error) {
+        console.error('Error al compartir:', error);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast({
+          title: t('log.shareFallback.title'),
+          description: t('log.shareFallback.description'),
+        });
+      } catch (err) {
+        console.error('Error al copiar al portapapeles:', err);
+         toast({
+            variant: 'destructive',
+            title: t('log.shareFallback.error.title'),
+            description: t('log.shareFallback.error.description'),
+         });
+      }
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -70,7 +119,7 @@ export default function LogPage() {
             {t('log.description')}
           </p>
         </div>
-        <Button variant="secondary" disabled={logData.length === 0}>
+        <Button variant="secondary" disabled={logData.length === 0} onClick={handleShareProgress}>
           <Share2 className="mr-2" />
           {t('log.shareProgress')}
         </Button>

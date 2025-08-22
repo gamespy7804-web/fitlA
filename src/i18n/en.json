@@ -154,6 +154,15 @@
       "title": "Training Log",
       "description": "Review your past workouts and track your long-term progress.",
       "shareProgress": "Share My Progress",
+      "shareTitle": "My Progress on TrainSmart AI",
+      "shareFallback": {
+        "title": "Progress Copied",
+        "description": "Your progress summary has been copied to the clipboard.",
+        "error": {
+          "title": "Copy Error",
+          "description": "Could not copy the text. Please try it manually."
+        }
+      },
       "na": "N/A",
       "history": {
         "title": "Workout History",
