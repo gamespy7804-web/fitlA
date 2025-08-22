@@ -77,7 +77,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} />
+                        <AvatarImage src={user?.photoURL ? user.photoURL : undefined} alt={user?.displayName ?? "User"} />
                         <AvatarFallback><User /></AvatarFallback>
                     </Avatar>
                 </Button>
