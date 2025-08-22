@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { performanceAnalystGenerator } from '@/ai/flows/performance-analyst-generator';
 import { Bot, Loader2 } from 'lucide-react';
 import { useI18n } from '@/i18n/client';
@@ -11,31 +11,32 @@ export function PerformanceFeedback() {
   const [isLoading, setIsLoading] = useState(true);
   const { t, locale } = useI18n();
 
-  useEffect(() => {
-    const fetchFeedback = async () => {
-      const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
-      if (!detailedLogsJSON || detailedLogsJSON === '[]') {
-        setFeedback(t('performanceFeedback.noWorkouts'));
-        setIsLoading(false);
-        return;
-      }
+  const fetchFeedback = useCallback(async () => {
+    setIsLoading(true);
+    const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
+    if (!detailedLogsJSON || detailedLogsJSON === '[]') {
+      setFeedback(t('performanceFeedback.noWorkouts'));
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const result = await performanceAnalystGenerator({
-          trainingData: detailedLogsJSON,
-          language: locale,
-        });
-        setFeedback(result.analysis);
-      } catch (error) {
-        console.error('Error generating performance feedback:', error);
-        setFeedback(t('performanceFeedback.error'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFeedback();
+    try {
+      const result = await performanceAnalystGenerator({
+        trainingData: detailedLogsJSON,
+        language: locale,
+      });
+      setFeedback(result.analysis);
+    } catch (error) {
+      console.error('Error generating performance feedback:', error);
+      setFeedback(t('performanceFeedback.error'));
+    } finally {
+      setIsLoading(false);
+    }
   }, [t, locale]);
+
+  useEffect(() => {
+    fetchFeedback();
+  }, [fetchFeedback]);
 
   return (
     <div className="flex items-start gap-2 mt-2 text-sm text-muted-foreground">

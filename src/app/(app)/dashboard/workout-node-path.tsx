@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { Check, Dumbbell, Lock, Flag } from 'lucide-react';
@@ -28,7 +28,7 @@ export function WorkoutNodePath() {
   const router = useRouter();
   const playSound = useAudioEffects();
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
     const completed = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as CompletedDay[];
     
@@ -43,6 +43,16 @@ export function WorkoutNodePath() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    loadData();
+    window.addEventListener('storage', loadData);
+    window.addEventListener('focus', loadData);
+    return () => {
+      window.removeEventListener('storage', loadData);
+      window.removeEventListener('focus', loadData);
+    };
+  }, [loadData]);
 
   const handleNodeClick = (dayIndex: number) => {
     stopMusic();
@@ -108,7 +118,7 @@ export function WorkoutNodePath() {
             <div
               key={day.day}
               className={cn(
-                'relative z-10 w-40 h-40 flex items-center justify-center workout-node',
+                'relative z-10 w-32 h-32 flex items-center justify-center workout-node',
                 index % 2 !== 0 ? 'self-start' : 'self-end'
               )}
             >
@@ -118,21 +128,21 @@ export function WorkoutNodePath() {
                     onClick={() => !isLocked && handleNodeClick(index)}
                     disabled={isLocked}
                     className={cn(
-                      'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
-                      // Base styles for active nodes
+                      'relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
+                      // Base styles
                       'bg-card shadow-lg',
                       // Completed State
                       isCompleted && 'bg-gradient-to-br from-green-400 to-green-600 text-white shadow-green-500/30',
                       // Active State
                       isActive && 'animate-pulse ring-4 ring-primary/50 shadow-primary/40',
                       // Locked State
-                      isLocked ? 'bg-muted/50 cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
+                      isLocked ? 'bg-muted cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
                     )}
                   >
-                    {isCompleted && <Check className="w-14 h-14 stroke-3" />}
-                    {isLocked && <Lock className="w-10 h-10 text-muted-foreground/50" />}
+                    {isCompleted && <Check className="w-12 h-12 stroke-3" />}
+                    {isLocked && <Lock className="w-8 h-8 text-muted-foreground/50" />}
                     {!isCompleted && !isLocked && (
-                        <span className="text-5xl font-bold text-primary font-headline">{day.day}</span>
+                        <span className="text-4xl font-bold text-primary font-headline">{day.day}</span>
                     )}
                      <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold shadow-md">{t('workoutNodePath.day')} {day.day}</div>
                   </button>
@@ -147,7 +157,7 @@ export function WorkoutNodePath() {
         })}
 
         <div className={cn(
-            'relative z-10 w-40 h-40 flex items-center justify-center',
+            'relative z-10 w-32 h-32 flex items-center justify-center',
              routine.length % 2 !== 0 ? 'self-start' : 'self-end'
         )}>
             <AdaptiveProgressionDialog className="w-full md:w-auto text-xs text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >

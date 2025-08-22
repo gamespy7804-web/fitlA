@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -70,34 +70,34 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     },
   });
 
-  useEffect(() => {
-    const checkProgress = () => {
-      const storedRoutine = localStorage.getItem('workoutRoutine');
-      const detailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
-      
-      if (storedRoutine) {
-        try {
-            const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-            setOriginalRoutine(parsedRoutine);
-            // Enable progression if there's a routine and at least one log has been completed.
-            if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
-              if (detailedLogs.length > 0) {
-                setCanProgress(true);
-              } else {
-                setCanProgress(false);
-              }
-            } else {
-               setCanProgress(false);
-            }
-        }
-        catch (e) {
-            setCanProgress(false);
-        }
-      } else {
-         setCanProgress(false);
-      }
-    };
+  const checkProgress = useCallback(() => {
+    const storedRoutine = localStorage.getItem('workoutRoutine');
+    const detailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
     
+    if (storedRoutine) {
+      try {
+          const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+          setOriginalRoutine(parsedRoutine);
+          // Enable progression if there's a routine and at least one log has been completed.
+          if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
+            if (detailedLogs.length > 0) {
+              setCanProgress(true);
+            } else {
+              setCanProgress(false);
+            }
+          } else {
+             setCanProgress(false);
+          }
+      }
+      catch (e) {
+          setCanProgress(false);
+      }
+    } else {
+       setCanProgress(false);
+    }
+  }, []);
+
+  useEffect(() => {
     checkProgress();
     window.addEventListener('focus', checkProgress);
     window.addEventListener('storage', checkProgress);
@@ -106,10 +106,10 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         window.removeEventListener('focus', checkProgress);
         window.removeEventListener('storage', checkProgress);
     }
-  }, []);
+  }, [checkProgress]);
 
   useEffect(() => {
-    if (originalRoutine?.structuredRoutine) {
+    if (isOpen && originalRoutine?.structuredRoutine) {
       form.setValue('trainingDays', originalRoutine.structuredRoutine.length);
       const avgDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0) / originalRoutine.structuredRoutine.length;
       form.setValue('trainingDuration', Math.round(avgDuration));
@@ -175,7 +175,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button disabled={!canProgress} className={cn("w-full", className)}>
+        <Button disabled={!canProgress} className={cn("w-full md:w-auto text-xs text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed", className)}>
             {children || <>
             <span>{t('adaptiveProgression.generateNewRoutine')}</span>
             </>}
