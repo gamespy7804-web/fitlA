@@ -118,14 +118,13 @@ export default function OnboardingPage() {
   
   const handlePreferencesSubmit = async () => {
     const isValid = await trigger(['trainingDays', 'trainingDuration']);
-    if (!isValid) {
+     if (!isValid) {
         toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
         return;
     }
 
     setIsLoading(true);
-    setAssessmentQuestions([]);
-
+    
     try {
         const values = form.getValues();
         const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
@@ -135,7 +134,7 @@ export default function OnboardingPage() {
             setStep(3); // Go to assessment step
         } else {
              // This case should ideally not happen with the new prompt, but as a fallback, we finish.
-             handleFinish(response);
+             toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
         }
     } catch (e) {
         console.error(e);
@@ -381,3 +380,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
