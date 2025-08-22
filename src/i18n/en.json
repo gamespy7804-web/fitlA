@@ -309,7 +309,6 @@
     "onboarding": {
       "title": "Welcome to TrainSmart AI",
       "description": "Let's personalize your fitness journey.",
-      "aiThinking": "Just a moment, our AI is preparing some questions to get to know you better...",
       "questions": {
         "sport": { 
           "label": "What is your main sport or activity?", 
@@ -331,11 +330,25 @@
             "advanced": "More than 2 years"
           }
         },
+        "age": {
+          "label": "Age",
+          "placeholder": "e.g. 25"
+        },
+        "weight": {
+          "label": "Weight (kg)",
+          "placeholder": "e.g. 70"
+        },
+        "gender": {
+          "label": "Gender",
+          "placeholder": "Select gender",
+          "options": {
+            "male": "Male",
+            "female": "Female",
+            "other": "Other"
+          }
+        },
         "trainingDays": { "label": "How many days a week can you train?", "placeholder": "e.g. 3" },
-        "trainingDuration": { "label": "How much time per session (minutes)?", "placeholder": "e.g. 60" },
-        "assessment": {
-          "intro": "To create the best plan for you, please answer these questions about your current abilities."
-        }
+        "trainingDuration": { "label": "How much time per session (minutes)?", "placeholder": "e.g. 60" }
       },
       "buttons": {
         "back": "Back",
@@ -353,8 +366,7 @@
         },
         "validation": {
             "title": "Incomplete Form",
-            "description": "Please fill out all the required fields before continuing.",
-            "assessment": "Please answer all assessment questions."
+            "description": "Please fill out all the required fields before continuing."
         }
       },
       "success": {
@@ -364,11 +376,11 @@
       "validation": {
         "sport": { "min": "Sport must be at least 3 characters." },
         "goals": { "min": "Goals must be at least 3 characters." },
-        "age": { "min": "You must be at least 10 years old", "max": "You must be 100 years old or younger" },
-        "weight": { "min": "Must be at least 30kg", "max": "Must be 200kg or less" },
+        "age": { "required": "Age is required", "min": "You must be at least 10 years old", "max": "You must be 100 years old or younger" },
+        "weight": { "required": "Weight is required", "min": "Must be at least 30kg", "max": "Must be 200kg or less" },
+        "gender": { "required": "Gender is required" },
         "trainingDays": { "required": "Days are required", "min": "At least 1 day", "max": "Maximum 7 days" },
-        "trainingDuration": { "required": "Duration is required", "min": "At least 15 minutes", "max": "Maximum 240 minutes" },
-        "clarification": { "min": "Please answer the question to continue."}
+        "trainingDuration": { "required": "Duration is required", "min": "At least 15 minutes", "max": "Maximum 240 minutes" }
       }
     },
     "workoutPage": {

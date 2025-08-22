@@ -46,6 +46,9 @@ const createFormSchema = (t: (key: string) => string) => {
     });
 
     const step2Schema = z.object({
+        age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
+        weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
+        gender: z.enum(['male', 'female', 'other'], { required_error: t('onboarding.validation.gender.required') }),
         trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
         trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
     });
@@ -73,6 +76,9 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: undefined,
+      age: undefined,
+      weight: undefined,
+      gender: undefined,
       trainingDays: 3,
       trainingDuration: 60,
     }
@@ -107,7 +113,7 @@ export default function OnboardingPage() {
   };
   
   const handleNextStep = async () => {
-    const isValid = await trigger(step === 1 ? ['sport', 'goals', 'fitnessLevel'] : ['trainingDays', 'trainingDuration']);
+    const isValid = await trigger(step === 1 ? ['sport', 'goals', 'fitnessLevel'] : ['age', 'weight', 'gender', 'trainingDays', 'trainingDuration']);
     if (!isValid) {
         toast({variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.description')});
         return;
@@ -242,6 +248,48 @@ export default function OnboardingPage() {
                           exit={{ opacity: 0, x: 50 }}
                           className="space-y-4"
                       >
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                           <FormField
+                              control={form.control}
+                              name="age"
+                              render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
+                                    <FormControl><Input type="number" placeholder={t('onboarding.questions.age.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="weight"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
+                                  <FormControl><Input type="number" placeholder={t('onboarding.questions.weight.placeholder')} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} value={field.value ?? ''} /></FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="gender"
+                              render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>{t('onboarding.questions.gender.label')}</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl><SelectTrigger><SelectValue placeholder={t('onboarding.questions.gender.placeholder')} /></SelectTrigger></FormControl>
+                                  <SelectContent>
+                                      <SelectItem value="male">{t('onboarding.questions.gender.options.male')}</SelectItem>
+                                      <SelectItem value="female">{t('onboarding.questions.gender.options.female')}</SelectItem>
+                                      <SelectItem value="other">{t('onboarding.questions.gender.options.other')}</SelectItem>
+                                  </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                              </FormItem>
+                              )}
+                          />
+                         </div>
                           <FormField
                               control={form.control}
                               name="trainingDays"

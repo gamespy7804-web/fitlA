@@ -299,7 +299,7 @@
           "button": "Restablecer datos",
           "confirm": {
             "title": "¿Estás seguro?",
-            "description": "Esta acción borrará todo tu progreso en la aplicación (rutinas, registros, etc.) y no se puede deshacer. Tu sesión de Google no se cerrará.",
+            "description": "Esta acción borrará todo tu progreso en la aplicación (rutinas, registros, etc.) y no se puede deshacer. Tu cuenta no será eliminada.",
             "cancel": "Cancelar",
             "action": "Sí, restablecer datos"
           }
@@ -309,7 +309,6 @@
     "onboarding": {
       "title": "Bienvenido a TrainSmart AI",
       "description": "Vamos a personalizar tu viaje de fitness.",
-      "aiThinking": "Un momento, nuestra IA está preparando unas preguntas para conocerte mejor...",
       "questions": {
         "sport": { 
           "label": "¿Cuál es tu deporte o actividad principal?", 
@@ -331,11 +330,25 @@
             "advanced": "Más de 2 años"
           }
         },
+        "age": {
+          "label": "Edad",
+          "placeholder": "ej. 25"
+        },
+        "weight": {
+          "label": "Peso (kg)",
+          "placeholder": "ej. 70"
+        },
+        "gender": {
+          "label": "Género",
+          "placeholder": "Seleccionar género",
+          "options": {
+            "male": "Masculino",
+            "female": "Femenino",
+            "other": "Otro"
+          }
+        },
         "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?", "placeholder": "ej. 3" },
-        "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?", "placeholder": "ej. 60" },
-        "assessment": {
-            "intro": "Para crear el mejor plan para ti, por favor responde estas preguntas sobre tus habilidades actuales."
-        }
+        "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?", "placeholder": "ej. 60" }
       },
       "buttons": {
         "back": "Atrás",
@@ -353,8 +366,7 @@
         },
         "validation": {
             "title": "Formulario Incompleto",
-            "description": "Por favor, rellena todos los campos obligatorios antes de continuar.",
-            "assessment": "Por favor, responde todas las preguntas de evaluación."
+            "description": "Por favor, rellena todos los campos obligatorios antes de continuar."
         }
       },
       "success": {
@@ -364,11 +376,11 @@
       "validation": {
         "sport": { "min": "El deporte debe tener al menos 3 caracteres." },
         "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
-        "age": { "min": "Debes tener al menos 10 años", "max": "Debes tener 100 años o menos" },
-        "weight": { "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
+        "age": { "required": "La edad es requerida", "min": "Debes tener al menos 10 años", "max": "Debes tener 100 años o menos" },
+        "weight": { "required": "El peso es requerido", "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
+        "gender": { "required": "El género es requerido" },
         "trainingDays": { "required": "Los días son requeridos", "min": "Al menos 1 día", "max": "Máximo 7 días" },
-        "trainingDuration": { "required": "La duración es requerida", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" },
-        "clarification": { "min": "Por favor, responde la pregunta para continuar."}
+        "trainingDuration": { "required": "La duración es requerida", "min": "Al menos 15 minutos", "max": "Máximo 240 minutos" }
       }
     },
     "workoutPage": {

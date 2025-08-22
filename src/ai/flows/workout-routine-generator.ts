@@ -24,7 +24,6 @@ const WorkoutRoutineInputSchema = z.object({
   gender: z.string().optional().describe("The user's gender."),
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  fitnessAssessment: z.string().optional().describe("A JSON string representing an array of questions and the user's answers to help quantify their fitness level. This is the history of the assessment."),
   language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
@@ -46,6 +45,9 @@ Your task is to act as a personal trainer and generate a detailed training plan 
 - Sport: {{{sport}}}
 - Goals: {{{goals}}}
 - Stated Fitness Level: {{{fitnessLevel}}}
+- Age: {{{age}}}
+- Weight: {{{weight}}} kg
+- Gender: {{{gender}}}
 - Training days per week: {{{trainingDays}}}
 - Training duration per session: {{{trainingDuration}}} minutes
 
