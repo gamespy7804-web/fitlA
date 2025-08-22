@@ -93,7 +93,7 @@
       "title": "Generador de Entrenamiento con IA",
       "descriptionInitial": "Describe tus metas para obtener una rutina de entrenamiento personalizada.",
       "descriptionClarification": "Proporciona más detalles para afinar tu rutina.",
-      "aiThinking": "Un momento, nuestra IA está afinando tu próxima pregunta...",
+      "aiThinking": "Un momento, nuestra IA está preparando unas preguntas para conocerte mejor...",
       "form": {
         "goals": {
           "label": "Tus Metas",
@@ -309,7 +309,7 @@
     "onboarding": {
       "title": "Bienvenido a TrainSmart AI",
       "description": "Vamos a personalizar tu viaje de fitness.",
-      "aiThinking": "Un momento, nuestra IA está afinando tu próxima pregunta...",
+      "aiThinking": "Un momento, nuestra IA está preparando unas preguntas para conocerte mejor...",
       "questions": {
         "sport": { 
           "label": "¿Cuál es tu deporte o actividad principal?", 
@@ -333,12 +333,9 @@
         },
         "trainingDays": { "label": "¿Cuántos días a la semana puedes entrenar?", "placeholder": "ej. 3" },
         "trainingDuration": { "label": "¿Cuánto tiempo por sesión (minutos)?", "placeholder": "ej. 60" },
-        "clarification": {
-            "label": "Tu Respuesta",
-            "placeholder": "ej., Puedo hacer 10 flexiones, corro 5km en 30 min...",
-            "generic": "Para crear el mejor plan para ti, por favor describe tu nivel de condición física actual con datos concretos. Por ejemplo: número de flexiones/dominadas que puedes hacer, tu mejor tiempo en 1km/5km, o tus pesos máximos en ejercicios como sentadilla o press de banca."
-         },
-        "optionalDetails": "Detalles Opcionales"
+        "assessment": {
+            "intro": "Para crear el mejor plan para ti, por favor responde estas preguntas sobre tus habilidades actuales."
+        }
       },
       "buttons": {
         "back": "Atrás",
@@ -356,7 +353,8 @@
         },
         "validation": {
             "title": "Formulario Incompleto",
-            "description": "Por favor, rellena todos los campos obligatorios antes de continuar."
+            "description": "Por favor, rellena todos los campos obligatorios antes de continuar.",
+            "assessment": "Por favor, responde todas las preguntas de evaluación."
         }
       },
       "success": {

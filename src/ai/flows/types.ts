@@ -21,8 +21,15 @@ export const DailyWorkoutSchema = z.object({
 });
 export type DailyWorkout = z.infer<typeof DailyWorkoutSchema>;
 
+export const AssessmentQuestionSchema = z.object({
+    question: z.string(),
+    options: z.array(z.string()),
+});
+export type AssessmentQuestion = z.infer<typeof AssessmentQuestionSchema>;
+
+
 export const WorkoutRoutineOutputSchema = z.object({
-  clarificationQuestion: z.string().optional().describe("A question to ask the user to get more details about their fitness level for the specified sport. Omit if enough information is present to generate a routine."),
+  assessmentQuestions: z.array(AssessmentQuestionSchema).optional().describe("A list of questions to ask the user to get more details about their fitness level for the specified sport. Omit if enough information is present to generate a routine."),
   isWeightTraining: z
     .boolean()
     .optional()
@@ -56,3 +63,4 @@ export const ChatOutputSchema = z.object({
   answer: z.string().describe('The AI-generated answer.'),
 });
 export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+

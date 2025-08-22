@@ -93,7 +93,7 @@
       "title": "AI Workout Generator",
       "descriptionInitial": "Describe your goals to get a personalized training routine.",
       "descriptionClarification": "Provide more details to fine-tune your routine.",
-      "aiThinking": "Just a moment, our AI is tailoring your next question...",
+      "aiThinking": "Just a moment, our AI is preparing some questions to get to know you better...",
       "form": {
         "goals": {
           "label": "Your Goals",
@@ -309,7 +309,7 @@
     "onboarding": {
       "title": "Welcome to TrainSmart AI",
       "description": "Let's personalize your fitness journey.",
-      "aiThinking": "Just a moment, our AI is tailoring your next question...",
+      "aiThinking": "Just a moment, our AI is preparing some questions to get to know you better...",
       "questions": {
         "sport": { 
           "label": "What is your main sport or activity?", 
@@ -333,12 +333,9 @@
         },
         "trainingDays": { "label": "How many days a week can you train?", "placeholder": "e.g. 3" },
         "trainingDuration": { "label": "How much time per session (minutes)?", "placeholder": "e.g. 60" },
-        "clarification": {
-            "label": "Your Answer",
-            "placeholder": "e.g., I can do 10 push-ups, run a 5k in 30 min...",
-            "generic": "To create the best plan for you, please describe your current fitness level with concrete data. For example: number of push-ups/pull-ups you can do, your best time for a 1k/5k, or your max lifts in exercises like squat or bench press."
-        },
-        "optionalDetails": "Optional Details"
+        "assessment": {
+          "intro": "To create the best plan for you, please answer these questions about your current abilities."
+        }
       },
       "buttons": {
         "back": "Back",
@@ -356,7 +353,8 @@
         },
         "validation": {
             "title": "Incomplete Form",
-            "description": "Please fill out all the required fields before continuing."
+            "description": "Please fill out all the required fields before continuing.",
+            "assessment": "Please answer all assessment questions."
         }
       },
       "success": {

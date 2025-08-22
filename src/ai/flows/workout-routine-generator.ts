@@ -9,7 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { WorkoutRoutineOutputSchema } from './types';
+import { DailyWorkoutSchema, WorkoutRoutineOutputSchema } from './types';
 import type { WorkoutRoutineOutput } from './types';
 
 
@@ -24,7 +24,7 @@ const WorkoutRoutineInputSchema = z.object({
   gender: z.string().optional().describe("The user's gender."),
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  fitnessAssessment: z.string().optional().describe("A history of questions and the user's answers to help quantify their fitness level."),
+  fitnessAssessment: z.string().optional().describe("A JSON string representing an array of questions and the user's answers to help quantify their fitness level. This is the history of the assessment."),
   language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
@@ -40,36 +40,35 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert sports trainer, specializing in generating personalized training routines.
 Your responses MUST be in the user's selected language: {{language}}.
 
-Your task is to act as a personal trainer. You will either generate a detailed training plan or ask a clarifying question to better understand the user's fitness level.
+Your task is to act as a personal trainer. You will either generate a detailed training plan or, more importantly, generate a set of assessment questions to accurately gauge the user's fitness level before creating a routine.
 
 **Step 1: Assess Information**
 Review all the user's provided information.
 - Sport: {{{sport}}}
 - Goals: {{{goals}}}
 - Stated Fitness Level: {{{fitnessLevel}}}
-{{#if fitnessAssessment}}- Fitness Assessment History (Questions and User's Answers): {{{fitnessAssessment}}}{{/if}}
-{{#if age}}- Age: {{{age}}}{{/if}}
-{{#if weight}}- Weight: {{{weight}}} kg{{/if}}
-{{#if gender}}- Gender: {{{gender}}}{{/if}}
-{{#if trainingDays}}- Training days per week: {{{trainingDays}}}{{/if}}
-{{#if trainingDuration}}- Training duration per session: {{{trainingDuration}}} minutes{{/if}}
+- Fitness Assessment History: {{#if fitnessAssessment}}{{{fitnessAssessment}}}{{else}}No history yet.{{/if}}
+- Training days per week: {{{trainingDays}}}
+- Training duration per session: {{{trainingDuration}}} minutes
 
 **Step 2: Decide Action - Ask or Generate**
-- **If the information is too generic OR the 'fitnessAssessment' field is empty**, you MUST ask a clarifying question to quantify the user's ability. This is your primary action. Do NOT generate a routine on the first pass.
-- The question must be specific to the sport. It should be a multiple-choice question to make it easy for the user to answer.
-- Frame the question and options in the \`clarificationQuestion\` field as a JSON string.
-- Example for "Calisthenics": \`{"question": "How many consecutive push-ups can you do?", "options": ["Fewer than 5", "5-15", "16-30", "More than 30"]}\`
-- Example for "Running": \`{"question": "What is your best time for a 5km run?", "options": ["I haven't run a 5k", "More than 30 minutes", "25-30 minutes", "Under 25 minutes"]}\`
-- Example for "Weightlifting": \`{"question": "What is your estimated one-rep max for the squat compared to your bodyweight?", "options": ["Less than my bodyweight", "Around my bodyweight", "1.5x my bodyweight", "More than 1.5x my bodyweight"]}\`
-- If you ask a question, DO NOT generate a routine. The other fields in the output must be empty.
 
-- **If you have enough information** (from the fitnessAssessment history), generate a full routine.
+- **IF 'fitnessAssessment' field is empty or contains fewer than 5 questions, your PRIMARY action is to generate a new set of diagnostic questions.** Do NOT generate a routine.
+- You MUST generate a set of at least 5 multiple-choice questions.
+- These questions must be designed to evaluate different skills and abilities relevant to the user's SPECIFIC SPORT AND GOALS.
+  - For example, if the sport is "Calisthenics" and goals are "learn planche", you must ask about pushing strength (dips), pulling strength (pull-ups), core strength, and a specific question about their current planche progression (e.g., "How long can you hold a tuck planche?").
+  - For "Running" with a goal of "run a 10k", ask about their best 5k time, weekly mileage, and leg strength (e.g., "How many squats can you do?").
+- The questions MUST be returned in the \`assessmentQuestions\` field as an array of JSON objects, each with a "question" and an array of "options".
+- Example for "Calisthenics": \`[{"question": "How many consecutive PULL-UPS can you do?", "options": ["0", "1-5", "6-10", "More than 10"]}, {"question": "How many consecutive DIPS can you do?", "options": ["0-5", "6-15", "16-25", "More than 25"]}, ...]\`
+- If you generate questions, DO NOT generate a routine. The 'routine' and 'structuredRoutine' fields must be empty.
+
+- **IF the 'fitnessAssessment' field contains answers to your previously generated questions**, you have enough information. Generate a full, detailed routine.
 - The plan MUST strictly adhere to the provided 'trainingDays' and 'trainingDuration'.
 - For EACH exercise, set 'requiresFeedback' to true ONLY for complex, high-injury-risk exercises (e.g., Squats, Deadlifts, Olympic Lifts).
 - For EACH exercise, set 'requiresWeight' to true for weightlifting exercises and false for bodyweight ones.
 - For EACH exercise, generate a 'youtubeQuery' for a tutorial video.
 - Determine if the sport is primarily weight training.
-  - If YES (e.g., Weightlifting, Powerlifting, Bodybuilding): Set 'isWeightTraining' to true and provide the routine as a simple text string in the 'routine' field. This is for sports where the structure is very specific and less about daily variety.
+  - If YES (e.g., Weightlifting, Powerlifting, Bodybuilding): Set 'isWeightTraining' to true and provide the routine as a simple text string in the 'routine' field.
   - If NO (e.g., Calisthenics, Running, general fitness): Set 'isWeightTraining' to false and generate a detailed, structured plan in the 'structuredRoutine' field, with varied days.
   `,
 });
@@ -85,3 +84,4 @@ const workoutRoutineFlow = ai.defineFlow(
     return output!;
   }
 );
+

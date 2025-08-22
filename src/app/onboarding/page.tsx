@@ -6,7 +6,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput, type AssessmentQuestion } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,15 +32,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Bot, ChevronLeft } from 'lucide-react';
+import { Loader2, Bot, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
 import { useAuth } from '@/hooks/use-auth';
-
-type ClarificationQuestion = {
-    question: string;
-    options: string[];
-}
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 // Step 1: Initial info
 const step1Schema = z.object({
@@ -64,8 +60,8 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
-  const [clarificationQuestion, setClarificationQuestion] = useState<ClarificationQuestion | null>(null);
-  const [assessmentHistory, setAssessmentHistory] = useState<string[]>([]);
+  const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[]>([]);
+  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -127,17 +123,15 @@ export default function OnboardingPage() {
     }
 
     setIsLoading(true);
-    setClarificationQuestion(null);
+    setAssessmentQuestions([]);
 
     try {
         const values = form.getValues();
-        // The goal here is to get the first clarification question.
         const response = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
         
-        if (response.clarificationQuestion) {
-            const parsedQuestion = JSON.parse(response.clarificationQuestion);
-            setClarificationQuestion(parsedQuestion);
-            setStep(3); // Go to clarification step
+        if (response.assessmentQuestions && response.assessmentQuestions.length > 0) {
+            setAssessmentQuestions(response.assessmentQuestions);
+            setStep(3); // Go to assessment step
         } else {
              // This case should ideally not happen with the new prompt, but as a fallback, we finish.
              handleFinish(response);
@@ -150,25 +144,28 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleClarificationSubmit = async (answer: string) => {
-    setIsLoading(true);
-    const newHistory = [...assessmentHistory, `Q: ${clarificationQuestion?.question} A: ${answer}`];
-    setAssessmentHistory(newHistory);
+  const handleAssessmentSubmit = async () => {
+    if (Object.keys(assessmentAnswers).length < assessmentQuestions.length) {
+      toast({ variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.assessment') });
+      return;
+    }
     
+    setIsLoading(true);
+    
+    const assessmentHistory = assessmentQuestions.map(q => `Q: ${q.question} A: ${assessmentAnswers[q.question]}`).join('\n');
+
     try {
         const values = form.getValues();
         const response = await generateWorkoutRoutine({ 
             ...values, 
             language: locale, 
-            fitnessAssessment: newHistory.join('\n') 
+            fitnessAssessment: assessmentHistory
         });
 
         if(response.routine || response.structuredRoutine) {
             handleFinish(response);
-        } else if (response.clarificationQuestion) {
-            const parsedQuestion = JSON.parse(response.clarificationQuestion);
-            setClarificationQuestion(parsedQuestion);
         } else {
+            // This might happen if the AI needs more info, but our current flow aims to prevent this.
             toast({ variant: 'destructive', title: t('onboarding.errors.generation.title'), description: t('onboarding.errors.generation.description') });
         }
     } catch(e) {
@@ -330,13 +327,13 @@ export default function OnboardingPage() {
 
             {step === 3 && (
                <motion.div
-                key="clarification"
+                key="assessment"
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
-                className="space-y-4 text-center"
+                className="space-y-6"
                >
-                 {isLoading ? (
+                 {isLoading && assessmentQuestions.length === 0 ? (
                     <div className="flex justify-center items-center h-48">
                       <Loader2 className="animate-spin text-primary size-10" />
                     </div>
@@ -344,18 +341,33 @@ export default function OnboardingPage() {
                     <>
                         <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
                           <Bot className="text-primary size-10 shrink-0 mt-1" />
-                           <p className="text-secondary-foreground font-medium">{clarificationQuestion?.question}</p>
+                           <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {clarificationQuestion?.options.map(option => (
-                                <Button key={option} variant="outline" size="lg" className="h-auto py-3" onClick={() => handleClarificationSubmit(option)}>
-                                    {option}
-                                </Button>
+                        <div className='space-y-6'>
+                            {assessmentQuestions.map((q, index) => (
+                                <div key={index}>
+                                    <Label className="font-semibold">{q.question}</Label>
+                                    <RadioGroup 
+                                        className="mt-2"
+                                        onValueChange={(value) => setAssessmentAnswers(prev => ({...prev, [q.question]: value}))}
+                                        value={assessmentAnswers[q.question]}
+                                    >
+                                        {q.options.map(opt => (
+                                            <div key={opt} className="flex items-center space-x-2">
+                                                <RadioGroupItem value={opt} id={`${index}-${opt}`} />
+                                                <Label htmlFor={`${index}-${opt}`}>{opt}</Label>
+                                            </div>
+                                        ))}
+                                    </RadioGroup>
+                                </div>
                             ))}
                         </div>
-                         <div className="pt-4 flex justify-start">
+                        <div className="pt-4 flex items-center gap-4">
                             <Button type="button" variant="ghost" onClick={() => setStep(2)} disabled={isLoading}>
                                 <ChevronLeft /> {t('onboarding.buttons.back')}
+                            </Button>
+                            <Button onClick={handleAssessmentSubmit} disabled={isLoading} className="w-full" size="lg">
+                                {isLoading ? <Loader2 className="animate-spin" /> : t('onboarding.buttons.generate')}
                             </Button>
                         </div>
                     </>

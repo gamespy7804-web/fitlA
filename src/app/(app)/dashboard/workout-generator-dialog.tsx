@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine, type WorkoutRoutineOutput, type AssessmentQuestion } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -46,11 +46,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useI18n } from '@/i18n/client';
-
-type ClarificationQuestion = {
-    question: string;
-    options: string[];
-}
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const createFormSchema = (t: (key: string) => string) => z.object({
   goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
@@ -72,8 +69,8 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const [step, setStep] = useState(1);
-  const [clarificationQuestion, setClarificationQuestion] = useState<ClarificationQuestion | null>(null);
-  const [assessmentHistory, setAssessmentHistory] = useState<string[]>([]);
+  const [assessmentQuestions, setAssessmentQuestions] = useState<AssessmentQuestion[] | null>(null);
+  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const formSchema = createFormSchema((key: string) => t(key as any));
@@ -97,18 +94,11 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
 
     try {
       const values = form.getValues();
-      const routine = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: assessmentHistory.join('\n') });
+      const routine = await generateWorkoutRoutine({ ...values, language: locale, fitnessAssessment: '' });
 
-      if (routine.clarificationQuestion) {
-        try {
-            const parsedQuestion = JSON.parse(routine.clarificationQuestion);
-            setClarificationQuestion(parsedQuestion);
-            setStep(2);
-        } catch(e) {
-            console.error("Failed to parse clarification question:", e);
-            // If parsing fails, we'll just proceed to generate the routine with what we have.
-            await handleFinalSubmit();
-        }
+      if (routine.assessmentQuestions && routine.assessmentQuestions.length > 0) {
+        setAssessmentQuestions(routine.assessmentQuestions);
+        setStep(2);
       } else {
         setResult(routine);
         localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
@@ -122,47 +112,26 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
     }
   }
 
-  const handleFinalSubmit = async () => {
+
+  const handleAssessmentSubmit = async () => {
+    if (!assessmentQuestions || Object.keys(assessmentAnswers).length < assessmentQuestions.length) {
+        toast({ variant: 'destructive', title: t('onboarding.errors.validation.title'), description: t('onboarding.errors.validation.assessment') });
+        return;
+    }
     setIsLoading(true);
+
+    const assessmentHistory = assessmentQuestions.map(q => `Q: ${q.question} A: ${assessmentAnswers[q.question]}`).join('\n');
+
     try {
         const values = form.getValues();
         const routine = await generateWorkoutRoutine({
             ...values,
             language: locale,
-            fitnessAssessment: assessmentHistory.join('\n')
+            fitnessAssessment: assessmentHistory
         });
         setResult(routine);
         localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
         setStep(3);
-    } catch (error) {
-        console.error(error);
-        toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
-    } finally {
-        setIsLoading(false);
-    }
-  }
-
-  const handleClarificationSubmit = async (answer: string) => {
-    setIsLoading(true);
-    const newHistory = [...assessmentHistory, `Q: ${clarificationQuestion?.question} A: ${answer}`];
-    setAssessmentHistory(newHistory);
-
-    try {
-        const values = form.getValues();
-        const routine = await generateWorkoutRoutine({
-            ...values,
-            language: locale,
-            fitnessAssessment: newHistory.join('\n')
-        });
-
-        if (routine.clarificationQuestion) {
-            const parsedQuestion = JSON.parse(routine.clarificationQuestion);
-            setClarificationQuestion(parsedQuestion);
-        } else {
-            setResult(routine);
-            localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
-            setStep(3);
-        }
     } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });
@@ -185,8 +154,8 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
       setResult(null);
       setIsLoading(false);
       setStep(1);
-      setClarificationQuestion(null);
-      setAssessmentHistory([]);
+      setAssessmentQuestions(null);
+      setAssessmentAnswers({});
     }
   };
   
@@ -305,27 +274,44 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
         )}
         {step === 2 && (
              <div className="space-y-4">
-                {isLoading && <div className='flex justify-center items-center h-48'><Loader2 className='animate-spin text-primary size-10' /></div>}
-                {clarificationQuestion && !isLoading && (
+                {isLoading && !assessmentQuestions && <div className='flex justify-center items-center h-48'><Loader2 className='animate-spin text-primary size-10' /></div>}
+                {assessmentQuestions && !isLoading && (
                     <>
-                        <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start">
-                          <Bot className="text-primary size-8 shrink-0 mt-1" />
-                           <p className="text-secondary-foreground">{clarificationQuestion.question}</p>
+                        <div className="mb-4 rounded-md bg-secondary/50 p-4 flex gap-4 items-start text-left">
+                          <Bot className="text-primary size-10 shrink-0 mt-1" />
+                           <p className="text-secondary-foreground font-medium">{t('onboarding.questions.assessment.intro')}</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {clarificationQuestion.options.map(option => (
-                                <Button key={option} variant="outline" onClick={() => handleClarificationSubmit(option)}>
-                                    {option}
-                                </Button>
-                            ))}
-                        </div>
+                        <ScrollArea className="h-72 pr-4">
+                            <div className='space-y-6'>
+                                {assessmentQuestions.map((q, index) => (
+                                    <div key={index}>
+                                        <Label className="font-semibold">{q.question}</Label>
+                                        <RadioGroup 
+                                            className="mt-2"
+                                            onValueChange={(value) => setAssessmentAnswers(prev => ({...prev, [q.question]: value}))}
+                                            value={assessmentAnswers[q.question]}
+                                        >
+                                            {q.options.map(opt => (
+                                                <div key={opt} className="flex items-center space-x-2">
+                                                    <RadioGroupItem value={opt} id={`dialog-${index}-${opt}`} />
+                                                    <Label htmlFor={`dialog-${index}-${opt}`}>{opt}</Label>
+                                                </div>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                         <DialogFooter className="pt-4 flex-col sm:flex-row gap-2">
+                            <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
+                                <ChevronLeft /> {t('onboarding.buttons.back')}
+                            </Button>
+                             <Button onClick={handleAssessmentSubmit} disabled={isLoading} className="w-full">
+                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : t('onboarding.buttons.generate')}
+                            </Button>
+                        </DialogFooter>
                     </>
                 )}
-                 <DialogFooter className="pt-4">
-                    <Button type="button" variant="ghost" onClick={() => setStep(1)} disabled={isLoading}>
-                        <ChevronLeft /> {t('onboarding.buttons.back')}
-                    </Button>
-                </DialogFooter>
              </div>
         )}
         {step === 3 && result && (
