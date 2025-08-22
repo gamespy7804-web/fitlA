@@ -35,33 +35,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInWithGoogle = async () => {
+    setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      // Let the onAuthStateChanged listener handle redirection by updating the user state
+      // onAuthStateChanged will handle the user state update and redirection
     } catch (error: any) {
       // Gracefully handle the case where the user closes the sign-in popup.
-      if (error.code === 'auth/popup-closed-by-user') {
-        return;
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+         // No need to log error, this is expected user behavior
+      } else {
+        console.error('Error signing in with Google', error);
       }
-      console.error('Error signing in with Google', error);
+    } finally {
+      // Set loading to false if user cancels, so UI becomes responsive again
+      if (!auth.currentUser) {
+        setLoading(false);
+      }
     }
   };
 
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      // Clear local storage related to the user's session
-      localStorage.removeItem('onboardingComplete');
-      localStorage.removeItem('workoutRoutine');
-      localStorage.removeItem('completedWorkouts');
-      localStorage.removeItem('detailedWorkoutLogs');
-      localStorage.removeItem('pendingFeedbackExercises');
-      localStorage.removeItem('quizHistory');
-      localStorage.removeItem('triviaHistory');
-      localStorage.removeItem('musicEnabled');
-      localStorage.removeItem('musicVolume');
-      localStorage.removeItem('sfxVolume');
+      // Clear all user-related data from localStorage
+      Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('firebase:')) return; // Preserve Firebase's own storage
+          localStorage.removeItem(key);
+      });
+      // Clear any session storage as well
+      sessionStorage.clear();
       router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);

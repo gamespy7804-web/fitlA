@@ -42,8 +42,8 @@ import { useI18n } from '@/i18n/client';
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
   trainingDays: z.preprocess(
-    (val) => (val === '' ? undefined : val),
-    z.coerce.number().min(1).max(7).optional()
+    (val) => (val === '' ? undefined : parseInt(String(val), 10)),
+    z.coerce.number().int().min(1).max(7).optional()
   ),
   trainingDuration: z.preprocess(
     (val) => (val === '' ? undefined : val),
@@ -72,24 +72,22 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
 
   const checkProgress = useCallback(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
-    const detailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
+    const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
     
     if (storedRoutine) {
       try {
           const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+          const detailedLogs = detailedLogsJSON ? JSON.parse(detailedLogsJSON) : [];
           setOriginalRoutine(parsedRoutine);
-          // Enable progression if there's a routine and at least one log has been completed.
+          
           if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
-            if (detailedLogs.length > 0) {
-              setCanProgress(true);
-            } else {
-              setCanProgress(false);
-            }
+            setCanProgress(detailedLogs.length > 0);
           } else {
              setCanProgress(false);
           }
       }
       catch (e) {
+          console.error("Failed to parse stored data:", e);
           setCanProgress(false);
       }
     } else {
@@ -98,6 +96,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   }, []);
 
   useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') return;
+
     checkProgress();
     window.addEventListener('focus', checkProgress);
     window.addEventListener('storage', checkProgress);
@@ -109,9 +110,10 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   }, [checkProgress]);
 
   useEffect(() => {
-    if (isOpen && originalRoutine?.structuredRoutine) {
+    if (isOpen && originalRoutine?.structuredRoutine && originalRoutine.structuredRoutine.length > 0) {
       form.setValue('trainingDays', originalRoutine.structuredRoutine.length);
-      const avgDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0) / originalRoutine.structuredRoutine.length;
+      const totalDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0);
+      const avgDuration = totalDuration / originalRoutine.structuredRoutine.length;
       form.setValue('trainingDuration', Math.round(avgDuration));
     }
   }, [originalRoutine, form, isOpen]);
@@ -128,7 +130,9 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         return;
       }
       
-      const adherence = (JSON.parse(detailedLogsJSON).length / (originalRoutine.structuredRoutine.length || 1));
+      const detailedLogs = JSON.parse(detailedLogsJSON);
+      const routineLength = originalRoutine.structuredRoutine.length;
+      const adherence = routineLength > 0 ? detailedLogs.length / routineLength : 0;
 
       const newRoutine = await adaptiveProgressionGenerator({
         selfReportedFitness: values.selfReportedFitness,
@@ -175,7 +179,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button disabled={!canProgress} className={cn("w-full md:w-auto text-xs text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed", className)}>
+        <Button disabled={!canProgress} className={cn("w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed", className)}>
             {children || <>
             <span>{t('adaptiveProgression.generateNewRoutine')}</span>
             </>}
@@ -224,7 +228,7 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
                   <FormControl>
                     <Textarea
                       placeholder={t('adaptiveProgression.feedbackPlaceholder')}
-                      className="resize-none"
+                      className="resize-y min-h-24"
                       {...field}
                     />
                   </FormControl>

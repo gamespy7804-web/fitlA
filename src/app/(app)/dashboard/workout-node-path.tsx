@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
-import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
+import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
 
 type CompletedDay = {
@@ -29,22 +29,30 @@ export function WorkoutNodePath() {
   const playSound = useAudioEffects();
 
   const loadData = useCallback(() => {
-    const storedRoutine = localStorage.getItem('workoutRoutine');
-    const completed = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as CompletedDay[];
-    
-    if (storedRoutine) {
-      try {
+    try {
+      const storedRoutine = localStorage.getItem('workoutRoutine');
+      const completedJSON = localStorage.getItem('completedWorkouts');
+      
+      const completed = completedJSON ? (JSON.parse(completedJSON) as CompletedDay[]) : [];
+      
+      if (storedRoutine) {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
         setWorkoutPlan(parsedRoutine);
         setCompletedDays(completed.map(c => c.workout));
-      } catch (e) {
-        console.error("Failed to parse workout routine:", e);
+      } else {
         setWorkoutPlan(null);
       }
+    } catch (e) {
+      console.error("Failed to parse workout data:", e);
+      setWorkoutPlan(null);
+      setCompletedDays([]);
     }
   }, []);
 
   useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') return;
+
     loadData();
     window.addEventListener('storage', loadData);
     window.addEventListener('focus', loadData);

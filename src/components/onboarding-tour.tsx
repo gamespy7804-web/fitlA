@@ -23,6 +23,7 @@ export function OnboardingTour() {
         return;
       }
       
+      // We need to wait a bit for the page to be fully rendered
       setTimeout(() => {
         const steps: DriveStep[] = [
           { 
@@ -45,14 +46,11 @@ export function OnboardingTour() {
               title: t('onboardingTour.actions.title'),
               description: t('onboardingTour.actions.description'),
               onNextClick: ({ tour }) => {
-                // Find and click the button to open the dropdown
                 const actionButton = document.getElementById('nav-actions');
                 if (actionButton) {
                     actionButton.click();
-                    tour.moveNext();
-                } else {
-                    tour.destroy();
                 }
+                tour.moveNext();
               }
             } 
           },
@@ -83,22 +81,27 @@ export function OnboardingTour() {
               title: t('onboardingTour.chatbot.title'),
               description: t('onboardingTour.chatbot.description')
             }
-          },
-          {
-            element: '.workout-node', // Use a class for the first node
-            popover: {
-              title: t('onboardingTour.startWorkout.title'),
-              description: t('onboardingTour.startWorkout.description'),
-            },
-          },
-          { 
+          }
+        ];
+        
+        const firstWorkoutNode = document.querySelector('.workout-node');
+        if (firstWorkoutNode) {
+            steps.push({
+                element: firstWorkoutNode as HTMLElement,
+                popover: {
+                  title: t('onboardingTour.startWorkout.title'),
+                  description: t('onboardingTour.startWorkout.description'),
+                },
+            });
+        }
+
+        steps.push({
             element: '#app-content', 
             popover: { 
               title: t('onboardingTour.end.title'),
               description: t('onboardingTour.end.description')
             } 
-          }
-        ];
+        })
 
         const driverObj = driver({
           showProgress: true,
@@ -111,7 +114,6 @@ export function OnboardingTour() {
             driverObj.destroy();
           },
           onDestroyStarted: () => {
-             // Close dropdown if open
             const actionButton = document.getElementById('nav-actions');
             if (actionButton && actionButton.ariaExpanded === 'true') {
                 actionButton.click();

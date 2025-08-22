@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useI18n } from '@/i18n/client';
@@ -28,9 +28,9 @@ type CompletedWorkout = {
 
 export function ProgressChart() {
   const { t, locale } = useI18n();
-  const dateLocale = locale === 'es' ? es : enUS;
+  const dateLocale = useMemo(() => (locale === 'es' ? es : enUS), [locale]);
 
-  const chartConfig = {
+  const chartConfig = useMemo(() => ({
     volume: {
       label: t('progressChart.volumeLabel'),
       color: 'hsl(var(--primary))',
@@ -39,37 +39,46 @@ export function ProgressChart() {
       label: t('progressChart.durationLabel'),
       color: 'hsl(var(--accent))',
     },
-  } satisfies ChartConfig;
+  }), [t]) satisfies ChartConfig;
   
   const [chartData, setChartData] = useState<any[]>([]);
 
   const loadChartData = useCallback(() => {
-    const completedWorkouts: CompletedWorkout[] = JSON.parse(
-      localStorage.getItem('completedWorkouts') || '[]'
-    );
+    try {
+        const completedWorkoutsJSON = localStorage.getItem('completedWorkouts');
+        const completedWorkouts: CompletedWorkout[] = completedWorkoutsJSON
+        ? JSON.parse(completedWorkoutsJSON)
+        : [];
 
-    const monthlyData = completedWorkouts.reduce((acc, log) => {
-      const month = format(new Date(log.date), 'yyyy-MM');
-      if (!acc[month]) {
-        acc[month] = { month, volume: 0, duration: 0, count: 0 };
-      }
-      acc[month].volume += log.volume;
-      acc[month].duration += log.duration;
-      acc[month].count += 1;
-      return acc;
-    }, {} as Record<string, { month: string, volume: number, duration: number, count: number }>);
+        const monthlyData = completedWorkouts.reduce((acc, log) => {
+        const month = format(new Date(log.date), 'yyyy-MM');
+        if (!acc[month]) {
+            acc[month] = { month, volume: 0, duration: 0, count: 0 };
+        }
+        acc[month].volume += log.volume;
+        acc[month].duration += log.duration;
+        acc[month].count += 1;
+        return acc;
+        }, {} as Record<string, { month: string, volume: number, duration: number, count: number }>);
 
-    const sortedData = Object.values(monthlyData)
-      .sort((a, b) => a.month.localeCompare(b.month))
-      .map(d => ({
-        ...d,
-        month: format(new Date(`${d.month}-01`), "MMMM", { locale: dateLocale }),
-      }));
-      
-    setChartData(sortedData);
+        const sortedData = Object.values(monthlyData)
+        .sort((a, b) => a.month.localeCompare(b.month))
+        .map(d => ({
+            ...d,
+            month: format(new Date(`${d.month}-01`), "MMMM", { locale: dateLocale }),
+        }));
+        
+        setChartData(sortedData);
+    } catch(e) {
+        console.error("Failed to parse chart data from localStorage", e);
+        setChartData([]);
+    }
   }, [dateLocale]);
 
   useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') return;
+    
     loadChartData();
 
     window.addEventListener('storage', loadChartData);

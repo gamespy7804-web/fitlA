@@ -13,14 +13,13 @@ export function PerformanceFeedback() {
 
   const fetchFeedback = useCallback(async () => {
     setIsLoading(true);
-    const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
-    if (!detailedLogsJSON || detailedLogsJSON === '[]') {
-      setFeedback(t('performanceFeedback.noWorkouts'));
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
+      if (!detailedLogsJSON || detailedLogsJSON === '[]') {
+        setFeedback(t('performanceFeedback.noWorkouts'));
+        return;
+      }
+
       const result = await performanceAnalystGenerator({
         trainingData: detailedLogsJSON,
         language: locale,
@@ -35,7 +34,22 @@ export function PerformanceFeedback() {
   }, [t, locale]);
 
   useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') return;
+    
     fetchFeedback();
+    
+    const handleStorageChange = () => {
+        fetchFeedback();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('focus', handleStorageChange);
+    }
   }, [fetchFeedback]);
 
   return (
