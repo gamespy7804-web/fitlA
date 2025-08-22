@@ -150,7 +150,7 @@ export function WorkoutNodePath() {
             'relative z-10 w-40 h-40 flex items-center justify-center',
              routine.length % 2 !== 0 ? 'self-start' : 'self-end'
         )}>
-            <AdaptiveProgressionDialog className="w-full md:w-auto text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
+            <AdaptiveProgressionDialog className="w-full md:w-auto text-xs text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
                 {t('workoutNodePath.generateNextWeek')}
             </AdaptiveProgressionDialog>
         </div>
