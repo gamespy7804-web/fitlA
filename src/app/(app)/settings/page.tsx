@@ -17,14 +17,16 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const { t, setLocale, locale } = useI18n();
 
-  const [isMusicEnabled, setIsMusicEnabled] = useState(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(50);
   const [sfxVolume, setSfxVolumeState] = useState(50);
 
 
   useEffect(() => {
-    const storedPreference = localStorage.getItem('musicEnabled') === 'true';
-    setIsMusicEnabled(storedPreference);
+    const storedPreference = localStorage.getItem('musicEnabled');
+    if (storedPreference !== null) {
+      setIsMusicEnabled(storedPreference === 'true');
+    }
 
     const storedMusicVolume = localStorage.getItem('musicVolume');
     if (storedMusicVolume) {

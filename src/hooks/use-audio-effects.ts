@@ -18,7 +18,7 @@ let nextGain: GainNode | null = null;
 let currentMusicType: MusicType | null = null;
 let loopTimeout: NodeJS.Timeout | null = null;
 let isInitialized = false;
-let isEnabled = false;
+let isEnabled = true; // Default to true
 let musicVolume = 0.5; // Default volume (50%)
 let sfxVolume = 0.5; // Default volume (50%)
 
@@ -33,8 +33,12 @@ export const initializeAudio = () => {
             audioContext.resume();
         }
         isInitialized = true;
-        // Check initial state from localStorage
-        isEnabled = localStorage.getItem('musicEnabled') === 'true';
+        // Check initial state from localStorage. If not set, it remains true.
+        const storedMusicEnabled = localStorage.getItem('musicEnabled');
+        if (storedMusicEnabled !== null) {
+            isEnabled = storedMusicEnabled === 'true';
+        }
+        
         const storedMusicVolume = localStorage.getItem('musicVolume');
         if (storedMusicVolume) {
             musicVolume = parseFloat(storedMusicVolume);
@@ -207,7 +211,13 @@ const playTrack = async (type: MusicType, startTime = 0) => {
 };
 
 export const startMusic = (type: MusicType) => {
-    isEnabled = localStorage.getItem('musicEnabled') === 'true';
+    const storedMusicEnabled = localStorage.getItem('musicEnabled');
+    if (storedMusicEnabled !== null) {
+      isEnabled = storedMusicEnabled === 'true';
+    } else {
+      isEnabled = true; // Default to true if not set
+    }
+    
     if (!isInitialized || !isEnabled) {
         return;
     }
@@ -238,15 +248,14 @@ export const stopMusic = () => {
 };
 
 export const toggleMusic = (shouldBeEnabled: boolean) => {
+    isEnabled = shouldBeEnabled;
+    localStorage.setItem('musicEnabled', shouldBeEnabled.toString());
+    
     if (shouldBeEnabled) {
-        isEnabled = true;
-        localStorage.setItem('musicEnabled', 'true');
         if (!currentMusicType) {
             startMusic('main');
         }
     } else {
-        isEnabled = false;
-        localStorage.setItem('musicEnabled', 'false');
         stopMusic();
     }
 }
