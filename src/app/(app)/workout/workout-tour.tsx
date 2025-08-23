@@ -1,34 +1,37 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import { driver } from 'driver.js';
+import { useEffect, useRef } from 'react';
+import { driver, type DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { useI18n } from '@/i18n/client';
 
 export function WorkoutTour() {
   const { t } = useI18n();
+  const driverRef = useRef<ReturnType<typeof driver> | null>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
     const runWorkoutTour = () => {
+      // Ensure the tour only tries to run once per component mount
+      if (hasRun.current) return;
+      hasRun.current = true;
+      
       const hasSeenWorkoutTour = localStorage.getItem('hasSeenWorkoutTour');
       if (hasSeenWorkoutTour) {
         return;
       }
       
-      // We need to wait a bit for the page to be fully rendered
       setTimeout(() => {
-        // Check if the necessary elements are on the page
         const viewTechniqueBtn = document.getElementById('view-technique-btn');
         const addToFeedbackBtn = document.getElementById('add-to-feedback-btn');
 
         if (!viewTechniqueBtn && !addToFeedbackBtn) {
-            // If no special buttons are present on this exercise, don't show the tour.
-            // It will try again on the next exercise/page load.
+            hasRun.current = false; // Allow re-running on next component if buttons weren't ready
             return;
         }
 
-        const steps = [];
+        const steps: DriveStep[] = [];
 
         if (viewTechniqueBtn) {
             steps.push({
@@ -52,26 +55,31 @@ export function WorkoutTour() {
 
         if (steps.length === 0) return;
 
-        const driverObj = driver({
+        driverRef.current = driver({
           showProgress: true,
           nextBtnText: t('onboardingTour.next'),
           prevBtnText: t('onboardingTour.prev'),
           doneBtnText: t('onboardingTour.done'),
-          onDeselected: () => {
-            localStorage.setItem('hasSeenWorkoutTour', 'true');
-            driverObj.destroy();
-          },
           onDestroyed: () => {
             localStorage.setItem('hasSeenWorkoutTour', 'true');
+            driverRef.current = null;
           }
         });
-
-        driverObj.setSteps(steps);
-        driverObj.drive();
+        
+        driverRef.current.setSteps(steps);
+        driverRef.current.drive();
       }, 1500);
     };
 
     runWorkoutTour();
+
+    // Cleanup function to destroy driver instance if component unmounts
+    return () => {
+        if (driverRef.current && driverRef.current.isActve()) {
+            driverRef.current.destroy();
+            localStorage.setItem('hasSeenWorkoutTour', 'true');
+        }
+    }
   }, [t]);
 
   return null;

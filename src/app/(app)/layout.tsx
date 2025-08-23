@@ -26,6 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
+  const isWorkoutPage = pathname === '/workout';
   const audioInitialized = useRef(false);
 
   useEffect(() => {
@@ -67,7 +68,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     updateTheme();
     window.addEventListener('storage', updateTheme);
 
-    if (!isGamePage && audioInitialized.current) {
+    const shouldPlayMusic = !isGamePage && !isWorkoutPage;
+
+    if (shouldPlayMusic && audioInitialized.current) {
       startMusic('main');
     } else {
       stopMusic();
@@ -77,12 +80,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       window.removeEventListener('storage', updateTheme);
     }
 
-  }, [pathname, updateTheme, isGamePage]); 
+  }, [pathname, updateTheme, isGamePage, isWorkoutPage]); 
   
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
       initializeAudio();
-      if (!isGamePage) {
+      const shouldPlayMusic = !isGamePage && !isWorkoutPage;
+      if (shouldPlayMusic) {
           startMusic('main');
       }
       audioInitialized.current = true;
