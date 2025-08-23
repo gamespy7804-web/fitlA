@@ -33,9 +33,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ChevronLeft } from 'lucide-react';
+import { Loader2, ChevronLeft, Minus, Plus, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
+import { cn } from '@/lib/utils';
 
 
 const createFormSchema = (t: (key: string) => string) => {
@@ -46,28 +47,36 @@ const createFormSchema = (t: (key: string) => string) => {
     });
 
     const step2Schema = z.object({
-        age: z.preprocess(
-          (val) => (val === '' ? undefined : val),
-          z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max'))
-        ),
-        weight: z.preprocess(
-          (val) => (val === '' ? undefined : val),
-          z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max'))
-        ),
+        age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
+        weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
         gender: z.enum(['male', 'female', 'other'], { required_error: t('onboarding.validation.gender.required') }),
-        trainingDays: z.preprocess(
-          (val) => (val === '' ? undefined : val),
-          z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max'))
-        ),
-        trainingDuration: z.preprocess(
-          (val) => (val === '' ? undefined : val),
-          z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max'))
-        ),
+        trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+        trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
     });
     
     return step1Schema.merge(step2Schema);
 };
 
+// Stepper Component
+const Stepper = ({ label, value, onValueChange, min, max, step, unit }: { label: string, value: number, onValueChange: (val: number) => void, min: number, max: number, step: number, unit?: string }) => {
+  const increment = () => onValueChange(Math.min(max, value + step));
+  const decrement = () => onValueChange(Math.max(min, value - step));
+
+  return (
+    <div className="space-y-2">
+      <FormLabel>{label}</FormLabel>
+      <div className="flex items-center justify-between gap-2 p-2 border rounded-lg">
+        <Button type="button" variant="ghost" size="icon" onClick={decrement} className="rounded-full w-10 h-10">
+          <Minus className="h-5 w-5" />
+        </Button>
+        <span className="text-2xl font-bold font-mono min-w-24 text-center">{value} {unit}</span>
+        <Button type="button" variant="ghost" size="icon" onClick={increment} className="rounded-full w-10 h-10">
+          <Plus className="h-5 w-5" />
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
@@ -87,15 +96,16 @@ export default function OnboardingPage() {
       sport: '',
       goals: '',
       fitnessLevel: undefined,
-      age: undefined,
-      weight: undefined,
+      age: 25,
+      weight: 70,
       gender: undefined,
-      trainingDays: undefined,
-      trainingDuration: undefined,
+      trainingDays: 3,
+      trainingDuration: 60,
     }
   });
   const { watch, setValue, trigger, handleSubmit } = form;
   const sportValue = watch('sport');
+  const genderValue = watch('gender');
 
   useEffect(() => {
     // This page is now the entry point for new (anonymous) users.
@@ -112,11 +122,21 @@ export default function OnboardingPage() {
     { id: 'running', name: t('onboarding.questions.sport.options.running') },
     { id: 'yoga', name: t('onboarding.questions.sport.options.yoga') },
   ];
+  
+  const genderOptions = [
+    { id: 'male', name: t('onboarding.questions.gender.options.male') },
+    { id: 'female', name: t('onboarding.questions.gender.options.female') },
+    { id: 'other', name: t('onboarding.questions.gender.options.other') },
+  ]
 
   const handleSportSelect = (sportName: string) => {
     setValue('sport', sportName, { shouldValidate: true });
     setShowOtherSportInput(false);
   };
+  
+  const handleGenderSelect = (gender: 'male' | 'female' | 'other') => {
+    setValue('gender', gender, { shouldValidate: true });
+  }
 
   const handleOtherSportClick = () => {
     setValue('sport', '', { shouldValidate: true });
@@ -253,16 +273,20 @@ export default function OnboardingPage() {
                           initial={{ opacity: 0, x: -50 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 50 }}
-                          className="space-y-4"
+                          className="space-y-6"
                       >
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <FormField
                               control={form.control}
                               name="age"
                               render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
-                                    <FormControl><Input type="number" placeholder={t('onboarding.questions.age.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
+                                    <Stepper 
+                                      label={t('onboarding.questions.age.label')}
+                                      value={field.value || 0}
+                                      onValueChange={field.onChange}
+                                      min={10} max={100} step={1}
+                                    />
                                     <FormMessage />
                                   </FormItem>
                               )}
@@ -272,50 +296,70 @@ export default function OnboardingPage() {
                               name="weight"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
-                                  <FormControl><Input type="number" placeholder={t('onboarding.questions.weight.placeholder')} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || undefined)} value={field.value ?? ''} /></FormControl>
+                                    <Stepper 
+                                      label={t('onboarding.questions.weight.label')}
+                                      value={field.value || 0}
+                                      onValueChange={field.onChange}
+                                      min={30} max={200} step={1}
+                                      unit="kg"
+                                    />
                                   <FormMessage />
                                   </FormItem>
                               )}
                             />
-                            <FormField
+                         </div>
+                           <FormField
                               control={form.control}
                               name="gender"
-                              render={({ field }) => (
+                              render={() => (
                               <FormItem>
                                   <FormLabel>{t('onboarding.questions.gender.label')}</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl><SelectTrigger><SelectValue placeholder={t('onboarding.questions.gender.placeholder')} /></SelectTrigger></FormControl>
-                                  <SelectContent>
-                                      <SelectItem value="male">{t('onboarding.questions.gender.options.male')}</SelectItem>
-                                      <SelectItem value="female">{t('onboarding.questions.gender.options.female')}</SelectItem>
-                                      <SelectItem value="other">{t('onboarding.questions.gender.options.other')}</SelectItem>
-                                  </SelectContent>
-                                  </Select>
+                                   <div className="flex items-center gap-2 pt-2">
+                                    {genderOptions.map(option => (
+                                      <Button 
+                                        key={option.id}
+                                        type="button" 
+                                        variant={genderValue === option.id ? 'default' : 'outline'}
+                                        onClick={() => handleGenderSelect(option.id as any)}
+                                        className="w-full"
+                                      >
+                                        {genderValue === option.id && <Check className="mr-2 h-4 w-4" />}
+                                        {option.name}
+                                      </Button>
+                                    ))}
+                                  </div>
                                   <FormMessage />
                               </FormItem>
                               )}
                           />
-                         </div>
                           <FormField
                               control={form.control}
                               name="trainingDays"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                                  <FormControl><Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
-                                  <FormMessage />
+                                    <Stepper 
+                                      label={t('onboarding.questions.trainingDays.label')}
+                                      value={field.value || 0}
+                                      onValueChange={field.onChange}
+                                      min={1} max={7} step={1}
+                                    />
+                                    <FormMessage />
                                   </FormItem>
                               )}
-                              />
+                          />
                           <FormField
                               control={form.control}
                               name="trainingDuration"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                                  <FormControl><Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} /></FormControl>
-                                  <FormMessage />
+                                    <Stepper 
+                                      label={t('onboarding.questions.trainingDuration.label')}
+                                      value={field.value || 0}
+                                      onValueChange={field.onChange}
+                                      min={15} max={240} step={15}
+                                      unit="min"
+                                    />
+                                    <FormMessage />
                                   </FormItem>
                               )}
                           />
