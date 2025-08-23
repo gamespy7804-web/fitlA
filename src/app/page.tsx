@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -15,19 +15,14 @@ export default function Home() {
       return; // Wait until auth state is confirmed
     }
 
-    if (user) {
-      // User is logged in, check if onboarding is complete
-      const onboardingComplete = localStorage.getItem('onboardingComplete');
-      if (onboardingComplete === 'true') {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/onboarding');
-      }
+    // Allow anonymous access. Check if onboarding is complete.
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    if (onboardingComplete === 'true') {
+      router.replace('/dashboard');
     } else {
-      // No user, send to login.
-      router.replace('/login');
+      router.replace('/onboarding');
     }
-  }, [user, loading, router]);
+  }, [loading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">

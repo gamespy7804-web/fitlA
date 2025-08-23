@@ -41,6 +41,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const provider = new GoogleAuthProvider();
     try {
         await signInWithPopup(auth, provider);
+        // On successful sign-in, Firebase's onAuthStateChanged will trigger
+        // and update the user state globally. We can then redirect.
+        toast({ title: "¡Sesión iniciada!", description: "Tu progreso ahora está sincronizado con tu cuenta." });
+        router.push('/settings');
     } catch (error: any) {
         if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
            // This is expected user behavior, no need to log or toast.
@@ -65,25 +69,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      cleanUpUserSession();
+      // The onAuthStateChanged listener will set user to null.
+      // We don't need to clear local storage here if we want progress to remain for anonymous re-login.
+      // Let's keep the data and just sign out.
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      router.push('/settings');
     } catch (error) {
       console.error('Error signing out', error);
+      toast({ variant: "destructive", title: "Error", description: "No se pudo cerrar la sesión." });
     }
   };
 
   const resetAccountData = async () => {
-    if (!auth.currentUser) {
-       toast({
-            variant: "destructive",
-            title: "Error",
-            description: "No user is currently signed in.",
-        });
-        return;
+    cleanUpUserSession(); // This will clear all data and redirect to login, which is now the desired behavior for a full reset
+    if (auth.currentUser) {
+        await firebaseSignOut(auth);
     }
-    await signOut();
     toast({
-        title: "Account Data Reset",
-        description: "All your progress has been reset. You can now start over.",
+        title: "Datos de la cuenta restablecidos",
+        description: "Todo tu progreso ha sido eliminado. Ahora puedes empezar de nuevo.",
     });
   }
   

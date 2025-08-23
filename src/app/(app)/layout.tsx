@@ -14,6 +14,7 @@ import { initializeAudio, startMusic, stopMusic } from '@/hooks/use-audio-effect
 import { WelcomeOverlay } from './welcome-overlay';
 import { Toaster } from '@/components/ui/toaster';
 import { OnboardingTour } from '@/components/onboarding-tour';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -21,13 +22,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [themeClass, setThemeClass] = useState('theme-default');
   const [showWelcome, setShowWelcome] = useState(false);
   const [isReadyForTour, setIsReadyForTour] = useState(false);
+  const { loading } = useAuth();
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
   const audioInitialized = useRef(false);
 
   useEffect(() => {
     // This check should only happen on the client
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !loading) {
       const hasInteracted = sessionStorage.getItem('userInteracted');
       const onboardingComplete = localStorage.getItem('onboardingComplete');
       if (!hasInteracted && onboardingComplete) {
@@ -41,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         setIsReadyForTour(true);
       }
     }
-  }, []);
+  }, [loading]);
 
   const updateTheme = useCallback(() => {
     const storedRoutine = localStorage.getItem('workoutRoutine');
@@ -93,6 +95,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setShowWelcome(false);
     setIsReadyForTour(true);
   };
+  
+  if (loading) {
+    return (
+       <div className="flex h-screen w-full items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    )
+  }
 
   return (
     <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>

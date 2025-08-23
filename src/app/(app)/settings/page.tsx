@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music, Volume2, ShieldAlert, Languages, Loader2, RotateCcw } from 'lucide-react';
+import { LogOut, Music, Volume2, ShieldAlert, Languages, Loader2, RotateCcw, Save } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
@@ -22,10 +22,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { GoogleIcon } from '@/components/icons';
 
 export default function SettingsPage() {
-  const { user, signOut, resetAccountData } = useAuth();
+  const { user, signOut, resetAccountData, signInWithGoogle, loading: authLoading } = useAuth();
   const { t, setLocale, locale } = useI18n();
 
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
@@ -35,7 +36,6 @@ export default function SettingsPage() {
 
 
   useEffect(() => {
-    // We get the initial values from localStorage or default them.
     const storedMusicEnabled = localStorage.getItem('musicEnabled');
     setIsMusicEnabled(storedMusicEnabled === null ? true : storedMusicEnabled === 'true');
 
@@ -66,10 +66,62 @@ export default function SettingsPage() {
   const handleResetAccount = async () => {
     setIsResetting(true);
     await resetAccountData();
-    // The reset function will handle redirection. Setting state back is a fallback.
     setIsResetting(false);
   }
 
+  const renderUserCard = () => {
+    if (authLoading) {
+      return (
+        <Card>
+          <CardHeader>
+             <CardTitle className="font-headline">{t('settings.profile.title')}</CardTitle>
+             <CardDescription>{t('settings.profile.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center h-24">
+            <Loader2 className="animate-spin" />
+          </CardContent>
+        </Card>
+      )
+    }
+
+    if (user) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">{t('settings.profile.title')}</CardTitle>
+            <CardDescription>{t('settings.profile.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('settings.profile.name')}</Label>
+                <Input id="name" defaultValue={user?.displayName ?? ''} readOnly />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('settings.profile.email')}</Label>
+                <Input id="email" type="email" defaultValue={user?.email ?? ''} readOnly disabled />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    return (
+      <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Guardar Progreso</CardTitle>
+            <CardDescription>Inicia sesión para sincronizar tu progreso y no perder tus datos.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={signInWithGoogle}>
+              <GoogleIcon className="mr-2" />
+              Iniciar Sesión con Google
+            </Button>
+          </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -81,25 +133,8 @@ export default function SettingsPage() {
           {t('settings.description')}
         </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline">{t('settings.profile.title')}</CardTitle>
-          <CardDescription>{t('settings.profile.description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('settings.profile.name')}</Label>
-              <Input id="name" defaultValue={user?.displayName ?? ''} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('settings.profile.email')}</Label>
-              <Input id="email" type="email" defaultValue={user?.email ?? ''} readOnly disabled />
-            </div>
-          </div>
-           <Button>{t('settings.profile.save')}</Button>
-        </CardContent>
-      </Card>
+
+      {renderUserCard()}
       
       <Card>
         <CardHeader>
@@ -178,16 +213,18 @@ export default function SettingsPage() {
           <CardDescription>{t('settings.account.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-           <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-border p-4'>
-             <div>
-                <h3 className="font-medium">{t('settings.account.signOut.title')}</h3>
-                <p className="text-sm text-muted-foreground">{t('settings.account.signOut.description')}</p>
-             </div>
-             <Button variant="outline" onClick={signOut} className="mt-2 md:mt-0 md:ml-4">
-                <LogOut className="mr-2" />
-                {t('settings.account.signOut.button')}
-             </Button>
-           </div>
+            {user && (
+              <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-border p-4'>
+                <div>
+                    <h3 className="font-medium">{t('settings.account.signOut.title')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('settings.account.signOut.description')}</p>
+                </div>
+                <Button variant="outline" onClick={signOut} className="mt-2 md:mt-0 md:ml-4">
+                    <LogOut className="mr-2" />
+                    {t('settings.account.signOut.button')}
+                </Button>
+              </div>
+            )}
             <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-destructive/50 p-4'>
              <div>
                 <h3 className="font-medium text-destructive">{t('settings.account.reset.title')}</h3>
