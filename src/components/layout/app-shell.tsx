@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { useI18n } from '@/i18n/client';
+import { GoogleIcon } from '../icons';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -23,9 +24,11 @@ interface AppShellProps {
 export function AppShell({ children, openChatbot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, signInWithGoogle } = useAuth();
   const isGamePage = pathname === '/games';
   const { t } = useI18n();
+
+  const isAnonymous = user?.isAnonymous ?? true;
 
   if (pathname === '/onboarding' || pathname === '/login') {
     return <>{children}</>;
@@ -55,13 +58,13 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.photoURL ?? undefined} alt={user?.displayName ?? "User"} />
+                        <AvatarImage src={!isAnonymous ? user?.photoURL ?? undefined : undefined} alt={!isAnonymous ? user?.displayName ?? "User" : "User"} />
                         <AvatarFallback><User /></AvatarFallback>
                     </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                 {user ? (
+                 {!isAnonymous ? (
                     <>
                         <DropdownMenuItem disabled>
                             <div className="flex flex-col space-y-1">
@@ -78,10 +81,21 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
                         </DropdownMenuItem>
                     </>
                  ) : (
-                    <DropdownMenuItem onClick={() => router.push('/settings')}>
-                        <LogIn className="mr-2 h-4 w-4" />
+                    <>
+                     <DropdownMenuItem disabled>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">Invitado</p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            Inicia sesión para guardar tu progreso
+                          </p>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => router.push('/settings')}>
+                        <GoogleIcon className="mr-2 h-4 w-4" />
                         <span>Iniciar Sesión</span>
-                    </DropdownMenuItem>
+                      </DropdownMenuItem>
+                    </>
                  )}
               </DropdownMenuContent>
              </DropdownMenu>

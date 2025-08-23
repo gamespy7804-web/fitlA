@@ -15,6 +15,7 @@ import { WelcomeOverlay } from './welcome-overlay';
 import { Toaster } from '@/components/ui/toaster';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -51,10 +52,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (storedRoutine) {
       try {
         const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        if (parsedRoutine.structuredRoutine && parsedRoutine.sport) {
-          currentTheme = getThemeForSport(parsedRoutine.sport);
-        } else if (parsedRoutine.sport) {
-          currentTheme = getThemeForSport(parsedRoutine.sport);
+        const sport = (parsedRoutine as any).sport;
+        if (sport) {
+          currentTheme = getThemeForSport(sport);
         }
       } catch (e) {
         console.error("Failed to parse workout routine for theming");

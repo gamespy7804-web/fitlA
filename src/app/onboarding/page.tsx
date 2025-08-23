@@ -98,9 +98,13 @@ export default function OnboardingPage() {
   const sportValue = watch('sport');
 
   useEffect(() => {
-    // No need to check for onboarding complete here, the root page handles redirection.
-    // This simplifies logic and prevents redirect loops.
-  }, []);
+    // This page is now the entry point for new (anonymous) users.
+    // If for some reason a user who has already onboarded lands here, send them to dashboard.
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    if (onboardingComplete === 'true') {
+      router.replace('/dashboard');
+    }
+  }, [router]);
 
   const popularSports = [
     { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },
