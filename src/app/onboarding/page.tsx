@@ -98,11 +98,9 @@ export default function OnboardingPage() {
   const sportValue = watch('sport');
 
   useEffect(() => {
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (onboardingComplete === 'true') {
-        router.replace('/dashboard');
-    }
-  }, [router]);
+    // No need to check for onboarding complete here, the root page handles redirection.
+    // This simplifies logic and prevents redirect loops.
+  }, []);
 
   const popularSports = [
     { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },

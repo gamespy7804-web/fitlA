@@ -12,7 +12,12 @@ export default function Home() {
 
   useEffect(() => {
     if (loading) {
-      return; // Wait until auth state is confirmed (or anonymous login completes)
+      return; // Wait until auth state is confirmed
+    }
+
+    if (!user) {
+      router.replace('/login');
+      return;
     }
 
     const onboardingComplete = localStorage.getItem('onboardingComplete');
