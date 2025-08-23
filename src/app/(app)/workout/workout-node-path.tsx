@@ -1,0 +1,174 @@
+
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import type { WorkoutRoutineOutput } from '@/ai/flows/types';
+import { Check, Dumbbell, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
+import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
+import { useI18n } from '@/i18n/client';
+
+type CompletedDay = {
+  workout: string;
+};
+
+export function WorkoutNodePath() {
+  const { t } = useI18n();
+  const [workoutPlan, setWorkoutPlan] = useState<WorkoutRoutineOutput | null>(null);
+  const [completedDays, setCompletedDays] = useState<string[]>([]);
+  const router = useRouter();
+  const playSound = useAudioEffects();
+
+  const loadData = useCallback(() => {
+    try {
+      const storedRoutine = localStorage.getItem('workoutRoutine');
+      const completedJSON = localStorage.getItem('completedWorkouts');
+      
+      const completed = completedJSON ? (JSON.parse(completedJSON) as CompletedDay[]) : [];
+      
+      if (storedRoutine) {
+        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
+        setWorkoutPlan(parsedRoutine);
+        setCompletedDays(completed.map(c => c.workout));
+      } else {
+        setWorkoutPlan(null);
+      }
+    } catch (e) {
+      console.error("Failed to parse workout data:", e);
+      setWorkoutPlan(null);
+      setCompletedDays([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only run on client
+    if (typeof window === 'undefined') return;
+
+    loadData();
+    window.addEventListener('storage', loadData);
+    window.addEventListener('focus', loadData);
+    return () => {
+      window.removeEventListener('storage', loadData);
+      window.removeEventListener('focus', loadData);
+    };
+  }, [loadData]);
+
+  const handleNodeClick = (dayIndex: number) => {
+    stopMusic();
+    playSound('startWorkout');
+    setTimeout(() => {
+      router.push(`/workout?day=${dayIndex}`);
+    }, 500); // Wait for sound to play a bit
+  };
+  
+  const routine = workoutPlan?.structuredRoutine;
+  
+  if (!routine || routine.length === 0) {
+    return (
+        <Card className="mt-10 text-center">
+            <CardHeader>
+                <CardTitle>{t('workoutNodePath.noPlan.title')}</CardTitle>
+                <CardDescription>{t('workoutNodePath.noPlan.description')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Dumbbell className="mx-auto h-12 w-12 text-muted-foreground" />
+            </CardContent>
+        </Card>
+    );
+  }
+
+  // Find the index of the last completed workout to determine the current "active" day
+  let lastCompletedIndex = -1;
+  for (let i = routine.length - 1; i >= 0; i--) {
+      if (completedDays.includes(routine[i].title)) {
+          lastCompletedIndex = i;
+          break;
+      }
+  }
+  const activeDayIndex = lastCompletedIndex + 1;
+
+
+  return (
+    <TooltipProvider>
+      <div className="relative flex flex-col items-center w-full p-8 pt-20 pb-24">
+        {/* The Path SVG */}
+        <svg
+          className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-auto"
+          width="100"
+          height="100%"
+          viewBox={`0 0 100 ${(routine.length + 1) * 120}`}
+          preserveAspectRatio="none"
+        >
+          <path
+            d={`M 50 0 ${routine.map((_, i) => `C 50 ${i*120 + 20}, ${i % 2 === 0 ? 100 : 0} ${i*120 + 60}, 50 ${i*120 + 120}`).join(' ')}`}
+            stroke="hsl(var(--border))"
+            strokeWidth="4"
+            fill="none"
+            strokeDasharray="10 10"
+          />
+        </svg>
+
+        {routine.map((day, index) => {
+          const isCompleted = completedDays.includes(day.title);
+          const isLocked = index > activeDayIndex;
+          const isActive = index === activeDayIndex;
+
+          return (
+            <div
+              key={day.day}
+              className={cn(
+                'relative z-10 w-32 h-32 flex items-center justify-center workout-node',
+                index % 2 !== 0 ? 'self-start' : 'self-end'
+              )}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => !isLocked && handleNodeClick(index)}
+                    disabled={isLocked}
+                    className={cn(
+                      'relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-background',
+                      'shadow-lg bg-card',
+                      isCompleted && 'bg-green-500 text-white shadow-green-500/50',
+                      isActive && 'animate-pulse ring-4 ring-primary/50 shadow-primary/40',
+                      isLocked ? 'bg-muted cursor-not-allowed opacity-50' : 'hover:scale-110 focus:ring-primary',
+                    )}
+                  >
+                    {isCompleted && <Check className="w-12 h-12 stroke-3" />}
+                    {isLocked && <Lock className="w-10 h-10 text-muted-foreground/50" />}
+                    {!isCompleted && !isLocked && (
+                        <span className="text-5xl font-bold text-primary font-headline">{day.day}</span>
+                    )}
+                     <div className="absolute -top-4 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold shadow-md">{t('workoutNodePath.day')} {day.day}</div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className='font-bold'>{day.title}</p>
+                  <p className='text-sm text-muted-foreground'>{isLocked ? t('workoutNodePath.tooltip.locked') : isCompleted ? t('workoutNodePath.tooltip.completed') : t('workoutNodePath.tooltip.active')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        })}
+
+        <div className={cn(
+            'relative z-10 w-full flex items-center justify-center mt-4',
+             routine.length % 2 !== 0 ? 'self-start pl-8' : 'self-end pr-8'
+        )}>
+            <AdaptiveProgressionDialog className="w-full h-16 rounded-lg text-accent-foreground justify-center bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed" >
+                {t('workoutNodePath.generateNextWeek')}
+            </AdaptiveProgressionDialog>
+        </div>
+      </div>
+    </TooltipProvider>
+  );
+}

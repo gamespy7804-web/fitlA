@@ -24,9 +24,11 @@ export default function GamesPage() {
   ]
 
   useEffect(() => {
+    stopMusic(); // Stop main music
     startMusic('game');
     return () => {
-      startMusic('main');
+      stopMusic(); // Stop game music when leaving
+      startMusic('main'); // Restart main music
     }
   }, []);
 

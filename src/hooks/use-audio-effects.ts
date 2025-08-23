@@ -21,18 +21,27 @@ let isInitialized = false;
 let isEnabled = true; // Default to true
 let musicVolume = 0.5; // Default volume (50%)
 let sfxVolume = 0.5; // Default volume (50%)
+let musicWasPlayingBeforeHidden = false;
+
 
 const FADE_TIME = 2; // seconds for crossfade
 
 const handleVisibilityChange = () => {
     if (!audioContext) return;
     if (document.hidden) {
-        if(currentMusicType) {
+        if (currentMusicType) {
+            musicWasPlayingBeforeHidden = true;
             audioContext.suspend();
+        } else {
+            musicWasPlayingBeforeHidden = false;
         }
     } else {
-        if(currentMusicType) {
-            audioContext.resume();
+        if (musicWasPlayingBeforeHidden) {
+            // Only resume if music was playing and we are not on a page that should be silent
+            const isGamePage = window.location.pathname.includes('/games');
+            if (!isGamePage) {
+                audioContext.resume();
+            }
         }
     }
 }
