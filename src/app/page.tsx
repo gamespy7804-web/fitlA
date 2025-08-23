@@ -15,11 +15,8 @@ export default function Home() {
       return; // Wait until auth state is confirmed
     }
 
-    if (!user) {
-      router.replace('/login');
-      return;
-    }
-
+    // Since we now use anonymous sign-in, user object will exist.
+    // The main logic is now about whether onboarding is complete.
     const onboardingComplete = localStorage.getItem('onboardingComplete');
     if (onboardingComplete === 'true') {
       router.replace('/dashboard');

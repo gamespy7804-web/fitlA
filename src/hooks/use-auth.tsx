@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -7,6 +8,8 @@ import {
   signInWithRedirect,
   signOut as firebaseSignOut,
   User,
+  signInAnonymously,
+  linkWithRedirect,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -29,21 +32,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setLoading(false);
+      } else {
+        // If no user, sign in anonymously
+        try {
+          const { user: anonUser } = await signInAnonymously(auth);
+          setUser(anonUser);
+        } catch (error) {
+           console.error("Anonymous sign-in failed", error);
+           toast({ variant: 'destructive', title: 'Error de conexión', description: 'No se pudo iniciar una sesión. Por favor, revisa tu conexión y recarga la página.'});
+        } finally {
+            setLoading(false);
+        }
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
-      // The redirect flow will handle the rest. The onAuthStateChanged listener
-      // will pick up the user when they are redirected back to the app.
+        if (auth.currentUser && auth.currentUser.isAnonymous) {
+            // If the user is anonymous, link the account
+            await linkWithRedirect(auth.currentUser, provider);
+        } else {
+            // Otherwise, perform a normal sign-in
+            await signInWithRedirect(auth, provider);
+        }
     } catch (error: any) {
-        console.error('Error initiating Google sign-in redirect', error);
+        console.error('Error initiating Google sign-in/linking', error);
         toast({ variant: 'destructive', title: 'Error de inicio de sesión', description: 'No se pudo iniciar el proceso de inicio de sesión con Google. Por favor, inténtalo de nuevo.'});
     }
   };
@@ -61,10 +81,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // The onAuthStateChanged listener will handle signing in a new anonymous user.
+      // We still clean up so the new anonymous user starts fresh.
       cleanUpUserSession();
-      // The onAuthStateChanged listener will set user to null, and the Home page logic will redirect to /login
-      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
-      router.push('/login');
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso ya no está sincronizado." });
+      router.push('/'); // Go to home to restart the flow
     } catch (error) {
       console.error('Error signing out', error);
       toast({ variant: "destructive", title: "Error", description: "No se pudo cerrar la sesión." });
@@ -72,15 +93,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetAccountData = async () => {
+    const wasRealUser = auth.currentUser && !auth.currentUser.isAnonymous;
     cleanUpUserSession();
-    if (auth.currentUser) {
+    
+    if (wasRealUser) {
       await firebaseSignOut(auth);
     }
+    
     toast({
         title: "Datos de la cuenta restablecidos",
         description: "Todo tu progreso ha sido eliminado. Ahora puedes empezar de nuevo.",
     });
-    router.push('/login');
+    
+    // Force a reload to ensure the anonymous user starts completely fresh
+    window.location.href = '/';
   }
   
   const value = { user, loading, signInWithGoogle, signOut, resetAccountData };

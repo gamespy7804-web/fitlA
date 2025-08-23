@@ -19,20 +19,28 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && user) {
+    // If the user is logged in (not anonymous), redirect to dashboard
+    if (!authLoading && user && !user.isAnonymous) {
       router.replace('/dashboard');
     }
   }, [authLoading, user, router]);
   
   const handleSignIn = async () => {
     setIsSigningIn(true);
-    await signInWithGoogle();
-    setIsSigningIn(false);
+    try {
+        await signInWithGoogle();
+    } catch (error) {
+        console.error("Sign in failed", error);
+    } finally {
+        setIsSigningIn(false);
+    }
   }
 
   const isLoading = authLoading || isSigningIn;
 
-  if (authLoading || (!authLoading && user)) {
+  // This page is now primarily for users who want to link their account from settings
+  // or if anonymous sign-in somehow fails.
+  if (authLoading) {
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
