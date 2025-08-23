@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
@@ -8,7 +9,7 @@ const firebaseConfig = {
   "storageBucket": "trainsmart-ai-q4a19.firebasestorage.app",
   "apiKey": "AIzaSyBMdaVSeE9xXLz684zeCSOVQkf8hZfX3do",
   "authDomain": "trainsmart-ai-q4a19.firebaseapp.com",
-  "measurementId": "",
+  "measurementId": "G-B16J0E9XSY",
   "messagingSenderId": "6010033705"
 };
 
