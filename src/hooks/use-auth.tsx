@@ -8,6 +8,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   User,
+  signInAnonymously,
+  linkWithCredential,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -30,27 +32,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setLoading(false);
+      } else {
+        // If no user, sign in anonymously
+        try {
+          const { user: anonUser } = await signInAnonymously(auth);
+          setUser(anonUser);
+        } catch (error) {
+           console.error("Anonymous sign-in failed", error);
+        } finally {
+            setLoading(false);
+        }
+      }
     });
     return () => unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
+    if (!auth.currentUser) {
+        console.error("No user to link google account to.");
+        return;
+    }
+
     const provider = new GoogleAuthProvider();
     try {
-        await signInWithPopup(auth, provider);
-        // On successful sign-in, Firebase's onAuthStateChanged will trigger
-        // and update the user state globally. We can then redirect.
-        toast({ title: "¡Sesión iniciada!", description: "Tu progreso ahora está sincronizado con tu cuenta." });
+        const result = await signInWithPopup(auth, provider);
+        // This is the normal sign-in result, not a link result
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (credential && auth.currentUser.isAnonymous) {
+            await linkWithCredential(auth.currentUser, credential);
+            toast({ title: "¡Cuenta Vinculada!", description: "Tu progreso ahora está guardado en tu cuenta de Google." });
+        } else {
+            toast({ title: "¡Sesión iniciada!", description: "Tu progreso ahora está sincronizado con tu cuenta." });
+        }
         router.push('/settings');
     } catch (error: any) {
         if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
            // This is expected user behavior, no need to log or toast.
-        } else {
+        } else if (error.code === 'auth/credential-already-in-use') {
+            toast({ variant: 'destructive', title: 'Error al vincular', description: 'Esta cuenta de Google ya está en uso por otro usuario.'});
+        }
+        else {
             console.error('Error signing in with Google', error);
-            toast({ variant: 'destructive', title: 'Sign-in Error', description: 'Could not sign in with Google. Please try again.'});
+            toast({ variant: 'destructive', title: 'Error de inicio de sesión', description: 'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.'});
         }
     }
   };
@@ -69,10 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
-      // The onAuthStateChanged listener will set user to null.
-      // We don't need to clear local storage here if we want progress to remain for anonymous re-login.
-      // Let's keep the data and just sign out.
-      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente." });
+      // The onAuthStateChanged listener will automatically sign the user in anonymously.
+      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso local se mantiene." });
       router.push('/settings');
     } catch (error) {
       console.error('Error signing out', error);
@@ -81,8 +106,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetAccountData = async () => {
-    cleanUpUserSession(); // This will clear all data and redirect to login, which is now the desired behavior for a full reset
-    if (auth.currentUser) {
+    const isAnon = user?.isAnonymous;
+    cleanUpUserSession(); 
+    if (!isAnon && auth.currentUser) {
         await firebaseSignOut(auth);
     }
     toast({

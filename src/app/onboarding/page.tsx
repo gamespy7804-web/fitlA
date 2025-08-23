@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { generateWorkoutRoutine, type WorkoutRoutineOutput } from '@/ai/flows/workout-routine-generator';
+import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -36,7 +36,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
-import { useAuth } from '@/hooks/use-auth';
 
 
 const createFormSchema = (t: (key: string) => string) => {
@@ -77,7 +76,6 @@ export default function OnboardingPage() {
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
 
   const formSchema = createFormSchema(t);
   type OnboardingData = z.infer<typeof formSchema>;
@@ -100,13 +98,11 @@ export default function OnboardingPage() {
   const sportValue = watch('sport');
 
   useEffect(() => {
-    if (!authLoading && user) {
-        const onboardingComplete = localStorage.getItem('onboardingComplete');
-        if (onboardingComplete === 'true') {
-            router.replace('/dashboard');
-        }
+    const onboardingComplete = localStorage.getItem('onboardingComplete');
+    if (onboardingComplete === 'true') {
+        router.replace('/dashboard');
     }
-  }, [user, authLoading, router]);
+  }, [router]);
 
   const popularSports = [
     { id: 'weightlifting', name: t('onboarding.questions.sport.options.weightlifting') },
@@ -163,15 +159,6 @@ export default function OnboardingPage() {
     setIsLoading(false);
   }
   
-
-  if (authLoading) {
-      return (
-          <div className="flex h-screen w-full items-center justify-center bg-background">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-      )
-  }
-
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-lg">

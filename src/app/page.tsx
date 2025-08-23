@@ -7,22 +7,21 @@ import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) {
-      return; // Wait until auth state is confirmed
+      return; // Wait until auth state is confirmed (or anonymous login completes)
     }
 
-    // Allow anonymous access. Check if onboarding is complete.
     const onboardingComplete = localStorage.getItem('onboardingComplete');
     if (onboardingComplete === 'true') {
       router.replace('/dashboard');
     } else {
       router.replace('/onboarding');
     }
-  }, [loading, router]);
+  }, [user, loading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
