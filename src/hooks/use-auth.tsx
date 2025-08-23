@@ -42,7 +42,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const { user: anonUser } = await signInAnonymously(auth);
           setUser(anonUser);
         } catch (error) {
-           console.error("Anonymous sign-in failed", error);
+           console.error("Anonymous sign-in failed. Please ensure it's enabled in the Firebase Console.", error);
+           // If anonymous sign-in fails, we can't proceed. The user will have to sign in manually.
+           setLoading(false); // Stop loading so the UI can render the sign-in options.
+           return;
         } finally {
             setLoading(false);
         }
