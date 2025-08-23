@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
-import useAudioEffects from '@/hooks/use-audio-effects';
 
 interface RestTimerProps {
   duration: number; // in seconds
@@ -15,7 +14,6 @@ interface RestTimerProps {
 export function RestTimer({ duration, onComplete }: RestTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const { t } = useI18n();
-  const playSound = useAudioEffects();
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -39,7 +37,6 @@ export function RestTimer({ duration, onComplete }: RestTimerProps) {
   const progress = (duration - timeLeft) / duration;
 
   const handleSkip = () => {
-    playSound('swoosh');
     onComplete();
   }
 
