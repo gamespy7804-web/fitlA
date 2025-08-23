@@ -122,4 +122,33 @@
     --ring: 15 80% 60%;
     @apply bg-background text-foreground;
   }
+
+  /* Driver.js Custom Theme */
+  :root {
+    --driver-bg-color: hsl(var(--card));
+    --driver-fg-color: hsl(var(--card-foreground));
+    --driver-button-bg-color: hsl(var(--primary));
+    --driver-button-hover-bg-color: hsl(var(--primary) / 0.9);
+    --driver-button-text-color: hsl(var(--primary-foreground));
+    --driver-popover-arrow-color: hsl(var(--card));
+  }
+
+  div.driver-popover {
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+  }
+  .driver-popover-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .driver-popover-description {
+    font-size: 0.875rem;
+  }
+  button.driver-popover-close-btn {
+    color: hsl(var(--muted-foreground));
+  }
+  button.driver-popover-close-btn:hover {
+    color: hsl(var(--foreground));
+  }
 }
