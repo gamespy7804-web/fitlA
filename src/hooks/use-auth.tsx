@@ -1,11 +1,10 @@
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   User,
 } from 'firebase/auth';
@@ -40,15 +39,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener will handle the user state update and redirection.
+      await signInWithRedirect(auth, provider);
+      // The redirect flow will handle the rest. The onAuthStateChanged listener
+      // will pick up the user when they are redirected back to the app.
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-         // This is expected user behavior, no need to log or toast.
-      } else {
-        console.error('Error signing in with Google', error);
-        toast({ variant: 'destructive', title: 'Error de inicio de sesión', description: 'No se pudo iniciar sesión con Google. Por favor, inténtalo de nuevo.'});
-      }
+        console.error('Error initiating Google sign-in redirect', error);
+        toast({ variant: 'destructive', title: 'Error de inicio de sesión', description: 'No se pudo iniciar el proceso de inicio de sesión con Google. Por favor, inténtalo de nuevo.'});
     }
   };
 
