@@ -34,21 +34,15 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
           nextBtnText: t('onboardingTour.next'),
           prevBtnText: t('onboardingTour.prev'),
           doneBtnText: t('onboardingTour.done'),
-          onCloseClick: () => {
+          onDeselected: () => {
             localStorage.setItem('hasSeenOnboardingTour', 'true');
             driverObj.destroy();
           },
-          onDestroyStarted: () => {
-            const actionButton = document.getElementById('nav-actions');
+          onDestroyed: () => {
+             const actionButton = document.getElementById('nav-actions');
             if (actionButton?.getAttribute('aria-expanded') === 'true') {
               actionButton.click();
             }
-            if (!driverObj.isLastStep()) {
-                localStorage.setItem('hasSeenOnboardingTour', 'true');
-                driverObj.destroy();
-            }
-          },
-          onDestroyed: () => {
             localStorage.setItem('hasSeenOnboardingTour', 'true');
           }
         });
@@ -87,6 +81,13 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
             popover: {
               title: t('onboardingTour.feedback.title'),
               description: t('onboardingTour.feedback.description'),
+               onNextClick: () => {
+                const actionButton = document.getElementById('nav-actions');
+                if (actionButton?.getAttribute('aria-expanded') === 'true') {
+                  actionButton.click();
+                }
+                driverObj.moveNext();
+              }
             }
           },
           {
@@ -144,4 +145,3 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
 
   return null;
 }
-

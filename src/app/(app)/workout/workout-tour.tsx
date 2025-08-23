@@ -57,18 +57,16 @@ export function WorkoutTour() {
           nextBtnText: t('onboardingTour.next'),
           prevBtnText: t('onboardingTour.prev'),
           doneBtnText: t('onboardingTour.done'),
-          steps: steps,
-          onDestroyStarted: () => {
-            if (!driverObj.isLastStep()) {
-                localStorage.setItem('hasSeenWorkoutTour', 'true');
-                driverObj.destroy();
-            }
+          onDeselected: () => {
+            localStorage.setItem('hasSeenWorkoutTour', 'true');
+            driverObj.destroy();
           },
           onDestroyed: () => {
             localStorage.setItem('hasSeenWorkoutTour', 'true');
           }
         });
 
+        driverObj.setSteps(steps);
         driverObj.drive();
       }, 1500);
     };
