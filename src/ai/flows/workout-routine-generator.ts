@@ -37,7 +37,7 @@ const prompt = ai.definePrompt({
   input: {schema: WorkoutRoutineInputSchema},
   output: {schema: WorkoutRoutineOutputSchema},
   prompt: `You are an expert sports trainer and physiologist, specializing in generating safe, effective, and personalized training routines.
-Your responses MUST be in the user's selected language: {{language}}.
+Your responses MUST be in the user's specified language: {{language}}.
 
 Your task is to generate a full, detailed, structured training plan based on the user's provided information.
 The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine' or 'isWeightTraining' fields.
@@ -58,11 +58,11 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 1.  **Structured Output ONLY**: You MUST generate a detailed plan in the 'structuredRoutine' field. The 'routine' and 'isWeightTraining' fields are deprecated and must not be used.
 2.  **Adherence to Constraints**: The plan MUST strictly adhere to the user's 'trainingDays' and 'trainingDuration'.
 3.  **Weekly Structure**: Organize the training days logically throughout the week to allow for adequate muscle recovery. Avoid scheduling two high-intensity workouts for the same muscle group on consecutive days.
-4.  **Warm-up and Cool-down**: EACH daily workout MUST begin with a specific 'Warm-up' phase (3-5 minutes of light cardio and dynamic stretches) and end with a 'Cool-down' phase (3-5 minutes of static stretches for the muscles worked). These should be included as exercises in the list. For warm-up/cool-down exercises, set 'reps' to a duration (e.g., "60 sec").
+4.  **Warm-up and Cool-down**: EACH daily workout MUST begin with a specific 'Warm-up' phase (3-5 minutes of light cardio and dynamic stretches) and end with a 'Cool-down' phase (3-5 minutes of static stretches for the muscles worked). These should be included as exercises in the list. For warm-up/cool-down exercises, set 'reps' to a duration string (e.g., "60 sec").
 5.  **Exercise Selection**:
     -   Set 'requiresFeedback' to true ONLY for complex, high-injury-risk, free-weight exercises (e.g., Squats, Deadlifts, Bench Press, Olympic Lifts). It should be false for machine exercises, bodyweight exercises, or simple movements.
     -   Set 'requiresWeight' to true for any exercise that requires external weights (dumbbells, barbells, machines) and false for bodyweight or cardio exercises.
-6.  **YouTube Query Generation**: For EACH exercise, generate a concise and effective 'youtubeQuery' in the user's specified language ({{language}}) to find a high-quality tutorial video. Example for squats in Spanish: "como hacer sentadillas correctamente".
+6.  **YouTube Query Generation**: For EACH exercise, generate a concise and effective 'youtubeQuery' in the user's specified language ({{language}}) that exactly matches the exercise name to find a high-quality tutorial video. Example for squats in Spanish: "como hacer sentadillas correctamente". If the exercise name is "Tuck Planche", the query must be "como hacer tuck planche".
 7.  **Safety First**: Prioritize safety and proper form. The routines should be designed to minimize injury risk.
   `,
 });
