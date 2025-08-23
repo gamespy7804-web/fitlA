@@ -90,8 +90,8 @@ export default function OnboardingPage() {
       age: undefined,
       weight: undefined,
       gender: undefined,
-      trainingDays: 3,
-      trainingDuration: 60,
+      trainingDays: undefined,
+      trainingDuration: undefined,
     }
   });
   const { watch, setValue, trigger, handleSubmit } = form;
