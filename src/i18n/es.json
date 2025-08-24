@@ -24,7 +24,8 @@
     "appShell": {
       "askAi": "Pregúntale a la IA",
       "signOut": "Cerrar sesión",
-      "analysisCredits": "Créditos de análisis"
+      "analysisCredits": "Créditos de análisis",
+      "analysisCredits_beta": "Créditos de análisis. Haz clic para ir a la herramienta."
     },
     "chatbot": {
       "title": "Asistente de IA",

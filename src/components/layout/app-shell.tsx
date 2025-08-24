@@ -36,6 +36,10 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
     return <>{children}</>;
   }
 
+  const handleCreditsClick = () => {
+    router.push('/feedback');
+  }
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-screen">
@@ -58,13 +62,15 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
             </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1.5 bg-secondary/50 text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
-                        <Diamond className="h-4 w-4 text-primary" />
-                        <span>{feedbackCredits ?? 0}</span>
-                    </div>
+                    <Button variant="ghost" className="flex items-center gap-1.5 h-auto px-3 py-1.5" onClick={handleCreditsClick}>
+                        <div className="flex items-center gap-1.5 bg-secondary/50 text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
+                            <Diamond className="h-4 w-4 text-primary" />
+                            <span>{feedbackCredits ?? 0}</span>
+                        </div>
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                    <p>{t('appShell.analysisCredits')}</p>
+                    <p>{t('appShell.analysisCredits_beta')}</p>
                 </TooltipContent>
             </Tooltip>
              <DropdownMenu>

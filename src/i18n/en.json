@@ -24,7 +24,8 @@
     "appShell": {
       "askAi": "Ask AI",
       "signOut": "Sign Out",
-      "analysisCredits": "Analysis credits"
+      "analysisCredits": "Analysis credits",
+      "analysisCredits_beta": "Analysis credits. Click to go to the tool."
     },
     "chatbot": {
       "title": "AI Assistant",
