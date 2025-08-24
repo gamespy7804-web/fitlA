@@ -30,7 +30,7 @@ function FeedbackToolContent() {
   const [exercisesForFeedback, setExercisesForFeedback] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(true); // Assume true initially to avoid flash of error
   
   const { toast } = useToast();
   
@@ -59,13 +59,17 @@ function FeedbackToolContent() {
 
   useEffect(() => {
     const getCameraPermission = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setHasCameraPermission(false);
+        return;
+      }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        setHasCameraPermission(true);
-
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        setHasCameraPermission(true);
+
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
