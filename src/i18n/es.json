@@ -195,16 +195,21 @@
     },
     "feedbackTool": {
       "credits": "Créditos",
+      "credits_one": "1 Crédito",
+      "step1": "Paso 1: Elige el Ejercicio",
+      "step2": "Paso 2: Graba o Sube tu Video",
       "cameraCard": {
-        "title": "Fuente del Video",
-        "description": "Selecciona un ejercicio de la lista o introduce uno personalizado, y después graba o sube un video para analizarlo."
+        "title": "Análisis de Forma con IA",
+        "description": "Recibe una corrección instantánea de tu técnica para maximizar resultados y prevenir lesiones."
       },
       "tabs": {
         "camera": "Cámara en Vivo",
         "upload": "Subir Video"
       },
       "upload": {
-        "description": "Haz clic en el botón de abajo para seleccionar un archivo de video de tu dispositivo."
+        "description": "Arrastra un video aquí o haz clic abajo para seleccionarlo.",
+        "selectFile": "Elegir archivo",
+        "invalidFileType": "Tipo de archivo no válido. Por favor, sube un video."
       },
       "cameraPermissionNeeded": "Permiso de cámara necesario",
       "selectExercisePlaceholder": "Seleccionar ejercicio pendiente",
@@ -214,7 +219,7 @@
       "buttons": {
         "record": "Grabar",
         "stop": "Detener",
-        "upload": "Subir Video"
+        "analyze": "Analizar Video"
       },
       "cameraError": {
         "title": "Error de Cámara",
@@ -225,6 +230,7 @@
         "description": "Por favor, activa los permisos de la cámara en tu navegador."
       },
       "selectExerciseError": "Por favor, selecciona o escribe un ejercicio primero.",
+      "noVideoError": "Por favor, graba o sube un video para analizar.",
       "analysisFailed": {
         "title": "Análisis Fallido",
         "description": "No se pudo analizar el video. Por favor, inténtalo de nuevo."
@@ -237,8 +243,11 @@
         "title": "Feedback de IA",
         "description": "Análisis instantáneo de tu forma.",
         "loading": "Analizando tu forma...",
-        "prompt": "Selecciona o escribe un ejercicio, y después graba o sube un video para obtener feedback sobre tu técnica.",
-        "allDone": "¡Felicitaciones! No tienes ejercicios pendientes de análisis de forma."
+        "prompt": "Completa los pasos anteriores para obtener un análisis de tu técnica.",
+        "allGood": {
+            "title": "¡Técnica Perfecta!",
+            "description": "Nuestra IA no ha encontrado errores en tu ejecución. ¡Sigue así, gran trabajo!"
+        }
       }
     },
     "gamesPage": {
@@ -455,7 +464,7 @@
         }
       }
     },
-    "onboardingTour": {
+     "onboardingTour": {
       "next": "Siguiente",
       "prev": "Anterior",
       "done": "Terminar",

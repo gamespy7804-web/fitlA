@@ -195,16 +195,21 @@
     },
     "feedbackTool": {
       "credits": "Credits",
+      "credits_one": "1 Credit",
+      "step1": "Step 1: Choose Exercise",
+      "step2": "Step 2: Record or Upload your Video",
       "cameraCard": {
-        "title": "Video Source",
-        "description": "Select an exercise from the list or enter a custom one, then record or upload a video to analyze it."
+        "title": "AI Form Analysis",
+        "description": "Get instant feedback on your technique to maximize results and prevent injuries."
       },
        "tabs": {
         "camera": "Live Camera",
         "upload": "Upload Video"
       },
       "upload": {
-        "description": "Click the button below to select a video file from your device."
+        "description": "Drag a video here or click below to select it.",
+        "selectFile": "Choose file",
+        "invalidFileType": "Invalid file type. Please upload a video."
       },
       "cameraPermissionNeeded": "Camera permission required",
       "selectExercisePlaceholder": "Select pending exercise",
@@ -214,7 +219,7 @@
       "buttons": {
         "record": "Record",
         "stop": "Stop",
-        "upload": "Upload Video"
+        "analyze": "Analyze Video"
       },
       "cameraError": {
         "title": "Camera Error",
@@ -225,6 +230,7 @@
         "description": "Please enable camera permissions in your browser."
       },
       "selectExerciseError": "Please select or type an exercise first.",
+      "noVideoError": "Please record or upload a video to analyze.",
       "analysisFailed": {
         "title": "Analysis Failed",
         "description": "Could not analyze the video. Please try again."
@@ -237,8 +243,11 @@
         "title": "AI Feedback",
         "description": "Instant analysis of your form.",
         "loading": "Analyzing your form...",
-        "prompt": "Select or type an exercise, then record or upload a video to get feedback on your technique.",
-        "allDone": "Congratulations! You have no pending exercises for form analysis."
+        "prompt": "Complete the steps to get an analysis of your technique.",
+        "allGood": {
+            "title": "Perfect Technique!",
+            "description": "Our AI found no errors in your execution. Keep up the great work!"
+        }
       }
     },
     "gamesPage": {
