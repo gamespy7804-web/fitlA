@@ -194,7 +194,7 @@
     "feedbackTool": {
       "cameraCard": {
         "title": "Video Source",
-        "description": "Record live or upload a video to analyze."
+        "description": "Select an exercise from the list or enter a custom one, then record or upload a video to analyze it."
       },
        "tabs": {
         "camera": "Live Camera",
@@ -204,8 +204,10 @@
         "description": "Click the button below to select a video file from your device."
       },
       "cameraPermissionNeeded": "Camera permission required",
-      "selectExercisePlaceholder": "Select exercise",
+      "selectExercisePlaceholder": "Select pending exercise",
       "noPendingExercises": "No pending exercises",
+      "customExerciseLabel": "Or type a custom exercise",
+      "customExercisePlaceholder": "e.g., Bench Press",
       "buttons": {
         "record": "Record",
         "stop": "Stop",
@@ -219,7 +221,7 @@
         "title": "Camera Access Denied",
         "description": "Please enable camera permissions in your browser."
       },
-      "selectExerciseError": "Please select an exercise first",
+      "selectExerciseError": "Please select or type an exercise first.",
       "analysisFailed": {
         "title": "Analysis Failed",
         "description": "Could not analyze the video. Please try again."
@@ -228,7 +230,7 @@
         "title": "AI Feedback",
         "description": "Instant analysis of your form.",
         "loading": "Analyzing your form...",
-        "prompt": "Select an exercise from the list and record a video to get feedback on your technique.",
+        "prompt": "Select or type an exercise, then record or upload a video to get feedback on your technique.",
         "allDone": "Congratulations! You have no pending exercises for form analysis."
       }
     },
@@ -497,5 +499,3 @@
     }
   }
 }
-
-    

@@ -194,7 +194,7 @@
     "feedbackTool": {
       "cameraCard": {
         "title": "Fuente del Video",
-        "description": "Graba en vivo o sube un video para analizar."
+        "description": "Selecciona un ejercicio de la lista o introduce uno personalizado, y después graba o sube un video para analizarlo."
       },
       "tabs": {
         "camera": "Cámara en Vivo",
@@ -204,8 +204,10 @@
         "description": "Haz clic en el botón de abajo para seleccionar un archivo de video de tu dispositivo."
       },
       "cameraPermissionNeeded": "Permiso de cámara necesario",
-      "selectExercisePlaceholder": "Seleccionar ejercicio",
+      "selectExercisePlaceholder": "Seleccionar ejercicio pendiente",
       "noPendingExercises": "No hay ejercicios pendientes",
+      "customExerciseLabel": "O escribe un ejercicio personalizado",
+      "customExercisePlaceholder": "ej., Press de banca",
       "buttons": {
         "record": "Grabar",
         "stop": "Detener",
@@ -219,7 +221,7 @@
         "title": "Acceso a la cámara denegado",
         "description": "Por favor, activa los permisos de la cámara en tu navegador."
       },
-      "selectExerciseError": "Selecciona un ejercicio primero",
+      "selectExerciseError": "Por favor, selecciona o escribe un ejercicio primero.",
       "analysisFailed": {
         "title": "Análisis Fallido",
         "description": "No se pudo analizar el video. Por favor, inténtalo de nuevo."
@@ -228,7 +230,7 @@
         "title": "Feedback de IA",
         "description": "Análisis instantáneo de tu forma.",
         "loading": "Analizando tu forma...",
-        "prompt": "Selecciona un ejercicio de la lista y graba un video para obtener feedback sobre tu técnica.",
+        "prompt": "Selecciona o escribe un ejercicio, y después graba o sube un video para obtener feedback sobre tu técnica.",
         "allDone": "¡Felicitaciones! No tienes ejercicios pendientes de análisis de forma."
       }
     },
@@ -497,5 +499,3 @@
     }
   }
 }
-
-    

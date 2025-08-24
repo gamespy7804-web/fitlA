@@ -19,6 +19,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 function FeedbackToolContent() {
   const { t, locale } = useI18n();
@@ -32,6 +33,7 @@ function FeedbackToolContent() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [exercisesForFeedback, setExercisesForFeedback] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
+  const [customExercise, setCustomExercise] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(true); // Assume true initially to avoid flash of error
   
@@ -132,7 +134,8 @@ function FeedbackToolContent() {
 
 
   const handleAnalyze = async (videoDataUri: string) => {
-    if (!selectedExercise) {
+    const exerciseToAnalyze = customExercise.trim() || selectedExercise;
+    if (!exerciseToAnalyze) {
         toast({ variant: 'destructive', title: t('feedbackTool.selectExerciseError') });
         return;
     }
@@ -141,25 +144,29 @@ function FeedbackToolContent() {
     try {
       const result: RealTimeFeedbackOutput = await realTimeFeedback({
         videoDataUri,
-        exerciseType: selectedExercise,
+        exerciseType: exerciseToAnalyze,
         language: locale,
       });
       setFeedback(result.feedback);
 
-      // Remove from pending list
+      // If the analyzed exercise was from the pending list, remove it.
       const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
-      const updatedPending = pending.filter(ex => ex !== selectedExercise);
-      localStorage.setItem('pendingFeedbackExercises', JSON.stringify(updatedPending));
-      
-      // Manually trigger a storage event to notify other components (like the navbar badge)
-      window.dispatchEvent(new Event('storage'));
-      
-      setExercisesForFeedback(updatedPending);
-      if (updatedPending.length > 0) {
-        setSelectedExercise(updatedPending[0]);
-      } else {
-        setSelectedExercise('');
+      if (pending.includes(exerciseToAnalyze)) {
+        const updatedPending = pending.filter(ex => ex !== exerciseToAnalyze);
+        localStorage.setItem('pendingFeedbackExercises', JSON.stringify(updatedPending));
+        
+        // Manually trigger a storage event to notify other components (like the navbar badge)
+        window.dispatchEvent(new Event('storage'));
+        
+        setExercisesForFeedback(updatedPending);
+        if (updatedPending.length > 0) {
+          setSelectedExercise(updatedPending[0]);
+        } else {
+          setSelectedExercise('');
+        }
       }
+      setCustomExercise('');
+
 
     } catch (error) {
       console.error('Error providing feedback:', error);
@@ -186,12 +193,15 @@ function FeedbackToolContent() {
     };
     reader.readAsDataURL(file);
   };
+  
+  const isAnalyzeButtonDisabled = isLoading || (!customExercise.trim() && !selectedExercise);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="font-headline">{t('feedbackTool.cameraCard.title')}</CardTitle>
+           <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="camera" className="w-full">
@@ -205,20 +215,10 @@ function FeedbackToolContent() {
                 {t('feedbackTool.tabs.upload')}
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="camera" className="mt-4">
-              <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
-                <video ref={videoRef} className="w-full h-full rounded-md" autoPlay muted playsInline />
-                {isRecording && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-red-500 animate-pulse" />}
-              </div>
-              {!hasCameraPermission && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
-                  <AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription>
-                </Alert>
-              )}
-               <div className="mt-4 flex gap-4">
-                <Select onValueChange={setSelectedExercise} value={selectedExercise} disabled={exercisesForFeedback.length === 0 || isLoading || isRecording}>
+            
+            {/* Exercise Selection - Common for both tabs */}
+            <div className="mt-4 space-y-4">
+                <Select onValueChange={setSelectedExercise} value={selectedExercise} disabled={isLoading || isRecording}>
                   <SelectTrigger>
                     <SelectValue placeholder={t('feedbackTool.selectExercisePlaceholder')} />
                   </SelectTrigger>
@@ -232,7 +232,32 @@ function FeedbackToolContent() {
                     )}
                   </SelectContent>
                 </Select>
-                <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-40" disabled={isLoading || !hasCameraPermission || !selectedExercise}>
+                <div>
+                  <Label htmlFor="custom-exercise">{t('feedbackTool.customExerciseLabel')}</Label>
+                  <Input 
+                    id="custom-exercise"
+                    placeholder={t('feedbackTool.customExercisePlaceholder')}
+                    value={customExercise}
+                    onChange={(e) => setCustomExercise(e.target.value)}
+                    disabled={isLoading || isRecording}
+                  />
+                </div>
+            </div>
+
+            <TabsContent value="camera" className="mt-4">
+              <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
+                <video ref={videoRef} className="w-full h-full rounded-md" autoPlay muted playsInline />
+                {isRecording && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-red-500 animate-pulse" />}
+              </div>
+              {!hasCameraPermission && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle>
+                  <AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription>
+                </Alert>
+              )}
+               <div className="mt-4 flex gap-4">
+                <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-full" disabled={isAnalyzeButtonDisabled || !hasCameraPermission}>
                   {isRecording ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2" />}
                   {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
                 </Button>
@@ -242,24 +267,10 @@ function FeedbackToolContent() {
                 <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-6 text-center">
                     <Upload className="h-12 w-12 text-muted-foreground" />
                     <p className="mt-2 text-sm text-muted-foreground">{t('feedbackTool.upload.description')}</p>
-                    <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} />
+                    <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={isAnalyzeButtonDisabled} />
                 </div>
                 <div className="mt-4 flex gap-4">
-                    <Select onValueChange={setSelectedExercise} value={selectedExercise} disabled={exercisesForFeedback.length === 0 || isLoading}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={t('feedbackTool.selectExercisePlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {exercisesForFeedback.length > 0 ? (
-                                exercisesForFeedback.map(ex => (
-                                    <SelectItem key={ex} value={ex}>{ex}</SelectItem>
-                                ))
-                            ) : (
-                                <SelectItem value="none" disabled>{t('feedbackTool.noPendingExercises')}</SelectItem>
-                            )}
-                        </SelectContent>
-                    </Select>
-                    <Button onClick={() => fileInputRef.current?.click()} className="w-40" disabled={isLoading || !selectedExercise}>
+                    <Button onClick={() => fileInputRef.current?.click()} className="w-full" disabled={isAnalyzeButtonDisabled}>
                         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2" />}
                         {t('feedbackTool.buttons.upload')}
                     </Button>
@@ -288,9 +299,7 @@ function FeedbackToolContent() {
           )}
           {!isLoading && !feedback && (
             <p className="text-muted-foreground">
-              {exercisesForFeedback.length > 0 
-                ? t('feedbackTool.feedbackCard.prompt')
-                : t('feedbackTool.feedbackCard.allDone')}
+                {t('feedbackTool.feedbackCard.prompt')}
             </p>
           )}
         </CardContent>
@@ -306,5 +315,3 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
-
-    
