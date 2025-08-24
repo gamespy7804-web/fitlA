@@ -193,15 +193,23 @@
     },
     "feedbackTool": {
       "cameraCard": {
-        "title": "Cámara en Vivo",
-        "description": "Colócate de manera que todo tu cuerpo sea visible."
+        "title": "Fuente del Video",
+        "description": "Graba en vivo o sube un video para analizar."
+      },
+      "tabs": {
+        "camera": "Cámara en Vivo",
+        "upload": "Subir Video"
+      },
+      "upload": {
+        "description": "Haz clic en el botón de abajo para seleccionar un archivo de video de tu dispositivo."
       },
       "cameraPermissionNeeded": "Permiso de cámara necesario",
       "selectExercisePlaceholder": "Seleccionar ejercicio",
       "noPendingExercises": "No hay ejercicios pendientes",
       "buttons": {
         "record": "Grabar",
-        "stop": "Detener"
+        "stop": "Detener",
+        "upload": "Subir Video"
       },
       "cameraError": {
         "title": "Error de Cámara",
@@ -489,3 +497,5 @@
     }
   }
 }
+
+    

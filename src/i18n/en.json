@@ -193,15 +193,23 @@
     },
     "feedbackTool": {
       "cameraCard": {
-        "title": "Live Camera",
-        "description": "Position yourself so your whole body is visible."
+        "title": "Video Source",
+        "description": "Record live or upload a video to analyze."
+      },
+       "tabs": {
+        "camera": "Live Camera",
+        "upload": "Upload Video"
+      },
+      "upload": {
+        "description": "Click the button below to select a video file from your device."
       },
       "cameraPermissionNeeded": "Camera permission required",
       "selectExercisePlaceholder": "Select exercise",
       "noPendingExercises": "No pending exercises",
       "buttons": {
         "record": "Record",
-        "stop": "Stop"
+        "stop": "Stop",
+        "upload": "Upload Video"
       },
       "cameraError": {
         "title": "Camera Error",
@@ -489,3 +497,5 @@
     }
   }
 }
+
+    
