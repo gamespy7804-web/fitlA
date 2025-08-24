@@ -4,7 +4,7 @@ import { Providers } from './providers';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'TrainSmart AI',
+  title: 'workout IA',
   description: 'Your personal AI sports trainer.',
 };
 

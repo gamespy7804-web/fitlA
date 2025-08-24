@@ -12,12 +12,12 @@
       }
     },
     "login": {
-      "title": "Bienvenido a TrainSmart AI",
+      "title": "Bienvenido a workout IA",
       "description": "Inicia sesión para continuar con tu viaje de fitness.",
       "button": "Iniciar sesión con Google"
     },
     "welcome": {
-      "title": "Bienvenido a TrainSmart AI",
+      "title": "Bienvenido a workout IA",
       "subtitle": "Tu aventura de fitness está a punto de comenzar.",
       "button": "Comenzar Aventura"
     },
@@ -155,7 +155,7 @@
       "title": "Registro de Entrenamiento",
       "description": "Revisa tus entrenamientos pasados y sigue tu progreso a largo plazo.",
       "shareProgress": "Compartir Mi Progreso",
-      "shareTitle": "Mi Progreso en TrainSmart AI",
+      "shareTitle": "Mi Progreso en workout IA",
       "shareFallback": {
         "title": "Progreso Copiado",
         "description": "Tu resumen de progreso ha sido copiado al portapapeles.",
@@ -317,7 +317,7 @@
       }
     },
     "onboarding": {
-      "title": "Bienvenido a TrainSmart AI",
+      "title": "Bienvenido a workout IA",
       "description": "Vamos a personalizar tu viaje de fitness.",
       "step": "Paso {{step}} de 2",
       "questions": {
@@ -453,7 +453,7 @@
       "prev": "Anterior",
       "done": "Terminar",
       "welcome": {
-        "title": "¡Bienvenido a TrainSmart AI!",
+        "title": "¡Bienvenido a workout IA!",
         "description": "Vamos a dar un rápido recorrido por las funciones principales de la app."
       },
       "dashboard": {

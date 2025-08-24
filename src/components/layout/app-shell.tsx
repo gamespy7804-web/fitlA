@@ -40,7 +40,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
        {!isGamePage && (
         <header id="app-header" className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
-             <span className="font-bold text-primary font-headline">TrainSmart AI</span>
+             <span className="font-bold text-primary font-headline">workout IA</span>
           </div>
           
           <div className="flex items-center gap-2">

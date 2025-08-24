@@ -72,13 +72,13 @@ export default function LogPage() {
         return acc + (isNaN(volumeNumber) ? 0 : volumeNumber);
     }, 0);
     
-    let shareText = `¡Mi progreso en TrainSmart AI!\n\n`;
+    let shareText = `¡Mi progreso en workout IA!\n\n`;
     shareText += `🏋️ Entrenamientos completados: ${totalWorkouts}\n`;
     shareText += `⏱️ Tiempo total entrenando: ${totalDuration} minutos\n`;
     if (totalVolume > 0) {
       shareText += `💪 Volumen total levantado: ${totalVolume.toLocaleString()} kg\n`;
     }
-    shareText += `\n¡Sigue mi progreso! #TrainSmartAI`;
+    shareText += `\n¡Sigue mi progreso! #workoutIA`;
 
     if (navigator.share) {
       try {
