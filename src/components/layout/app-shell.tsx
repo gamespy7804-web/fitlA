@@ -62,8 +62,8 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
             </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-1.5 h-auto px-3 py-1.5" onClick={handleCreditsClick}>
-                        <div className="flex items-center gap-1.5 bg-secondary/50 text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
+                    <Button variant="ghost" className="flex items-center gap-1.5 h-auto px-2 py-1.5" onClick={handleCreditsClick}>
+                        <div className="flex items-center gap-2 bg-secondary border border-border text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm">
                             <Diamond className="h-4 w-4 text-primary" />
                             <span>{feedbackCredits ?? 0}</span>
                         </div>
