@@ -39,23 +39,16 @@ import { useI18n } from '@/i18n/client';
 import { cn } from '@/lib/utils';
 
 
-const createFormSchema = (t: (key: string) => string) => {
-    const step1Schema = z.object({
-        sport: z.string().min(1, t('onboarding.validation.sport.min')),
-        goals: z.string().min(1, t('onboarding.validation.goals.min')),
-        fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
-    });
-
-    const step2Schema = z.object({
-        age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
-        weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
-        gender: z.enum(['male', 'female', 'other'], { required_error: t('onboarding.validation.gender.required') }),
-        trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
-        trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
-    });
-    
-    return step1Schema.merge(step2Schema);
-};
+const createFormSchema = (t: (key: string) => string) => z.object({
+    sport: z.string().min(1, t('onboarding.validation.sport.min')),
+    goals: z.string().min(1, t('onboarding.validation.goals.min')),
+    fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required') }),
+    age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
+    weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
+    gender: z.enum(['male', 'female', 'other'], { required_error: t('onboarding.validation.gender.required') }),
+    trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
+    trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
+});
 
 // Stepper Component
 const Stepper = ({ label, value, onValueChange, min, max, step, unit }: { label: string, value: number, onValueChange: (val: number) => void, min: number, max: number, step: number, unit?: string }) => {
@@ -386,3 +379,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
