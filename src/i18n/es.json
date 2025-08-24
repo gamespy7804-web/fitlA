@@ -23,7 +23,8 @@
     },
     "appShell": {
       "askAi": "Pregúntale a la IA",
-      "signOut": "Cerrar sesión"
+      "signOut": "Cerrar sesión",
+      "analysisCredits": "Créditos de análisis"
     },
     "chatbot": {
       "title": "Asistente de IA",

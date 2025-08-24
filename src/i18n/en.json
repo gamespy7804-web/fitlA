@@ -23,7 +23,8 @@
     },
     "appShell": {
       "askAi": "Ask AI",
-      "signOut": "Sign Out"
+      "signOut": "Sign Out",
+      "analysisCredits": "Analysis credits"
     },
     "chatbot": {
       "title": "AI Assistant",

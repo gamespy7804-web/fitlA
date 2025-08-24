@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, User, LogOut, LogIn } from 'lucide-react';
+import { MessageSquare, User, LogOut, Diamond } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { useI18n } from '@/i18n/client';
 import { GoogleIcon } from '../icons';
+import { useUserData } from '@/hooks/use-user-data.tsx';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -24,7 +25,8 @@ interface AppShellProps {
 export function AppShell({ children, openChatbot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut, signInWithGoogle } = useAuth();
+  const { user, signOut } = useAuth();
+  const { feedbackCredits } = useUserData();
   const isGamePage = pathname === '/games';
   const { t } = useI18n();
 
@@ -53,6 +55,17 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
               <TooltipContent side="bottom">
                   <p>{t('appShell.askAi')}</p>
               </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 bg-secondary/50 text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
+                        <Diamond className="h-4 w-4 text-primary" />
+                        <span>{feedbackCredits ?? 0}</span>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    <p>{t('appShell.analysisCredits')}</p>
+                </TooltipContent>
             </Tooltip>
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
