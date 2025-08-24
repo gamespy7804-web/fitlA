@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, User, LogOut, Diamond } from 'lucide-react';
+import { MessageSquare, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
 import { useI18n } from '@/i18n/client';
 import { GoogleIcon } from '../icons';
-import { useUserData } from '@/hooks/use-user-data.tsx';
+import { useUserData } from '@/hooks/use-user-data';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -64,7 +64,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
                 <TooltipTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-1.5 h-auto px-2 py-1.5" onClick={handleCreditsClick}>
                         <div className="flex items-center gap-2 bg-secondary border border-border text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm">
-                            <Diamond className="h-4 w-4 text-primary" />
+                            <span role="img" aria-label="diamond">💎</span>
                             <span>{feedbackCredits ?? 0}</span>
                         </div>
                     </Button>
