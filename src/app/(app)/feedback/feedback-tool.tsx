@@ -36,6 +36,8 @@ function FeedbackToolContent() {
   const [customExercise, setCustomExercise] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(true); // Assume true initially to avoid flash of error
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
+  const [videoToAnalyze, setVideoToAnalyze] = useState<string | null>(null);
   
   const { toast } = useToast();
   
@@ -120,15 +122,18 @@ function FeedbackToolContent() {
   };
 
   useEffect(() => {
-    if (!isRecording && recordedChunks.length > 0) {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        await handleAnalyze(base64data);
-      };
-    }
+    const analyzeRecordedVideo = async () => {
+      if (!isRecording && recordedChunks.length > 0) {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          await handleAnalyze(base64data);
+        };
+      }
+    };
+    analyzeRecordedVideo();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, recordedChunks]);
 
@@ -166,6 +171,8 @@ function FeedbackToolContent() {
         }
       }
       setCustomExercise('');
+      setUploadedVideoUrl(null);
+      setVideoToAnalyze(null);
 
 
     } catch (error) {
@@ -184,15 +191,32 @@ function FeedbackToolContent() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (uploadedVideoUrl) {
+      URL.revokeObjectURL(uploadedVideoUrl);
+    }
+    const newUrl = URL.createObjectURL(file);
+    setUploadedVideoUrl(newUrl);
+
     const reader = new FileReader();
     reader.onload = (e) => {
         const dataUri = e.target?.result as string;
         if (dataUri) {
-            handleAnalyze(dataUri);
+            setVideoToAnalyze(dataUri);
         }
     };
     reader.readAsDataURL(file);
   };
+
+  const handleUploadAndAnalyze = () => {
+    if (videoToAnalyze) {
+      handleAnalyze(videoToAnalyze);
+    }
+  }
+
+  const handleTabChange = () => {
+    setUploadedVideoUrl(null);
+    setVideoToAnalyze(null);
+  }
   
   const isAnalyzeButtonDisabled = isLoading || (!customExercise.trim() && !selectedExercise);
 
@@ -204,7 +228,7 @@ function FeedbackToolContent() {
            <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="camera" className="w-full">
+          <Tabs defaultValue="camera" className="w-full" onValueChange={handleTabChange}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="camera">
                 <Camera className="mr-2 h-4 w-4" />
@@ -264,15 +288,24 @@ function FeedbackToolContent() {
               </div>
             </TabsContent>
             <TabsContent value="upload" className="mt-4">
-                <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-6 text-center">
-                    <Upload className="h-12 w-12 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">{t('feedbackTool.upload.description')}</p>
+                <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center">
+                    {uploadedVideoUrl ? (
+                      <video src={uploadedVideoUrl} controls className="w-full h-full rounded-md" />
+                    ) : (
+                      <>
+                        <Upload className="h-12 w-12 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.upload.description')}</p>
+                      </>
+                    )}
                     <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={isAnalyzeButtonDisabled} />
                 </div>
                 <div className="mt-4 flex gap-4">
-                    <Button onClick={() => fileInputRef.current?.click()} className="w-full" disabled={isAnalyzeButtonDisabled}>
-                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2" />}
-                        {t('feedbackTool.buttons.upload')}
+                    <Button onClick={() => fileInputRef.current?.click()} className="w-full" variant="outline" disabled={isAnalyzeButtonDisabled}>
+                        {uploadedVideoUrl ? "Elegir otro video" : "Elegir video"}
+                    </Button>
+                    <Button onClick={handleUploadAndAnalyze} className="w-full" disabled={isAnalyzeButtonDisabled || !videoToAnalyze}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2" />}
+                        Analizar video
                     </Button>
                 </div>
             </TabsContent>
