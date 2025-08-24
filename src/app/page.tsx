@@ -5,25 +5,25 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
+import { useUserData } from '@/hooks/use-user-data';
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { loading: authLoading } = useAuth();
+  const { onboardingComplete, loading: userDataLoading } = useUserData();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) {
-      return; // Wait until auth state is confirmed
+    const isLoading = authLoading || userDataLoading;
+    if (isLoading) {
+      return; // Wait until all auth and user data state is confirmed
     }
 
-    // Since we now use anonymous sign-in, user object will exist.
-    // The main logic is now about whether onboarding is complete.
-    const onboardingComplete = localStorage.getItem('onboardingComplete');
-    if (onboardingComplete === 'true') {
+    if (onboardingComplete) {
       router.replace('/dashboard');
     } else {
       router.replace('/onboarding');
     }
-  }, [user, loading, router]);
+  }, [onboardingComplete, authLoading, userDataLoading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">

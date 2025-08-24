@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type TriviaHistory = {
@@ -22,6 +23,7 @@ type TriviaHistory = {
 
 export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
   const { t, locale } = useI18n();
+  const { triviaHistory, updateTriviaHistory, workoutRoutine } = useUserData();
   const [gameState, setGameState] = useState<GameState>('loading');
   const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -35,18 +37,14 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
     setGameState('loading');
     setSessionHistory([]);
     try {
-      const storedRoutine = localStorage.getItem('workoutRoutine');
-      if (!storedRoutine) {
+      if (!workoutRoutine) {
         toast({ variant: 'destructive', title: t('games.errors.title'), description: t('games.errors.noRoutine') });
         onGameFinish();
         return;
       }
-      const parsedRoutine = JSON.parse(storedRoutine);
-      const sport = parsedRoutine.sport || 'general fitness';
+      const sport = (workoutRoutine as any).sport || 'general fitness';
       
-      const triviaHistory = localStorage.getItem('triviaHistory');
-
-      const triviaData = await generateTrivia({ sport, history: triviaHistory ?? undefined, language: locale });
+      const triviaData = await generateTrivia({ sport, history: JSON.stringify(triviaHistory ?? []), language: locale });
       
       if (triviaData.questions && triviaData.questions.length > 0) {
         setQuestions(triviaData.questions);
@@ -65,7 +63,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
       toast({ variant: 'destructive', title: t('games.errors.title'), description: t('games.errors.generationFailed') });
       onGameFinish();
     }
-  }, [onGameFinish, toast, playSound, t, locale]);
+  }, [onGameFinish, toast, playSound, t, locale, workoutRoutine, triviaHistory]);
 
   useEffect(() => {
     startGame();
@@ -100,9 +98,7 @@ export function TriviaGame({ onGameFinish }: { onGameFinish: () => void }) {
       setUserAnswer(null);
       setGameState('playing');
     } else {
-      const fullHistory = JSON.parse(localStorage.getItem('triviaHistory') || '[]') as TriviaHistory[];
-      const updatedHistory = [...fullHistory, ...sessionHistory];
-      localStorage.setItem('triviaHistory', JSON.stringify(updatedHistory));
+      updateTriviaHistory(sessionHistory);
       setGameState('finished');
     }
   };

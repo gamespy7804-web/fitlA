@@ -16,51 +16,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AdaptiveProgressionDialog } from './adaptive-progression-dialog';
 import useAudioEffects, { stopMusic } from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
-
-type CompletedDay = {
-  workout: string;
-};
+import { useUserData } from '@/hooks/use-user-data';
 
 export function WorkoutNodePath() {
   const { t } = useI18n();
-  const [workoutPlan, setWorkoutPlan] = useState<WorkoutRoutineOutput | null>(null);
+  const { workoutRoutine: workoutPlan, completedWorkouts } = useUserData();
   const [completedDays, setCompletedDays] = useState<string[]>([]);
   const router = useRouter();
   const playSound = useAudioEffects();
 
-  const loadData = useCallback(() => {
-    try {
-      const storedRoutine = localStorage.getItem('workoutRoutine');
-      const completedJSON = localStorage.getItem('completedWorkouts');
-      
-      const completed = completedJSON ? (JSON.parse(completedJSON) as CompletedDay[]) : [];
-      
-      if (storedRoutine) {
-        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        setWorkoutPlan(parsedRoutine);
-        setCompletedDays(completed.map(c => c.workout));
-      } else {
-        setWorkoutPlan(null);
-      }
-    } catch (e) {
-      console.error("Failed to parse workout data:", e);
-      setWorkoutPlan(null);
+  useEffect(() => {
+    if (completedWorkouts) {
+      setCompletedDays(completedWorkouts.map(c => c.workout));
+    } else {
       setCompletedDays([]);
     }
-  }, []);
+  }, [completedWorkouts]);
 
-  useEffect(() => {
-    // Only run on client
-    if (typeof window === 'undefined') return;
-
-    loadData();
-    window.addEventListener('storage', loadData);
-    window.addEventListener('focus', loadData);
-    return () => {
-      window.removeEventListener('storage', loadData);
-      window.removeEventListener('focus', loadData);
-    };
-  }, [loadData]);
 
   const handleNodeClick = (dayIndex: number) => {
     stopMusic();

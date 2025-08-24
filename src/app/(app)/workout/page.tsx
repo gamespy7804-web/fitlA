@@ -17,6 +17,7 @@ import { RestTimer } from './rest-timer';
 import { Stopwatch } from './stopwatch';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 export type SetLog = { weight: number; reps: number; completed: boolean };
 export type ExerciseLog = { name: string; sets: SetLog[]; originalExercise: ExerciseSchema };
@@ -36,6 +37,7 @@ function WorkoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const playSound = useAudioEffects();
+  const { workoutRoutine, addCompletedWorkout, addDetailedWorkoutLog, pendingFeedback } = useUserData();
   
   const dayParam = searchParams.get('day');
 
@@ -53,15 +55,12 @@ function WorkoutPageContent() {
   }, []);
 
   useEffect(() => {
-    const storedRoutine = localStorage.getItem('workoutRoutine');
-    
-    if (storedRoutine && dayParam !== null) {
+    if (workoutRoutine && dayParam !== null) {
       try {
-        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
         const dayIndex = parseInt(dayParam, 10);
 
-        if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine[dayIndex]) {
-          const targetDay = parsedRoutine.structuredRoutine[dayIndex];
+        if (workoutRoutine.structuredRoutine && workoutRoutine.structuredRoutine[dayIndex]) {
+          const targetDay = workoutRoutine.structuredRoutine[dayIndex];
           setDay(targetDay);
           initializeWorkoutLog(targetDay);
         } else {
@@ -74,10 +73,11 @@ function WorkoutPageContent() {
       } finally {
         setIsLoading(false);
       }
-    } else {
+    } else if (workoutRoutine !== null) { // We have data, but no dayParam
       router.push('/dashboard');
     }
-  }, [dayParam, initializeWorkoutLog, router, t, toast]);
+    // If workoutRoutine is null, we are still loading, so do nothing.
+  }, [dayParam, initializeWorkoutLog, router, t, toast, workoutRoutine]);
 
   const updateSetLog = (exIndex: number, setIndex: number, newSet: SetLog) => {
     const newLog = [...exerciseLog];
@@ -145,10 +145,8 @@ function WorkoutPageContent() {
       duration: day.duration,
       volume: totalVolume,
     };
-
-    const allCompletedSummaries = JSON.parse(localStorage.getItem('completedWorkouts') || '[]') as any[];
-    allCompletedSummaries.push(completedWorkoutSummary);
-    localStorage.setItem('completedWorkouts', JSON.stringify(allCompletedSummaries));
+    addCompletedWorkout(completedWorkoutSummary);
+    
 
     const detailedWorkoutLog = {
       date: new Date().toISOString(),
@@ -158,13 +156,9 @@ function WorkoutPageContent() {
           sets: ex.sets
       }))
     };
-    
-    const allDetailedLogs = JSON.parse(localStorage.getItem('detailedWorkoutLogs') || '[]');
-    allDetailedLogs.push(detailedWorkoutLog);
-    localStorage.setItem('detailedWorkoutLogs', JSON.stringify(allDetailedLogs));
+    addDetailedWorkoutLog(detailedWorkoutLog);
 
-    const pendingFeedback = localStorage.getItem('pendingFeedbackExercises');
-    const hasPendingFeedback = pendingFeedback && JSON.parse(pendingFeedback).length > 0;
+    const hasPendingFeedback = pendingFeedback && pendingFeedback.length > 0;
     
     if (hasPendingFeedback) {
         toast({
@@ -182,7 +176,7 @@ function WorkoutPageContent() {
     setTimeout(() => router.push('/dashboard'), 2000);
   };
   
-  if (isLoading) {
+  if (isLoading || workoutRoutine === null) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

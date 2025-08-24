@@ -5,23 +5,29 @@ import { useEffect, useState, useCallback } from 'react';
 import { performanceAnalystGenerator } from '@/ai/flows/performance-analyst-generator';
 import { Bot, Loader2 } from 'lucide-react';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 export function PerformanceFeedback() {
   const [feedback, setFeedback] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { t, locale } = useI18n();
+  const { detailedWorkoutLogs } = useUserData();
 
   const fetchFeedback = useCallback(async () => {
+    if (detailedWorkoutLogs === null) {
+      setIsLoading(true);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
-      if (!detailedLogsJSON || detailedLogsJSON === '[]') {
+      if (!detailedWorkoutLogs || detailedWorkoutLogs.length === 0) {
         setFeedback(t('performanceFeedback.noWorkouts'));
         return;
       }
 
       const result = await performanceAnalystGenerator({
-        trainingData: detailedLogsJSON,
+        trainingData: JSON.stringify(detailedWorkoutLogs),
         language: locale,
       });
       setFeedback(result.analysis);
@@ -31,25 +37,10 @@ export function PerformanceFeedback() {
     } finally {
       setIsLoading(false);
     }
-  }, [t, locale]);
+  }, [t, locale, detailedWorkoutLogs]);
 
   useEffect(() => {
-    // Only run on client
-    if (typeof window === 'undefined') return;
-    
     fetchFeedback();
-    
-    const handleStorageChange = () => {
-        fetchFeedback();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleStorageChange);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('focus', handleStorageChange);
-    }
   }, [fetchFeedback]);
 
   return (

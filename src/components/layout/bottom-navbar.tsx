@@ -16,12 +16,15 @@ import { WorkoutGeneratorDialog } from '@/app/(app)/dashboard/workout-generator-
 import { Badge } from '../ui/badge';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const pathname = usePathname();
-  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+  const { pendingFeedback } = useUserData();
   const playSound = useAudioEffects();
+  
+  const pendingFeedbackCount = pendingFeedback?.length ?? 0;
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
@@ -30,18 +33,6 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
     { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
     { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
-
-  useEffect(() => {
-    const updateCount = () => {
-        const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
-        setPendingFeedbackCount(pending.length);
-    }
-    updateCount();
-    window.addEventListener('storage', updateCount);
-    return () => {
-        window.removeEventListener('storage', updateCount);
-    }
-  }, [])
 
   return (
     <div id="bottom-navbar" className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">

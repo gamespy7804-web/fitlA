@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 const formSchema = z.object({
   selfReportedFitness: z.enum(['easy', 'just-right', 'hard']),
@@ -54,10 +55,10 @@ const formSchema = z.object({
 
 export function AdaptiveProgressionDialog({ children, className }: { children?: React.ReactNode, className?: string }) {
   const { t, locale } = useI18n();
+  const { workoutRoutine, detailedWorkoutLogs, clearWorkoutProgress, saveWorkoutRoutine } = useUserData();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [canProgress, setCanProgress] = useState(false);
-  const [originalRoutine, setOriginalRoutine] = useState<WorkoutRoutineOutput | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -70,74 +71,39 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
     },
   });
 
-  const checkProgress = useCallback(() => {
-    const storedRoutine = localStorage.getItem('workoutRoutine');
-    const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
-    
-    if (storedRoutine) {
-      try {
-          const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-          const detailedLogs = detailedLogsJSON ? JSON.parse(detailedLogsJSON) : [];
-          setOriginalRoutine(parsedRoutine);
-          
-          if (parsedRoutine.structuredRoutine && parsedRoutine.structuredRoutine.length > 0) {
-            setCanProgress(detailedLogs.length > 0);
-          } else {
-             setCanProgress(false);
-          }
-      }
-      catch (e) {
-          console.error("Failed to parse stored data:", e);
-          setCanProgress(false);
-      }
+  useEffect(() => {
+    if (workoutRoutine && workoutRoutine.structuredRoutine && workoutRoutine.structuredRoutine.length > 0) {
+      setCanProgress((detailedWorkoutLogs ?? []).length > 0);
     } else {
-       setCanProgress(false);
+      setCanProgress(false);
     }
-  }, []);
+  }, [workoutRoutine, detailedWorkoutLogs]);
 
   useEffect(() => {
-    // Only run on client
-    if (typeof window === 'undefined') return;
-
-    checkProgress();
-    window.addEventListener('focus', checkProgress);
-    window.addEventListener('storage', checkProgress);
-
-    return () => {
-        window.removeEventListener('focus', checkProgress);
-        window.removeEventListener('storage', checkProgress);
-    }
-  }, [checkProgress]);
-
-  useEffect(() => {
-    if (isOpen && originalRoutine?.structuredRoutine && originalRoutine.structuredRoutine.length > 0) {
-      form.setValue('trainingDays', originalRoutine.structuredRoutine.length);
-      const totalDuration = originalRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0);
-      const avgDuration = totalDuration > 0 ? totalDuration / originalRoutine.structuredRoutine.length : 0;
+    if (isOpen && workoutRoutine?.structuredRoutine && workoutRoutine.structuredRoutine.length > 0) {
+      form.setValue('trainingDays', workoutRoutine.structuredRoutine.length);
+      const totalDuration = workoutRoutine.structuredRoutine.reduce((acc, day) => acc + day.duration, 0);
+      const avgDuration = totalDuration > 0 ? totalDuration / workoutRoutine.structuredRoutine.length : 0;
       form.setValue('trainingDuration', Math.round(avgDuration));
     }
-  }, [originalRoutine, form, isOpen]);
+  }, [workoutRoutine, form, isOpen]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const originalRoutineJSON = localStorage.getItem('workoutRoutine');
-      const detailedLogsJSON = localStorage.getItem('detailedWorkoutLogs');
-
-      if (!originalRoutineJSON || !detailedLogsJSON || !originalRoutine?.structuredRoutine) {
+      if (!workoutRoutine || !detailedWorkoutLogs || !workoutRoutine.structuredRoutine) {
         toast({ variant: 'destructive', title: t('adaptiveProgression.errors.insufficientData.title'), description: t('adaptiveProgression.errors.insufficientData.description') });
         setIsLoading(false);
         return;
       }
       
-      const detailedLogs = JSON.parse(detailedLogsJSON);
-      const routineLength = originalRoutine.structuredRoutine.length;
-      const adherence = routineLength > 0 ? detailedLogs.length / routineLength : 0;
+      const routineLength = workoutRoutine.structuredRoutine.length;
+      const adherence = routineLength > 0 ? detailedWorkoutLogs.length / routineLength : 0;
 
       const newRoutine = await adaptiveProgressionGenerator({
         selfReportedFitness: values.selfReportedFitness,
-        originalRoutine: originalRoutineJSON,
-        trainingData: detailedLogsJSON,
+        originalRoutine: JSON.stringify(workoutRoutine),
+        trainingData: JSON.stringify(detailedWorkoutLogs),
         adherence,
         trainingDays: values.trainingDays,
         trainingDuration: values.trainingDuration,
@@ -145,9 +111,8 @@ export function AdaptiveProgressionDialog({ children, className }: { children?: 
         language: locale,
       });
 
-      localStorage.setItem('workoutRoutine', JSON.stringify(newRoutine));
-      localStorage.setItem('completedWorkouts', JSON.stringify([]));
-      localStorage.setItem('detailedWorkoutLogs', JSON.stringify([]));
+      saveWorkoutRoutine(newRoutine);
+      clearWorkoutProgress();
 
       toast({
         title: t('adaptiveProgression.success.title'),

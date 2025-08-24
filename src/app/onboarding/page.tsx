@@ -37,6 +37,7 @@ import { Loader2, ChevronLeft, Minus, Plus, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/client';
 import { cn } from '@/lib/utils';
+import { useUserData } from '@/hooks/use-user-data';
 
 
 const createFormSchema = (t: (key: string) => string) => z.object({
@@ -73,6 +74,7 @@ const Stepper = ({ label, value, onValueChange, min, max, step, unit }: { label:
 
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
+  const { saveWorkoutRoutine, setOnboardingComplete, setInitialFeedbackCredits } = useUserData();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherSportInput, setShowOtherSportInput] = useState(false);
@@ -154,8 +156,9 @@ export default function OnboardingPage() {
         try {
             const response = await generateWorkoutRoutine({ ...data, language: locale });
             if (response.structuredRoutine && response.structuredRoutine.length > 0) {
-                localStorage.setItem('workoutRoutine', JSON.stringify({...response, sport: data.sport}));
-                localStorage.setItem('onboardingComplete', 'true');
+                saveWorkoutRoutine({...response, sport: data.sport});
+                setOnboardingComplete(true);
+                setInitialFeedbackCredits(3);
                 toast({ title: t('onboarding.success.title'), description: t('onboarding.success.description') });
                 router.push('/dashboard');
                 return; // Success, exit the loop

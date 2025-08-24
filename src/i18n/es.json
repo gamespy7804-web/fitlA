@@ -192,6 +192,7 @@
       "description": "Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA."
     },
     "feedbackTool": {
+      "credits": "Créditos",
       "cameraCard": {
         "title": "Fuente del Video",
         "description": "Selecciona un ejercicio de la lista o introduce uno personalizado, y después graba o sube un video para analizarlo."
@@ -225,6 +226,10 @@
       "analysisFailed": {
         "title": "Análisis Fallido",
         "description": "No se pudo analizar el video. Por favor, inténtalo de nuevo."
+      },
+      "noCredits": {
+          "title": "No te quedan créditos",
+          "description": "Has agotado tus créditos de análisis gratuitos. ¡Pronto habrá más formas de conseguir créditos!"
       },
       "feedbackCard": {
         "title": "Feedback de IA",

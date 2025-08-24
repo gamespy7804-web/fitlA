@@ -19,15 +19,11 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { useI18n } from '@/i18n/client';
-
-type CompletedWorkout = { 
-  date: string; 
-  duration: number; 
-  volume: number; 
-};
+import { useUserData } from '@/hooks/use-user-data';
 
 export function ProgressChart() {
   const { t, locale } = useI18n();
+  const { completedWorkouts } = useUserData();
   const dateLocale = useMemo(() => (locale === 'es' ? es : enUS), [locale]);
 
   const chartConfig = useMemo(() => ({
@@ -44,12 +40,11 @@ export function ProgressChart() {
   const [chartData, setChartData] = useState<any[]>([]);
 
   const loadChartData = useCallback(() => {
+    if (!completedWorkouts) {
+        setChartData([]);
+        return;
+    }
     try {
-        const completedWorkoutsJSON = localStorage.getItem('completedWorkouts');
-        const completedWorkouts: CompletedWorkout[] = completedWorkoutsJSON
-        ? JSON.parse(completedWorkoutsJSON)
-        : [];
-
         const monthlyData = completedWorkouts.reduce((acc, log) => {
         const month = format(new Date(log.date), 'yyyy-MM');
         if (!acc[month]) {
@@ -70,24 +65,13 @@ export function ProgressChart() {
         
         setChartData(sortedData);
     } catch(e) {
-        console.error("Failed to parse chart data from localStorage", e);
+        console.error("Failed to parse chart data", e);
         setChartData([]);
     }
-  }, [dateLocale]);
+  }, [dateLocale, completedWorkouts]);
 
   useEffect(() => {
-    // Only run on client
-    if (typeof window === 'undefined') return;
-    
     loadChartData();
-
-    window.addEventListener('storage', loadChartData);
-    window.addEventListener('focus', loadChartData);
-    
-    return () => {
-        window.removeEventListener('storage', loadChartData);
-        window.removeEventListener('focus', loadChartData);
-    };
   }, [loadChartData]);
 
   return (

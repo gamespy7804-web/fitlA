@@ -9,13 +9,13 @@ import { ChatbotSheet } from '@/components/chatbot/chatbot-sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
-import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { initializeAudio, startMusic, stopMusic } from '@/hooks/use-audio-effects';
 import { WelcomeOverlay } from './welcome-overlay';
 import { Toaster } from '@/components/ui/toaster';
 import { OnboardingTour } from '@/components/onboarding-tour';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
+import { useUserData } from '@/hooks/use-user-data';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
@@ -24,6 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isReadyForTour, setIsReadyForTour] = useState(false);
   const { loading } = useAuth();
+  const { workoutRoutine } = useUserData();
   const pathname = usePathname();
   const isGamePage = pathname === '/games';
   const isWorkoutPage = pathname === '/workout';
@@ -48,36 +49,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [loading]);
 
   const updateTheme = useCallback(() => {
-    const storedRoutine = localStorage.getItem('workoutRoutine');
     let currentTheme = 'theme-default';
-    if (storedRoutine) {
-      try {
-        const parsedRoutine: WorkoutRoutineOutput = JSON.parse(storedRoutine);
-        const sport = (parsedRoutine as any).sport;
-        if (sport) {
-          currentTheme = getThemeForSport(sport);
-        }
-      } catch (e) {
-        console.error("Failed to parse workout routine for theming");
+    if (workoutRoutine) {
+      const sport = (workoutRoutine as any).sport;
+      if (sport) {
+        currentTheme = getThemeForSport(sport);
       }
     }
     setThemeClass(currentTheme);
-  }, []);
+  }, [workoutRoutine]);
 
   useEffect(() => {
     updateTheme();
-    window.addEventListener('storage', updateTheme);
-
+    
     const shouldPlayMusic = !isGamePage && !isWorkoutPage;
 
     if (shouldPlayMusic && audioInitialized.current) {
       startMusic('main');
     } else {
       stopMusic();
-    }
-    
-    return () => {
-      window.removeEventListener('storage', updateTheme);
     }
 
   }, [pathname, updateTheme, isGamePage, isWorkoutPage]); 

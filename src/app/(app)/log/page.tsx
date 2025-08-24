@@ -19,6 +19,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useI18n } from '@/i18n/client';
 import { useToast } from '@/hooks/use-toast';
 import { AdBanner } from '@/components/ad-banner';
+import { useUserData } from '@/hooks/use-user-data';
 
 type LogEntry = {
   date: string;
@@ -30,36 +31,23 @@ type LogEntry = {
 export default function LogPage() {
   const { t, locale } = useI18n();
   const { toast } = useToast();
+  const { completedWorkouts } = useUserData();
   const [logData, setLogData] = useState<LogEntry[]>([]);
   const dateLocale = locale === 'es' ? es : enUS;
   
   const loadLogData = useCallback(() => {
-    const completed = JSON.parse(
-      localStorage.getItem('completedWorkouts') || '[]'
-    ) as { date: string; workout: string; duration: number; volume: number }[];
-
-    const formattedData = completed.map((item) => ({
+    const formattedData = (completedWorkouts ?? []).map((item) => ({
       ...item,
       duration: `${item.duration} min`,
       volume: item.volume > 0 ? `${item.volume.toLocaleString()} kg` : t('log.na'),
     })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     setLogData(formattedData);
-  }, [t]);
+  }, [completedWorkouts, t]);
 
 
   useEffect(() => {
     loadLogData();
-
-    // Add event listeners to update data when it changes in another tab or on focus
-    window.addEventListener('storage', loadLogData);
-    window.addEventListener('focus', loadLogData);
-
-    // Cleanup listeners
-    return () => {
-      window.removeEventListener('storage', loadLogData);
-      window.removeEventListener('focus', loadLogData);
-    };
   }, [loadLogData]);
 
   const handleShareProgress = async () => {

@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useToast } from '@/hooks/use-toast';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 interface WorkoutExerciseCardProps {
   exercise: ExerciseLog;
@@ -26,6 +27,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
   const { t } = useI18n();
   const { toast } = useToast();
   const playSound = useAudioEffects();
+  const { addPendingFeedback, pendingFeedback } = useUserData();
 
   const handleSetFieldChange = (field: 'weight' | 'reps', value: string) => {
     const newSet = { ...set };
@@ -56,12 +58,8 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
 
   const handleAddToFeedbackQueue = () => {
     playSound('click');
-    const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
-    if (!pending.includes(exercise.name)) {
-        pending.push(exercise.name);
-        localStorage.setItem('pendingFeedbackExercises', JSON.stringify(pending));
-        // Manually trigger a storage event to notify other components (like the navbar badge)
-        window.dispatchEvent(new Event('storage'));
+    if (!pendingFeedback?.includes(exercise.name)) {
+        addPendingFeedback(exercise.name);
         toast({
             title: t('workoutExerciseCard.feedbackQueue.added.title'),
             description: t('workoutExerciseCard.feedbackQueue.added.description', { name: exercise.name }),

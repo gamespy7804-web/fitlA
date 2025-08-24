@@ -48,6 +48,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useUserData } from '@/hooks/use-user-data';
 
 const createFormSchema = (t: (key: string) => string) => z.object({
   goals: z.string().min(3, t('workoutGenerator.form.validations.goals.min')),
@@ -66,6 +67,7 @@ interface WorkoutGeneratorDialogProps {
 
 export function WorkoutGeneratorDialog({ children, open, onOpenChange }: WorkoutGeneratorDialogProps) {
   const { t, locale } = useI18n();
+  const { saveWorkoutRoutine } = useUserData();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<WorkoutRoutineOutput | null>(null);
   const [step, setStep] = useState(1);
@@ -92,7 +94,7 @@ export function WorkoutGeneratorDialog({ children, open, onOpenChange }: Workout
 
        if (routine.structuredRoutine && routine.structuredRoutine.length > 0) {
         setResult(routine);
-        localStorage.setItem('workoutRoutine', JSON.stringify({...routine, sport: values.sport}));
+        saveWorkoutRoutine({...routine, sport: values.sport});
         setStep(2);
       } else {
         toast({ variant: 'destructive', title: t('workoutGenerator.errors.generationFailed.title'), description: t('workoutGenerator.errors.generationFailed.description') });

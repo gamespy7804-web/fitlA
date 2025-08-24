@@ -14,12 +14,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, Ticket } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useUserData } from '@/hooks/use-user-data';
 
 function FeedbackToolContent() {
   const { t, locale } = useI18n();
@@ -28,6 +29,8 @@ function FeedbackToolContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+
+  const { pendingFeedback, feedbackCredits, removePendingFeedback, consumeFeedbackCredit } = useUserData();
 
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -43,26 +46,16 @@ function FeedbackToolContent() {
   
   const exerciseFromParam = searchParams.get('exercise');
 
-  const loadPendingExercises = useCallback(() => {
-    const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
-    setExercisesForFeedback(pending);
-
-    if (exerciseFromParam && pending.includes(exerciseFromParam)) {
-        setSelectedExercise(exerciseFromParam);
-    } else if (pending.length > 0 && !selectedExercise) {
-        setSelectedExercise(pending[0]);
-    }
-  }, [exerciseFromParam, selectedExercise]);
-
-
   useEffect(() => {
-    loadPendingExercises();
-    // Listen for storage changes to update the list in real-time
-    window.addEventListener('storage', loadPendingExercises);
-    return () => {
-      window.removeEventListener('storage', loadPendingExercises)
+    setExercisesForFeedback(pendingFeedback ?? []);
+
+    if (exerciseFromParam && (pendingFeedback ?? []).includes(exerciseFromParam)) {
+        setSelectedExercise(exerciseFromParam);
+    } else if ((pendingFeedback ?? []).length > 0 && !selectedExercise) {
+        setSelectedExercise(pendingFeedback[0]);
     }
-  }, [loadPendingExercises]);
+  }, [pendingFeedback, exerciseFromParam, selectedExercise]);
+
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -144,9 +137,16 @@ function FeedbackToolContent() {
         toast({ variant: 'destructive', title: t('feedbackTool.selectExerciseError') });
         return;
     }
+    
+    if ((feedbackCredits ?? 0) <= 0) {
+        toast({ variant: 'destructive', title: t('feedbackTool.noCredits.title'), description: t('feedbackTool.noCredits.description') });
+        return;
+    }
+
     setIsLoading(true);
     setFeedback(null);
     try {
+      consumeFeedbackCredit(); // Consume credit optimistically
       const result: RealTimeFeedbackOutput = await realTimeFeedback({
         videoDataUri,
         exerciseType: exerciseToAnalyze,
@@ -155,17 +155,11 @@ function FeedbackToolContent() {
       setFeedback(result.feedback);
 
       // If the analyzed exercise was from the pending list, remove it.
-      const pending = JSON.parse(localStorage.getItem('pendingFeedbackExercises') || '[]') as string[];
-      if (pending.includes(exerciseToAnalyze)) {
-        const updatedPending = pending.filter(ex => ex !== exerciseToAnalyze);
-        localStorage.setItem('pendingFeedbackExercises', JSON.stringify(updatedPending));
+      if (pendingFeedback?.includes(exerciseToAnalyze)) {
+        removePendingFeedback(exerciseToAnalyze);
         
-        // Manually trigger a storage event to notify other components (like the navbar badge)
-        window.dispatchEvent(new Event('storage'));
-        
-        setExercisesForFeedback(updatedPending);
-        if (updatedPending.length > 0) {
-          setSelectedExercise(updatedPending[0]);
+        if ((pendingFeedback?.length ?? 1) - 1 > 0) {
+          setSelectedExercise(pendingFeedback![0]);
         } else {
           setSelectedExercise('');
         }
@@ -182,6 +176,7 @@ function FeedbackToolContent() {
         title: t('feedbackTool.analysisFailed.title'),
         description: t('feedbackTool.analysisFailed.description'),
       });
+      // TODO: Here you could add logic to refund the credit if the API call failed.
     } finally {
       setIsLoading(false);
     }
@@ -218,14 +213,24 @@ function FeedbackToolContent() {
     setVideoToAnalyze(null);
   }
   
-  const isAnalyzeButtonDisabled = isLoading || (!customExercise.trim() && !selectedExercise);
+  const noCredits = (feedbackCredits ?? 0) <= 0;
+  const isAnalyzeButtonDisabled = isLoading || noCredits || (!customExercise.trim() && !selectedExercise);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">{t('feedbackTool.cameraCard.title')}</CardTitle>
-           <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="font-headline">{t('feedbackTool.cameraCard.title')}</CardTitle>
+              <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
+                <Ticket className="h-5 w-5 text-primary" />
+                <span>{feedbackCredits ?? 0}</span>
+                <span className="hidden sm:inline">{t('feedbackTool.credits')}</span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="camera" className="w-full" onValueChange={handleTabChange}>
@@ -310,6 +315,13 @@ function FeedbackToolContent() {
                 </div>
             </TabsContent>
           </Tabs>
+           {noCredits && (
+             <Alert variant="destructive" className="mt-4">
+               <AlertTriangle className="h-4 w-4" />
+               <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
+               <AlertDescription>{t('feedbackTool.noCredits.description')}</AlertDescription>
+             </Alert>
+           )}
         </CardContent>
       </Card>
       <Card>

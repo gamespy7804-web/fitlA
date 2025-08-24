@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import useAudioEffects from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
+import { useUserData } from '@/hooks/use-user-data';
 
 type GameState = 'loading' | 'playing' | 'answered' | 'finished';
 type QuizHistory = {
@@ -24,6 +25,7 @@ type Difficulty = 'easy' | 'normal' | 'hard';
 
 export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void }) {
   const { t, locale } = useI18n();
+  const { quizHistory, updateQuizHistory, workoutRoutine } = useUserData();
   const [gameState, setGameState] = useState<GameState>('loading');
   const [questions, setQuestions] = useState<MultipleChoiceQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -40,18 +42,14 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
     setCurrentDifficulty(difficulty);
     setSessionHistory([]);
     try {
-      const storedRoutine = localStorage.getItem('workoutRoutine');
-      if (!storedRoutine) {
+      if (!workoutRoutine) {
         toast({ variant: 'destructive', title: t('games.errors.title'), description: t('games.errors.noRoutine') });
         onGameFinish();
         return;
       }
-      const parsedRoutine = JSON.parse(storedRoutine);
-      const sport = parsedRoutine.sport || 'general fitness';
-      
-      const quizHistory = localStorage.getItem('quizHistory');
+      const sport = (workoutRoutine as any).sport || 'general fitness';
 
-      const quizData = await generateMultipleChoiceQuiz({ sport, history: quizHistory ?? undefined, difficulty, language: locale });
+      const quizData = await generateMultipleChoiceQuiz({ sport, history: JSON.stringify(quizHistory ?? []), difficulty, language: locale });
       
       if (quizData.questions && quizData.questions.length > 0) {
         setQuestions(quizData.questions);
@@ -70,7 +68,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
       toast({ variant: 'destructive', title: t('games.errors.title'), description: t('games.errors.generationFailed') });
       onGameFinish();
     }
-  }, [onGameFinish, toast, playSound, t, locale]);
+  }, [onGameFinish, toast, playSound, t, locale, workoutRoutine, quizHistory]);
 
   useEffect(() => {
     startGame();
@@ -113,9 +111,7 @@ export function MultipleChoiceQuiz({ onGameFinish }: { onGameFinish: () => void 
       setUserAnswerIndex(null);
       setGameState('playing');
     } else {
-      const fullHistory = JSON.parse(localStorage.getItem('quizHistory') || '[]') as QuizHistory[];
-      const updatedHistory = [...fullHistory, ...sessionHistory];
-      localStorage.setItem('quizHistory', JSON.stringify(updatedHistory));
+      updateQuizHistory(sessionHistory);
       setGameState('finished');
     }
   };
