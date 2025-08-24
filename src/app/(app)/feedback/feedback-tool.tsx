@@ -20,7 +20,7 @@ import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUserData } from '@/hooks/use-user-data';
+import { useUserData } from '@/hooks/use-user-data.tsx';
 
 function FeedbackToolContent() {
   const { t, locale } = useI18n();
@@ -360,3 +360,5 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
+
+    
