@@ -34,6 +34,7 @@ interface UserDataContextType {
 
     setInitialFeedbackCredits: (amount: number) => void;
     consumeFeedbackCredit: () => void;
+    addFeedbackCredits: (amount: number) => void;
 
     updateTriviaHistory: (sessionHistory: TriviaHistoryItem[]) => void;
     updateQuizHistory: (sessionHistory: QuizHistoryItem[]) => void;
@@ -166,6 +167,12 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         saveToLocalStorage('feedbackCredits', newCredits);
     }, [feedbackCredits]);
 
+    const addFeedbackCredits = useCallback((amount: number) => {
+        const newCredits = (feedbackCredits ?? 0) + amount;
+        setFeedbackCreditsState(newCredits);
+        saveToLocalStorage('feedbackCredits', newCredits);
+    }, [feedbackCredits]);
+
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
         const updated = [...(triviaHistory ?? []), ...sessionHistory];
         setTriviaHistoryState(updated);
@@ -216,6 +223,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         removePendingFeedback,
         setInitialFeedbackCredits,
         consumeFeedbackCredit,
+        addFeedbackCredits,
         updateTriviaHistory,
         updateQuizHistory,
         resetAllData,
@@ -231,3 +239,5 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
+
+    

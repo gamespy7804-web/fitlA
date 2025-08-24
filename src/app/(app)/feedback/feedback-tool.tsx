@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef, Suspense, useCallback, DragEvent } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { realTimeFeedback, type RealTimeFeedbackOutput } from '@/ai/flows/real-time-feedback-generator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, Ticket, CheckCircle, Info } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, Ticket, CheckCircle, Info, ShoppingBag } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 
 function FeedbackToolContent() {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -257,8 +258,8 @@ function FeedbackToolContent() {
               <CardTitle className="font-headline">{t('feedbackTool.cameraCard.title')}</CardTitle>
               <CardDescription>{t('feedbackTool.cameraCard.description')}</CardDescription>
             </div>
-            <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-full text-sm">
-                <Ticket className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border">
+                <span role="img" aria-label="diamond">💎</span>
                 <span>{feedbackCredits ?? 0}</span>
                 <span className="hidden sm:inline">{t('feedbackTool.credits')}</span>
             </div>
@@ -296,11 +297,11 @@ function FeedbackToolContent() {
               <Label className="font-semibold text-base">{t('feedbackTool.step2')}</Label>
               <Tabs defaultValue="camera" className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="camera" disabled={isLoading}>
+                  <TabsTrigger value="camera" disabled={isLoading || noCredits}>
                     <Camera className="mr-2 h-4 w-4" />
                     {t('feedbackTool.tabs.camera')}
                   </TabsTrigger>
-                  <TabsTrigger value="upload" disabled={isLoading}>
+                  <TabsTrigger value="upload" disabled={isLoading || noCredits}>
                     <Upload className="mr-2 h-4 w-4" />
                     {t('feedbackTool.tabs.upload')}
                   </TabsTrigger>
@@ -361,7 +362,12 @@ function FeedbackToolContent() {
                     <Alert variant="destructive" className="mt-2">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
-                    <AlertDescription>{t('feedbackTool.noCredits.description')}</AlertDescription>
+                    <AlertDescription>
+                        {t('feedbackTool.noCredits.description')}
+                        <Button variant="secondary" className="mt-2 w-full" onClick={() => router.push('/store')}>
+                           <ShoppingBag className="mr-2" /> {t('feedbackTool.noCredits.buyMore')}
+                        </Button>
+                    </AlertDescription>
                     </Alert>
                 )}
            </div>
@@ -418,3 +424,5 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
+
+    

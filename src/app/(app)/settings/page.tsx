@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { LogOut, Music, Volume2, ShieldAlert, Languages, Loader2, RotateCcw, Save } from 'lucide-react';
+import { LogOut, Music, Volume2, ShieldAlert, Languages, Loader2, RotateCcw, Save, ShoppingBag } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useState, useEffect } from 'react';
@@ -24,10 +24,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { GoogleIcon } from '@/components/icons';
+import { useUserData } from '@/hooks/use-user-data';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const { user, signOut, resetAccountData, signInWithGoogle, loading: authLoading } = useAuth();
   const { t, setLocale, locale } = useI18n();
+  const router = useRouter();
+  const { feedbackCredits } = useUserData();
 
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(50);
@@ -135,6 +139,26 @@ export default function SettingsPage() {
       </div>
 
       {renderUserCard()}
+
+      <Card>
+        <CardHeader>
+            <CardTitle className="font-headline">{t('settings.credits.title')}</CardTitle>
+            <CardDescription>{t('settings.credits.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className='flex items-center justify-between rounded-lg border p-4'>
+            <div className='flex items-center gap-2'>
+                 <span role="img" aria-label="diamond" className='text-2xl'>💎</span>
+                 <div>
+                    <p className="font-medium">{t('settings.credits.yourBalance')}</p>
+                    <p className="text-2xl font-bold">{feedbackCredits ?? 0}</p>
+                 </div>
+            </div>
+            <Button onClick={() => router.push('/store')}>
+                <ShoppingBag className="mr-2" />
+                {t('settings.credits.buyMore')}
+            </Button>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
@@ -259,3 +283,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+    

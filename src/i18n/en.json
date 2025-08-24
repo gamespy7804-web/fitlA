@@ -237,7 +237,8 @@
       },
       "noCredits": {
           "title": "No Credits Left",
-          "description": "You have used all your free analysis credits. More ways to get credits coming soon!"
+          "description": "You have used all your free analysis credits.",
+          "buyMore": "Buy More Credits"
       },
       "feedbackCard": {
         "title": "AI Feedback",
@@ -330,7 +331,35 @@
             "action": "Yes, reset data"
           }
         }
+      },
+      "credits": {
+          "title": "Feedback Credits",
+          "description": "Credits are used for AI form analysis.",
+          "yourBalance": "Your Balance",
+          "buyMore": "Buy More"
       }
+    },
+    "store": {
+        "title": "Credits Store",
+        "description": "Purchase credits to use the AI form analysis feature.",
+        "credits": "Credits",
+        "buyNow": "Buy Now",
+        "popular": "Popular",
+        "packages": {
+            "small": { "name": "Starter Pack" },
+            "medium": { "name": "Enthusiast Pack" },
+            "large": { "name": "Pro Pack" },
+            "features": {
+                "instantAnalysis": "Instant analysis",
+                "errorDetection": "Detailed error detection",
+                "prioritySupport": "Priority support",
+                "betaAccess": "Access to beta features"
+            }
+        },
+        "purchaseSuccess": {
+            "title": "Purchase Successful!",
+            "description": "{{count}} credits have been added to your account."
+        }
     },
     "onboarding": {
       "title": "Welcome to workout IA",
@@ -515,3 +544,5 @@
     }
   }
 }
+
+    

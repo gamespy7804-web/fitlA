@@ -237,7 +237,8 @@
       },
       "noCredits": {
           "title": "No te quedan créditos",
-          "description": "Has agotado tus créditos de análisis gratuitos. ¡Pronto habrá más formas de conseguir créditos!"
+          "description": "Has agotado tus créditos de análisis gratuitos.",
+          "buyMore": "Comprar más créditos"
       },
       "feedbackCard": {
         "title": "Feedback de IA",
@@ -330,7 +331,35 @@
             "action": "Sí, restablecer datos"
           }
         }
+      },
+       "credits": {
+          "title": "Créditos de Feedback",
+          "description": "Los créditos se usan para el análisis de forma con IA.",
+          "yourBalance": "Tu Saldo",
+          "buyMore": "Comprar Más"
       }
+    },
+    "store": {
+        "title": "Tienda de Créditos",
+        "description": "Adquiere créditos para utilizar la función de análisis de forma con IA.",
+        "credits": "Créditos",
+        "buyNow": "Comprar Ahora",
+        "popular": "Popular",
+        "packages": {
+            "small": { "name": "Paquete Inicial" },
+            "medium": { "name": "Paquete Entusiasta" },
+            "large": { "name": "Paquete Pro" },
+            "features": {
+                "instantAnalysis": "Análisis instantáneo",
+                "errorDetection": "Detección de errores detallada",
+                "prioritySupport": "Soporte prioritario",
+                "betaAccess": "Acceso a funciones beta"
+            }
+        },
+        "purchaseSuccess": {
+            "title": "¡Compra Exitosa!",
+            "description": "Se han añadido {{count}} créditos a tu cuenta."
+        }
     },
     "onboarding": {
       "title": "Bienvenido a workout IA",
@@ -515,3 +544,5 @@
     }
   }
 }
+
+    
