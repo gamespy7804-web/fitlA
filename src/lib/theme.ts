@@ -1,11 +1,13 @@
 
+
 export function getThemeForSport(sport: string): string {
+  if (!sport) return 'theme-default';
   const lowerCaseSport = sport.toLowerCase();
 
-  if (lowerCaseSport.includes('boxeo')) {
+  if (lowerCaseSport.includes('boxeo') || lowerCaseSport.includes('boxing')) {
     return 'theme-boxing';
   }
-  if (lowerCaseSport.includes('calistenia')) {
+  if (lowerCaseSport.includes('calistenia') || lowerCaseSport.includes('calisthenics')) {
     return 'theme-calisthenics';
   }
    if (lowerCaseSport.includes('yoga') || lowerCaseSport.includes('pilates')) {
