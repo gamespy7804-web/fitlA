@@ -52,7 +52,7 @@ function FeedbackToolContent() {
     if (exerciseFromParam && (pendingFeedback ?? []).includes(exerciseFromParam)) {
         setSelectedExercise(exerciseFromParam);
     } else if ((pendingFeedback ?? []).length > 0 && !selectedExercise) {
-        setSelectedExercise(pendingFeedback[0]);
+        setSelectedExercise(pendingFeedback![0]);
     }
   }, [pendingFeedback, exerciseFromParam, selectedExercise]);
 

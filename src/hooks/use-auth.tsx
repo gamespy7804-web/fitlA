@@ -31,8 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
-  // We can't destructure resetAllData directly as useUserData might not be ready
-  const userData = useUserData();
+  const { resetAllData } = useUserData();
 
 
   useEffect(() => {
@@ -77,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await firebaseSignOut(auth);
       // The onAuthStateChanged listener will handle signing in a new anonymous user.
       // We still clean up so the new anonymous user starts fresh.
-      userData?.resetAllData();
+      resetAllData();
       toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso ya no está sincronizado." });
       router.push('/'); // Go to home to restart the flow
     } catch (error) {
@@ -88,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetAccountData = async () => {
     const wasRealUser = auth.currentUser && !auth.currentUser.isAnonymous;
-    userData?.resetAllData();
+    resetAllData();
     
     if (wasRealUser) {
       await firebaseSignOut(auth);
