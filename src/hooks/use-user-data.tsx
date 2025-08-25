@@ -45,7 +45,7 @@ interface UserDataContextType {
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
 // Helper function to safely parse JSON from localStorage
-const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
+const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
     if (typeof window === 'undefined') {
         return defaultValue;
     }
@@ -59,7 +59,7 @@ const loadFromLocalStorage = <T>(key: string, defaultValue: T): T => {
 };
 
 // Helper function to safely stringify and set JSON in localStorage
-const saveToLocalStorage = <T>(key: string, value: T) => {
+const saveToLocalStorage = <T,>(key: string, value: T) => {
     if (typeof window === 'undefined') {
         return;
     }
@@ -239,5 +239,3 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
-
-    

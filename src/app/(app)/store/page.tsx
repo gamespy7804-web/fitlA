@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/i18n/client";
-import { Check, ShoppingBag, Sparkles, Star } from "lucide-react";
+import { Check, Star, Sparkles } from "lucide-react";
 import { useUserData } from "@/hooks/use-user-data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -113,5 +113,3 @@ export default function StorePage() {
         </div>
     )
 }
-
-    

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, Ticket, CheckCircle, Info, ShoppingBag } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +22,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUserData } from '@/hooks/use-user-data';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 
 function FeedbackToolContent() {
   const { t, locale } = useI18n();
@@ -247,7 +246,7 @@ function FeedbackToolContent() {
   }
   
   const noCredits = (feedbackCredits ?? 0) <= 0;
-  const isAnalyzeButtonDisabled = isLoading || noCredits || (!customExercise.trim() && !selectedExercise);
+  const isAnalyzeButtonDisabled = isLoading || !videoToAnalyze || noCredits || (!customExercise.trim() && !selectedExercise);
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -354,7 +353,7 @@ function FeedbackToolContent() {
            </div>
            
            <div className="space-y-4">
-                <Button onClick={handleAnalyze} className="w-full" size="lg" disabled={isAnalyzeButtonDisabled || !videoToAnalyze}>
+                <Button onClick={handleAnalyze} className="w-full" size="lg" disabled={isAnalyzeButtonDisabled}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2" />}
                     {t('feedbackTool.buttons.analyze')} ({t('feedbackTool.credits_one')})
                 </Button>
@@ -424,5 +423,3 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
-
-    
