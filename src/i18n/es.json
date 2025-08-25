@@ -24,8 +24,8 @@
     "appShell": {
       "askAi": "Pregúntale a la IA",
       "signOut": "Cerrar sesión",
-      "analysisCredits": "Créditos de análisis",
-      "analysisCredits_beta": "Créditos de análisis. Haz clic para ir a la tienda."
+      "analysisCredits": "Diamantes",
+      "analysisCredits_beta": "Diamantes. Haz clic para ir a la tienda."
     },
     "chatbot": {
       "title": "Asistente de IA",
@@ -194,7 +194,7 @@
       "description": "Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA."
     },
     "feedbackTool": {
-      "credits": "Créditos",
+      "credits": "Diamantes",
       "credits_one": "1 Crédito",
       "step1": "Paso 1: Elige tu Ejercicio",
       "step1_description": "Selecciona un ejercicio de tu lista de pendientes o escribe uno personalizado.",
@@ -239,9 +239,9 @@
         "description": "No se pudo analizar el video. Por favor, inténtalo de nuevo."
       },
       "noCredits": {
-          "title": "No te quedan créditos",
-          "description": "Has agotado tus créditos de análisis gratuitos.",
-          "buyMore": "Comprar más créditos"
+          "title": "No tienes suficientes diamantes",
+          "description": "Necesitas más diamantes para este análisis.",
+          "buyMore": "Conseguir Más Diamantes"
       },
       "feedbackCard": {
         "title": "Feedback de IA",
@@ -338,22 +338,29 @@
         }
       },
        "credits": {
-          "title": "Créditos de Feedback",
-          "description": "Los créditos se usan para el análisis de forma con IA.",
+          "title": "Tus Diamantes",
+          "description": "Los diamantes se usan para el análisis de forma con IA.",
           "yourBalance": "Tu Saldo",
-          "buyMore": "Comprar Más"
+          "buyMore": "Conseguir Más"
       }
     },
     "store": {
-        "title": "Tienda de Créditos",
-        "description": "Adquiere créditos para utilizar la función de análisis de forma con IA.",
-        "credits": "Créditos",
+        "title": "Tienda de Diamantes",
+        "description": "Consigue más diamantes para utilizar la función de análisis de forma con IA.",
+        "credits": "Diamantes",
         "buyNow": "Comprar Ahora",
+        "watchAd": "Ver Anuncio",
         "popular": "Popular",
         "packages": {
-            "small": { "name": "Paquete Inicial" },
-            "medium": { "name": "Paquete Entusiasta" },
-            "large": { "name": "Paquete Pro" },
+            "ad": {
+                "name": "Recompensa Gratis",
+                "price": "Gratis",
+                "feature1": "Mira un anuncio corto",
+                "feature2": "Consigue una pequeña recompensa"
+            },
+            "small": { "name": "Puñado de Diamantes" },
+            "medium": { "name": "Bolsa de Diamantes" },
+            "large": { "name": "Cofre de Diamantes" },
             "features": {
                 "instantAnalysis": "Análisis instantáneo",
                 "errorDetection": "Detección de errores detallada",
@@ -363,7 +370,11 @@
         },
         "purchaseSuccess": {
             "title": "¡Compra Exitosa!",
-            "description": "Se han añadido {{count}} créditos a tu cuenta."
+            "description": "Se han añadido {{count}} diamantes a tu cuenta."
+        },
+        "adSuccess": {
+            "title": "¡Recompensa Obtenida!",
+            "description": "Se han añadido {{count}} diamantes a tu cuenta."
         }
     },
     "onboarding": {
@@ -549,3 +560,5 @@
     }
   }
 }
+
+    

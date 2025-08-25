@@ -4,7 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/i18n/client";
-import { Check, Star, Sparkles, ArrowLeft } from "lucide-react";
+import { Check, Star, Sparkles, ArrowLeft, Tv } from "lucide-react";
 import { useUserData } from "@/hooks/use-user-data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -15,12 +15,22 @@ export default function StorePage() {
     const { t } = useI18n();
     const { toast } = useToast();
     const router = useRouter();
-    const { addFeedbackCredits } = useUserData();
+    const { addDiamonds } = useUserData();
 
     const creditPackages = [
         {
-            name: t('store.packages.small.name'),
+            name: t('store.packages.ad.name'),
             credits: 5,
+            price: t('store.packages.ad.price'),
+            features: [
+                 t('store.packages.ad.feature1'),
+                 t('store.packages.ad.feature2'),
+            ],
+            isAd: true,
+        },
+        {
+            name: t('store.packages.small.name'),
+            credits: 50,
             price: '$4.99',
             features: [
                 t('store.packages.features.instantAnalysis'),
@@ -30,7 +40,7 @@ export default function StorePage() {
         },
         {
             name: t('store.packages.medium.name'),
-            credits: 20,
+            credits: 250,
             price: '$14.99',
             features: [
                 t('store.packages.features.instantAnalysis'),
@@ -41,7 +51,7 @@ export default function StorePage() {
         },
         {
             name: t('store.packages.large.name'),
-            credits: 50,
+            credits: 750,
             price: '$29.99',
             features: [
                 t('store.packages.features.instantAnalysis'),
@@ -53,13 +63,13 @@ export default function StorePage() {
         }
     ]
 
-    const handlePurchase = (credits: number) => {
+    const handlePurchase = (credits: number, isAd: boolean = false) => {
         // --- SIMULACIÓN DE PAGO ---
         // En una aplicación real, aquí iría la lógica para redirigir a una pasarela de pago como Stripe.
-        // La función addFeedbackCredits() solo se llamaría después de que el pago sea confirmado por el servidor.
-        addFeedbackCredits(credits);
+        // La función addDiamonds() solo se llamaría después de que el pago sea confirmado por el servidor.
+        addDiamonds(credits);
         toast({
-            title: t('store.purchaseSuccess.title'),
+            title: isAd ? t('store.adSuccess.title') : t('store.purchaseSuccess.title'),
             description: t('store.purchaseSuccess.description', { count: credits }),
         });
     };
@@ -80,7 +90,7 @@ export default function StorePage() {
                     {t('store.description')}
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
                 {creditPackages.map((pkg) => (
                     <Card key={pkg.name} className={cn("flex flex-col", pkg.isPopular && "border-primary border-2 shadow-lg shadow-primary/20")}>
                         {pkg.isPopular && (
@@ -94,12 +104,15 @@ export default function StorePage() {
                         <CardHeader className="text-center">
                             <CardTitle className="font-headline text-2xl">{pkg.name}</CardTitle>
                             <CardDescription>
-                                 <span className="text-4xl font-bold text-foreground">{pkg.price}</span>
+                                 <span className={cn("text-4xl font-bold text-foreground", pkg.isAd && "text-primary")}>{pkg.price}</span>
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 flex flex-col justify-between space-y-6">
                             <div className="text-center">
-                                 <p className="text-5xl font-bold text-primary">{pkg.credits}</p>
+                                 <p className="text-5xl font-bold text-primary flex items-center justify-center gap-2">
+                                    <span>💎</span>
+                                    <span>{pkg.credits}</span>
+                                </p>
                                  <p className="text-lg font-medium text-muted-foreground">{t('store.credits')}</p>
                             </div>
                            
@@ -111,9 +124,9 @@ export default function StorePage() {
                                     </li>
                                 ))}
                             </ul>
-                             <Button size="lg" className="w-full" onClick={() => handlePurchase(pkg.credits)}>
-                                <Sparkles className="mr-2" />
-                                {t('store.buyNow')}
+                             <Button size="lg" className="w-full" onClick={() => handlePurchase(pkg.credits, pkg.isAd)} variant={pkg.isAd ? 'outline' : 'default'}>
+                                {pkg.isAd ? <Tv className="mr-2"/> : <Sparkles className="mr-2" />}
+                                {pkg.isAd ? t('store.watchAd') : t('store.buyNow')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -122,3 +135,5 @@ export default function StorePage() {
         </div>
     )
 }
+
+    

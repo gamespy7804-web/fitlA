@@ -24,8 +24,8 @@
     "appShell": {
       "askAi": "Ask AI",
       "signOut": "Sign Out",
-      "analysisCredits": "Analysis credits",
-      "analysisCredits_beta": "Analysis credits. Click to go to the store."
+      "analysisCredits": "Diamonds",
+      "analysisCredits_beta": "Diamonds. Click to go to the store."
     },
     "chatbot": {
       "title": "AI Assistant",
@@ -194,7 +194,7 @@
       "description": "Use your camera to get AI feedback on your exercise technique."
     },
     "feedbackTool": {
-      "credits": "Credits",
+      "credits": "Diamonds",
       "credits_one": "1 Credit",
       "step1": "Step 1: Choose Your Exercise",
       "step1_description": "Select an exercise from your pending list or type a custom one.",
@@ -239,9 +239,9 @@
         "description": "Could not analyze the video. Please try again."
       },
       "noCredits": {
-          "title": "No Credits Left",
-          "description": "You have used all your free analysis credits.",
-          "buyMore": "Buy More Credits"
+          "title": "Not enough diamonds",
+          "description": "You need more diamonds for this analysis.",
+          "buyMore": "Get More Diamonds"
       },
       "feedbackCard": {
         "title": "AI Feedback",
@@ -338,22 +338,29 @@
         }
       },
       "credits": {
-          "title": "Feedback Credits",
-          "description": "Credits are used for AI form analysis.",
+          "title": "Your Diamonds",
+          "description": "Diamonds are used for AI form analysis.",
           "yourBalance": "Your Balance",
-          "buyMore": "Buy More"
+          "buyMore": "Get More"
       }
     },
     "store": {
-        "title": "Credits Store",
-        "description": "Purchase credits to use the AI form analysis feature.",
-        "credits": "Credits",
+        "title": "Diamond Store",
+        "description": "Get more diamonds to use the AI form analysis feature.",
+        "credits": "Diamonds",
         "buyNow": "Buy Now",
+        "watchAd": "Watch Ad",
         "popular": "Popular",
         "packages": {
-            "small": { "name": "Starter Pack" },
-            "medium": { "name": "Enthusiast Pack" },
-            "large": { "name": "Pro Pack" },
+            "ad": {
+                "name": "Free Reward",
+                "price": "Free",
+                "feature1": "Watch a short ad",
+                "feature2": "Get a small reward"
+            },
+            "small": { "name": "Handful of Diamonds" },
+            "medium": { "name": "Pouch of Diamonds" },
+            "large": { "name": "Chest of Diamonds" },
             "features": {
                 "instantAnalysis": "Instant analysis",
                 "errorDetection": "Detailed error detection",
@@ -363,7 +370,11 @@
         },
         "purchaseSuccess": {
             "title": "Purchase Successful!",
-            "description": "{{count}} credits have been added to your account."
+            "description": "{{count}} diamonds have been added to your account."
+        },
+        "adSuccess": {
+            "title": "Reward Claimed!",
+            "description": "{{count}} diamonds have been added to your account."
         }
     },
     "onboarding": {
@@ -549,3 +560,5 @@
     }
   }
 }
+
+    

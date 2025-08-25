@@ -26,7 +26,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const { feedbackCredits } = useUserData();
+  const { diamonds } = useUserData();
   const isGamePage = pathname === '/games';
   const { t } = useI18n();
 
@@ -62,10 +62,10 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
             </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-1.5 h-auto px-2 py-1.5" onClick={handleCreditsClick}>
+                    <Button variant="ghost" className="h-auto px-2 py-1.5" onClick={handleCreditsClick}>
                         <div className="flex items-center gap-2 bg-secondary border border-border text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm">
                             <span role="img" aria-label="diamond">💎</span>
-                            <span>{feedbackCredits ?? 0}</span>
+                            <span>{diamonds ?? 0}</span>
                         </div>
                     </Button>
                 </TooltipTrigger>
@@ -126,3 +126,5 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
     </TooltipProvider>
   );
 }
+
+    

@@ -33,7 +33,7 @@ function FeedbackToolContent() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
 
-  const { pendingFeedback, feedbackCredits, removePendingFeedback, consumeFeedbackCredit } = useUserData();
+  const { pendingFeedback, diamonds, removePendingFeedback, consumeDiamonds } = useUserData();
 
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<RealTimeFeedbackOutput | null>(null);
@@ -49,6 +49,7 @@ function FeedbackToolContent() {
   const { toast } = useToast();
   
   const exerciseFromParam = searchParams.get('exercise');
+  const ANALYSIS_COST = 10;
 
   useEffect(() => {
     setExercisesForFeedback(pendingFeedback ?? []);
@@ -147,7 +148,7 @@ function FeedbackToolContent() {
         return;
     }
 
-    if ((feedbackCredits ?? 0) <= 0) {
+    if ((diamonds ?? 0) < ANALYSIS_COST) {
         toast({ variant: 'destructive', title: t('feedbackTool.noCredits.title'), description: t('feedbackTool.noCredits.description') });
         return;
     }
@@ -155,7 +156,7 @@ function FeedbackToolContent() {
     setIsLoading(true);
     setFeedback(null);
     try {
-      consumeFeedbackCredit(); // Consume credit optimistically
+      consumeDiamonds(ANALYSIS_COST); // Consume credit optimistically
       const result: RealTimeFeedbackOutput = await realTimeFeedback({
         videoDataUri: videoToAnalyze,
         exerciseType: exerciseToAnalyze,
@@ -246,8 +247,8 @@ function FeedbackToolContent() {
     setFeedback(null);
   }
   
-  const noCredits = (feedbackCredits ?? 0) <= 0;
-  const isAnalyzeButtonDisabled = isLoading || !videoToAnalyze || noCredits || (!customExercise.trim() && !selectedExercise);
+  const hasEnoughDiamonds = (diamonds ?? 0) >= ANALYSIS_COST;
+  const isAnalyzeButtonDisabled = isLoading || !videoToAnalyze || !hasEnoughDiamonds || (!customExercise.trim() && !selectedExercise);
 
   if (isLoading) {
     return (
@@ -312,7 +313,7 @@ function FeedbackToolContent() {
                 <CardTitle className="font-headline">{t('feedbackTool.step1')}</CardTitle>
                  <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border">
                     <span role="img" aria-label="diamond">💎</span>
-                    <span>{feedbackCredits ?? 0}</span>
+                    <span>{diamonds ?? 0}</span>
                     <span className="hidden sm:inline">{t('feedbackTool.credits')}</span>
                 </div>
             </div>
@@ -354,11 +355,11 @@ function FeedbackToolContent() {
             <CardContent>
                 <Tabs defaultValue="camera" className="w-full" onValueChange={handleTabChange}>
                     <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="camera" disabled={isLoading || noCredits}>
+                    <TabsTrigger value="camera" disabled={isLoading || !hasEnoughDiamonds}>
                         <Camera className="mr-2 h-4 w-4" />
                         {t('feedbackTool.tabs.camera')}
                     </TabsTrigger>
-                    <TabsTrigger value="upload" disabled={isLoading || noCredits}>
+                    <TabsTrigger value="upload" disabled={isLoading || !hasEnoughDiamonds}>
                         <Upload className="mr-2 h-4 w-4" />
                         {t('feedbackTool.tabs.upload')}
                     </TabsTrigger>
@@ -377,7 +378,7 @@ function FeedbackToolContent() {
                         </Alert>
                     )}
                     <div className="mt-4 flex gap-4">
-                        <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-full" disabled={isLoading || noCredits || !hasCameraPermission}>
+                        <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-full" disabled={isLoading || !hasEnoughDiamonds || !hasCameraPermission}>
                         {isRecording ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2" />}
                         {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
                         </Button>
@@ -399,12 +400,12 @@ function FeedbackToolContent() {
                             <>
                                 <Upload className="h-12 w-12 text-muted-foreground" />
                                 <p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.upload.description')}</p>
-                                <Button variant="link" size="sm" className="mt-1" onClick={() => fileInputRef.current?.click()} disabled={isLoading || noCredits}>
+                                <Button variant="link" size="sm" className="mt-1" onClick={() => fileInputRef.current?.click()} disabled={isLoading || !hasEnoughDiamonds}>
                                     {t('feedbackTool.upload.selectFile')}
                                 </Button>
                             </>
                             )}
-                            <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={isLoading || noCredits} />
+                            <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={isLoading || !hasEnoughDiamonds} />
                         </div>
                     </TabsContent>
                 </Tabs>
@@ -414,9 +415,9 @@ function FeedbackToolContent() {
        <div className="space-y-4 pt-4">
             <Button onClick={handleAnalyze} className="w-full" size="lg" disabled={isAnalyzeButtonDisabled}>
                 <Sparkles className="mr-2" />
-                {t('feedbackTool.buttons.analyze')} ({t('feedbackTool.credits_one')})
+                {t('feedbackTool.buttons.analyze')} ({ANALYSIS_COST} 💎)
             </Button>
-            {noCredits && (
+            {!hasEnoughDiamonds && (
                 <Alert variant="destructive" className="mt-2">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
@@ -440,3 +441,5 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
+
+    

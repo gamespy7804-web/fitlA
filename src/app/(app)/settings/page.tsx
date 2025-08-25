@@ -31,7 +31,7 @@ export default function SettingsPage() {
   const { user, signOut, resetAccountData, signInWithGoogle, loading: authLoading } = useAuth();
   const { t, setLocale, locale } = useI18n();
   const router = useRouter();
-  const { feedbackCredits } = useUserData();
+  const { diamonds } = useUserData();
 
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(50);
@@ -150,7 +150,7 @@ export default function SettingsPage() {
                  <span role="img" aria-label="diamond" className='text-2xl'>💎</span>
                  <div>
                     <p className="font-medium">{t('settings.credits.yourBalance')}</p>
-                    <p className="text-2xl font-bold">{feedbackCredits ?? 0}</p>
+                    <p className="text-2xl font-bold">{diamonds ?? 0}</p>
                  </div>
             </div>
             <Button onClick={() => router.push('/store')}>
@@ -283,3 +283,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+    

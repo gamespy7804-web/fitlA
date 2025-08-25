@@ -19,7 +19,7 @@ interface UserDataContextType {
     completedWorkouts: CompletedWorkout[] | null;
     detailedWorkoutLogs: DetailedWorkoutLog[] | null;
     pendingFeedback: string[] | null;
-    feedbackCredits: number | null;
+    diamonds: number | null;
     triviaHistory: TriviaHistoryItem[] | null;
     quizHistory: QuizHistoryItem[] | null;
 
@@ -32,9 +32,9 @@ interface UserDataContextType {
     addPendingFeedback: (exercise: string) => void;
     removePendingFeedback: (exercise: string) => void;
 
-    setInitialFeedbackCredits: (amount: number) => void;
-    consumeFeedbackCredit: () => void;
-    addFeedbackCredits: (amount: number) => void;
+    setInitialDiamonds: (amount: number) => void;
+    consumeDiamonds: (amount: number) => void;
+    addDiamonds: (amount: number) => void;
 
     updateTriviaHistory: (sessionHistory: TriviaHistoryItem[]) => void;
     updateQuizHistory: (sessionHistory: QuizHistoryItem[]) => void;
@@ -81,7 +81,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [completedWorkouts, setCompletedWorkoutsState] = useState<CompletedWorkout[] | null>(null);
     const [detailedWorkoutLogs, setDetailedWorkoutLogsState] = useState<DetailedWorkoutLog[] | null>(null);
     const [pendingFeedback, setPendingFeedbackState] = useState<string[] | null>(null);
-    const [feedbackCredits, setFeedbackCreditsState] = useState<number | null>(null);
+    const [diamonds, setDiamondsState] = useState<number | null>(null);
     const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
 
@@ -92,7 +92,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setCompletedWorkoutsState(loadFromLocalStorage('completedWorkouts', []));
         setDetailedWorkoutLogsState(loadFromLocalStorage('detailedWorkoutLogs', []));
         setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
-        setFeedbackCreditsState(loadFromLocalStorage('feedbackCredits', 0));
+        setDiamondsState(loadFromLocalStorage('diamonds', 0));
         setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
         setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         setLoading(false);
@@ -106,7 +106,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             setCompletedWorkoutsState(loadFromLocalStorage('completedWorkouts', []));
             setDetailedWorkoutLogsState(loadFromLocalStorage('detailedWorkoutLogs', []));
             setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
-            setFeedbackCreditsState(loadFromLocalStorage('feedbackCredits', 0));
+            setDiamondsState(loadFromLocalStorage('diamonds', 0));
             setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
             setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         };
@@ -156,22 +156,22 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         saveToLocalStorage('pendingFeedbackExercises', updated);
     }, [pendingFeedback]);
 
-    const setInitialFeedbackCredits = useCallback((amount: number) => {
-        setFeedbackCreditsState(amount);
-        saveToLocalStorage('feedbackCredits', amount);
+    const setInitialDiamonds = useCallback((amount: number) => {
+        setDiamondsState(amount);
+        saveToLocalStorage('diamonds', amount);
     }, []);
     
-    const consumeFeedbackCredit = useCallback(() => {
-        const newCredits = Math.max(0, (feedbackCredits ?? 0) - 1);
-        setFeedbackCreditsState(newCredits);
-        saveToLocalStorage('feedbackCredits', newCredits);
-    }, [feedbackCredits]);
+    const consumeDiamonds = useCallback((amount: number) => {
+        const newDiamonds = Math.max(0, (diamonds ?? 0) - amount);
+        setDiamondsState(newDiamonds);
+        saveToLocalStorage('diamonds', newDiamonds);
+    }, [diamonds]);
 
-    const addFeedbackCredits = useCallback((amount: number) => {
-        const newCredits = (feedbackCredits ?? 0) + amount;
-        setFeedbackCreditsState(newCredits);
-        saveToLocalStorage('feedbackCredits', newCredits);
-    }, [feedbackCredits]);
+    const addDiamonds = useCallback((amount: number) => {
+        const newDiamonds = (diamonds ?? 0) + amount;
+        setDiamondsState(newDiamonds);
+        saveToLocalStorage('diamonds', newDiamonds);
+    }, [diamonds]);
 
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
         const updated = [...(triviaHistory ?? []), ...sessionHistory];
@@ -188,7 +188,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const resetAllData = useCallback(() => {
         const keys = [
             'onboardingComplete', 'workoutRoutine', 'completedWorkouts', 
-            'detailedWorkoutLogs', 'pendingFeedbackExercises', 'feedbackCredits',
+            'detailedWorkoutLogs', 'pendingFeedbackExercises', 'diamonds',
             'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour'
         ];
         keys.forEach(key => localStorage.removeItem(key));
@@ -198,7 +198,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setCompletedWorkoutsState([]);
         setDetailedWorkoutLogsState([]);
         setPendingFeedbackState([]);
-        setFeedbackCreditsState(0);
+        setDiamondsState(0);
         setTriviaHistoryState([]);
         setQuizHistoryState([]);
     }, []);
@@ -211,7 +211,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         completedWorkouts,
         detailedWorkoutLogs,
         pendingFeedback,
-        feedbackCredits,
+        diamonds,
         triviaHistory,
         quizHistory,
         saveWorkoutRoutine,
@@ -221,9 +221,9 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setOnboardingComplete,
         addPendingFeedback,
         removePendingFeedback,
-        setInitialFeedbackCredits,
-        consumeFeedbackCredit,
-        addFeedbackCredits,
+        setInitialDiamonds,
+        consumeDiamonds,
+        addDiamonds,
         updateTriviaHistory,
         updateQuizHistory,
         resetAllData,
@@ -239,3 +239,5 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
+
+    
