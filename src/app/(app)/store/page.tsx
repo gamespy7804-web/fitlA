@@ -54,12 +54,14 @@ export default function StorePage() {
     ]
 
     const handlePurchase = (credits: number) => {
+        // --- SIMULACIÓN DE PAGO ---
+        // En una aplicación real, aquí iría la lógica para redirigir a una pasarela de pago como Stripe.
+        // La función addFeedbackCredits() solo se llamaría después de que el pago sea confirmado por el servidor.
         addFeedbackCredits(credits);
         toast({
             title: t('store.purchaseSuccess.title'),
             description: t('store.purchaseSuccess.description', { count: credits }),
         });
-        // Here you would integrate with a real payment provider like Stripe
     };
 
     return (
