@@ -26,7 +26,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
   const { workoutRoutine } = useUserData();
   const pathname = usePathname();
-  const isGamePage = pathname === '/games';
   const isWorkoutPage = pathname === '/workout';
   const audioInitialized = useRef(false);
 
@@ -62,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     updateTheme();
     
-    const shouldPlayMusic = !isGamePage && !isWorkoutPage;
+    const shouldPlayMusic = !isWorkoutPage;
 
     if (shouldPlayMusic && audioInitialized.current) {
       startMusic('main');
@@ -70,12 +69,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       stopMusic();
     }
 
-  }, [pathname, updateTheme, isGamePage, isWorkoutPage]); 
+  }, [pathname, updateTheme, isWorkoutPage]); 
   
   const handleFirstInteraction = () => {
     if (!audioInitialized.current) {
       initializeAudio();
-      const shouldPlayMusic = !isGamePage && !isWorkoutPage;
+      const shouldPlayMusic = !isWorkoutPage;
       if (shouldPlayMusic) {
           startMusic('main');
       }
@@ -99,10 +98,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={cn("h-full w-full", isGamePage ? 'game-theme' : themeClass)}>
+    <div className={cn("h-full w-full", themeClass)}>
         <WelcomeOverlay show={showWelcome} onClick={handleWelcomeClick} />
         <AppShell openChatbot={() => setIsChatbotOpen(true)}>
-          <div id="app-content" className={cn("pb-24", isGamePage ? "" : "p-4 sm:p-6")}>{children}</div>
+          <div id="app-content" className="p-4 sm:p-6 pb-24">{children}</div>
           <BottomNavbar>
             <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
           </BottomNavbar>

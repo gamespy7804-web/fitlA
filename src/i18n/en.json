@@ -25,7 +25,7 @@
       "askAi": "Ask AI",
       "signOut": "Sign Out",
       "analysisCredits": "Analysis credits",
-      "analysisCredits_beta": "Analysis credits. Click to go to the tool."
+      "analysisCredits_beta": "Analysis credits. Click to go to the store."
     },
     "chatbot": {
       "title": "AI Assistant",
@@ -196,8 +196,10 @@
     "feedbackTool": {
       "credits": "Credits",
       "credits_one": "1 Credit",
-      "step1": "Step 1: Choose Exercise",
-      "step2": "Step 2: Record or Upload your Video",
+      "step1": "Step 1: Choose Your Exercise",
+      "step1_description": "Select an exercise from your pending list or type a custom one.",
+      "step2": "Step 2: Provide Your Video",
+      "step2_description": "Record a new video using your camera or upload an existing one.",
       "cameraCard": {
         "title": "AI Form Analysis",
         "description": "Get instant feedback on your technique to maximize results and prevent injuries."
@@ -219,7 +221,8 @@
       "buttons": {
         "record": "Record",
         "stop": "Stop",
-        "analyze": "Analyze Video"
+        "analyze": "Analyze Video",
+        "analyzeAnother": "Analyze Another Video"
       },
       "cameraError": {
         "title": "Camera Error",
@@ -243,12 +246,14 @@
       "feedbackCard": {
         "title": "AI Feedback",
         "description": "Instant analysis of your form.",
-        "loading": "Analyzing your form...",
+        "loading": "Analyzing your form, this may take a moment...",
+        "loadingDescription": "The AI is reviewing every frame to give you the best possible feedback.",
         "prompt": "Complete the steps to get an analysis of your technique.",
         "allGood": {
             "title": "Perfect Technique!",
             "description": "Our AI found no errors in your execution. Keep up the great work!"
-        }
+        },
+        "resultsFor": "Results for:"
       }
     },
     "gamesPage": {

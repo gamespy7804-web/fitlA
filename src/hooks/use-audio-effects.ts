@@ -38,8 +38,8 @@ const handleVisibilityChange = () => {
     } else {
         if (musicWasPlayingBeforeHidden) {
             // Only resume if music was playing and we are not on a page that should be silent
-            const isGamePage = window.location.pathname.includes('/games');
-            if (!isGamePage) {
+            const isWorkoutPage = window.location.pathname.includes('/workout');
+            if (!isWorkoutPage) {
                 audioContext.resume();
             }
         }
@@ -92,7 +92,7 @@ const loadMusicBuffer = async (type: MusicType): Promise<AudioBuffer | null> => 
         return null;
     }
 
-    const musicFile = type === 'main' ? '/sounds/music-2.mp3' : '/sounds/music-1.mp3';
+    const musicFile = type === 'main' ? '/sounds/music-1.mp3' : '/sounds/music-2.mp3';
 
     try {
         const response = await fetch(musicFile);

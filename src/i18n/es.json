@@ -25,7 +25,7 @@
       "askAi": "Pregúntale a la IA",
       "signOut": "Cerrar sesión",
       "analysisCredits": "Créditos de análisis",
-      "analysisCredits_beta": "Créditos de análisis. Haz clic para ir a la herramienta."
+      "analysisCredits_beta": "Créditos de análisis. Haz clic para ir a la tienda."
     },
     "chatbot": {
       "title": "Asistente de IA",
@@ -196,8 +196,10 @@
     "feedbackTool": {
       "credits": "Créditos",
       "credits_one": "1 Crédito",
-      "step1": "Paso 1: Elige el Ejercicio",
-      "step2": "Paso 2: Graba o Sube tu Video",
+      "step1": "Paso 1: Elige tu Ejercicio",
+      "step1_description": "Selecciona un ejercicio de tu lista de pendientes o escribe uno personalizado.",
+      "step2": "Paso 2: Proporciona tu Video",
+      "step2_description": "Graba un nuevo video usando tu cámara o sube uno ya existente.",
       "cameraCard": {
         "title": "Análisis de Forma con IA",
         "description": "Recibe una corrección instantánea de tu técnica para maximizar resultados y prevenir lesiones."
@@ -219,7 +221,8 @@
       "buttons": {
         "record": "Grabar",
         "stop": "Detener",
-        "analyze": "Analizar Video"
+        "analyze": "Analizar Video",
+        "analyzeAnother": "Analizar otro video"
       },
       "cameraError": {
         "title": "Error de Cámara",
@@ -243,12 +246,14 @@
       "feedbackCard": {
         "title": "Feedback de IA",
         "description": "Análisis instantáneo de tu forma.",
-        "loading": "Analizando tu forma...",
+        "loading": "Analizando tu forma, esto puede tardar un momento...",
+        "loadingDescription": "La IA está revisando cada fotograma para darte el mejor feedback posible.",
         "prompt": "Completa los pasos anteriores para obtener un análisis de tu técnica.",
         "allGood": {
             "title": "¡Técnica Perfecta!",
             "description": "Nuestra IA no ha encontrado errores en tu ejecución. ¡Sigue así, gran trabajo!"
-        }
+        },
+        "resultsFor": "Resultados para:"
       }
     },
     "gamesPage": {

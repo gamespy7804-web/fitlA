@@ -22,6 +22,7 @@ export type RealTimeFeedbackInput = z.infer<typeof RealTimeFeedbackInputSchema>;
 const FeedbackPointSchema = z.object({
     point: z.string().describe('A one-sentence description of the mistake or point of feedback (e.g., "Your hips are rising faster than your chest.")'),
     correction: z.string().describe('A brief explanation of why this is a problem and a clear, actionable instruction on how to fix it (e.g., "This puts strain on your lower back. Focus on lifting your chest and hips at the same rate.")'),
+    summary: z.string().describe("A very short (2-3 word) summary of the feedback point. E.g., 'Hip Rise', 'Back Arch', 'Knee Valgus'"),
 });
 
 const RealTimeFeedbackOutputSchema = z.object({
@@ -45,8 +46,9 @@ Your response MUST be in the user's selected language: {{language}}.
 1.  **Analyze the Video:** Watch the user's video performing the {{{exerciseType}}} exercise.
 2.  **Identify Specific Errors:** Identify up to 3 of the MOST IMPORTANT, SPECIFIC errors in the user's form that you can clearly see in the video. Do NOT give generic advice. If the form is excellent, set 'isCorrect' to true and leave the 'feedback' array empty.
 3.  **Structure the Feedback:** For EACH error identified, you MUST provide:
-    a.  **point:** A clear, one-sentence description of the mistake. (e.g., "Your hips are rising faster than your chest.")
-    b.  **correction:** A brief explanation of why this is a problem AND a clear, actionable instruction on how to fix it. (e.g., "This puts excessive strain on your lower back. Focus on lifting your chest and hips at the same rate.")
+    a.  **summary:** A very short, 2-3 word title for the error (e.g., "Hip Rise", "Knees Inward").
+    b.  **point:** A clear, one-sentence description of the mistake. (e.g., "Your hips are rising faster than your chest.")
+    c.  **correction:** A brief explanation of why this is a problem AND a clear, actionable instruction on how to fix it. (e.g., "This puts excessive strain on your lower back. Focus on lifting your chest and hips at the same rate.")
 4.  **Tone:** Be direct, encouraging, and clear. Address the user in the second person ("you/your").
 5.  **No Generic Advice:** Do NOT include general advice like "warm up properly," "stay hydrated," or "consult a doctor" unless it's directly related to a specific, visible error. The feedback must be 100% based on the provided video.
 
