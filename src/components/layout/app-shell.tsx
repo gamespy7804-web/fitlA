@@ -37,7 +37,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   }
 
   const handleCreditsClick = () => {
-    router.push('/feedback');
+    router.push('/store');
   }
 
   return (
