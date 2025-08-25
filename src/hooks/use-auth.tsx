@@ -14,7 +14,6 @@ import {
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from './use-toast';
-import { useUserData } from './use-user-data';
 
 interface AuthContextType {
   user: User | null;
@@ -31,9 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
-  const { resetAllData } = useUserData();
-
-
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -75,10 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await firebaseSignOut(auth);
       // The onAuthStateChanged listener will handle signing in a new anonymous user.
-      // We still clean up so the new anonymous user starts fresh.
-      resetAllData();
       toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso ya no está sincronizado." });
-      router.push('/'); // Go to home to restart the flow
+      window.location.href = '/'; // Go to home to restart the flow
     } catch (error) {
       console.error('Error signing out', error);
       toast({ variant: "destructive", title: "Error", description: "No se pudo cerrar la sesión." });
@@ -87,8 +82,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetAccountData = async () => {
     const wasRealUser = auth.currentUser && !auth.currentUser.isAnonymous;
-    resetAllData();
     
+    // Clear all localStorage data
+    localStorage.removeItem('onboardingComplete');
+    localStorage.removeItem('workoutRoutine');
+    localStorage.removeItem('completedWorkouts');
+    localStorage.removeItem('detailedWorkoutLogs');
+    localStorage.removeItem('pendingFeedbackExercises');
+    localStorage.removeItem('feedbackCredits');
+    localStorage.removeItem('triviaHistory');
+    localStorage.removeItem('quizHistory');
+    localStorage.removeItem('hasSeenOnboardingTour');
+
     if (wasRealUser) {
       await firebaseSignOut(auth);
     }
