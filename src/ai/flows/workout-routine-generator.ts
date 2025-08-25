@@ -63,7 +63,7 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
     -   Set 'requiresFeedback' to true ONLY for complex, high-injury-risk, free-weight exercises (e.g., Squats, Deadlifts, Bench Press, Olympic Lifts). It should be false for machine exercises, bodyweight exercises, or simple movements.
     -   Set 'requiresWeight' to true for any exercise that requires external weights (dumbbells, barbells, machines) and false for bodyweight or cardio exercises.
 6.  **YouTube Query Generation**: For EACH exercise, generate a concise and effective 'youtubeQuery' in the user's specified language ({{language}}) that exactly matches the exercise name to find a high-quality tutorial video. Example for squats in Spanish: "como hacer sentadillas correctamente". If the exercise name is "Tuck Planche", the query must be "como hacer tuck planche".
-7.  **Specific Exercise Naming**: Each exercise 'name' MUST be specific and singular (e.g., "Barbell Squat", "Tuck Planche", "Diamond Push-up"). Do NOT use generic category names or list multiple progressions in one name (e.g., do NOT use "Squat Progressions (Goblet, Barbell)" or "Push-ups (regular, diamond)"). Be decisive and choose ONE specific exercise appropriate for the user's level.
+7.  **Specific Exercise Naming**: Each exercise 'name' MUST be specific and singular (e.g., "Barbell Squat", "Tuck Planche", "Diamond Push-up"). Do NOT use generic category names or list multiple progressions in one name. For example, do NOT use "Front Lever Progressions". Instead, you must choose ONE specific progression suitable for the user, like "Tuck Front Lever". Be decisive.
 8.  **Safety First**: Prioritize safety and proper form. The routines should be designed to minimize injury risk.
   `,
 });
