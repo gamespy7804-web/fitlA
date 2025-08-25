@@ -4,15 +4,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/i18n/client";
-import { Check, Star, Sparkles } from "lucide-react";
+import { Check, Star, Sparkles, ArrowLeft } from "lucide-react";
 import { useUserData } from "@/hooks/use-user-data";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ShoppingBagIcon } from "@/components/icons";
+import { useRouter } from "next/navigation";
 
 export default function StorePage() {
     const { t } = useI18n();
     const { toast } = useToast();
+    const router = useRouter();
     const { addFeedbackCredits } = useUserData();
 
     const creditPackages = [
@@ -63,11 +65,16 @@ export default function StorePage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
-                    <ShoppingBagIcon className="h-8 w-8 text-primary" />
-                    {t('store.title')}
-                </h1>
-                <p className="text-muted-foreground">
+                 <div className="flex items-center gap-4 mb-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft />
+                    </Button>
+                    <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
+                        <ShoppingBagIcon className="h-8 w-8 text-primary" />
+                        {t('store.title')}
+                    </h1>
+                 </div>
+                <p className="text-muted-foreground pl-14">
                     {t('store.description')}
                 </p>
             </div>
