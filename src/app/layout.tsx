@@ -23,12 +23,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
         {/* 
-          TODO: Reemplaza "ca-pub-XXXXXXXXXXXXXXXX" con tu ID de editor de AdSense.
-          Este script es necesario para que AdSense verifique y active tu sitio.
+          Importante para AdSense: 
+          1. Debes usar un dominio personalizado (ej. www.tu-app.com) para que AdSense apruebe tu sitio. No aceptan URLs de plataformas de desarrollo.
+          2. Reemplaza "ca-pub-XXXXXXXXXXXXXXXX" con tu propio ID de editor de AdSense que obtendrás de tu cuenta de AdSense.
         */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9675156642757442"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
