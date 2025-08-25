@@ -42,7 +42,7 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
   
   const allSetsInExercise = exercise.sets.length;
   const isLastSet = setIndex === allSetsInExercise - 1;
-  const isTimedExercise = exercise.originalExercise.reps.includes('seg');
+  const isTimedExercise = exercise.originalExercise.reps.toLowerCase().includes('sec');
 
   const isSetDataEntered = () => {
     // For timed exercises, we only need a value greater than 0 in reps (seconds)
@@ -128,7 +128,11 @@ export function WorkoutExerciseCard({ exercise, set, setIndex, onSetChange, onSe
             <div>
               <Label htmlFor={`reps-${setIndex}`} className="sr-only">{isTimedExercise ? t('workoutExerciseCard.secondsLabel') : t('workoutExerciseCard.repsLabel')}</Label>
               <div className="relative">
-                <Repeat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                {isTimedExercise ? (
+                   <Timer className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                ) : (
+                   <Repeat className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                )}
                 <Input
                   id={`reps-${setIndex}`}
                   type="number"
