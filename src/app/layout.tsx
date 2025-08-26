@@ -23,9 +23,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
         {/* 
-          Importante para AdSense: 
-          1. Debes usar un dominio personalizado (ej. www.tu-app.com) para que AdSense apruebe tu sitio. No aceptan URLs de plataformas de desarrollo.
-          2. Reemplaza "ca-pub-XXXXXXXXXXXXXXXX" con tu propio ID de editor de AdSense que obtendrás de tu cuenta de AdSense.
+          PASO FINAL PARA ADSENSE:
+          Una vez que tu dominio personalizado (ej. www.tu-app.com) esté conectado y aprobado por AdSense,
+          debes reemplazar "ca-pub-XXXXXXXXXXXXXXXX" con tu propio ID de editor de AdSense.
+          Este ID lo encontrarás en tu cuenta de AdSense.
         */}
         <Script
           async
