@@ -127,7 +127,7 @@ export default function StorePage() {
                              <Button size="lg" className="w-full" onClick={() => handlePurchase(pkg.credits, pkg.isAd)} variant={pkg.isAd ? 'outline' : 'default'}>
                                 {pkg.isAd ? <Tv className="mr-2"/> : <Sparkles className="mr-2" />}
                                 {pkg.isAd ? t('store.watchAd') : t('store.buyNow')}
-                            </Button>
+                             </Button>
                         </CardContent>
                     </Card>
                 ))}
