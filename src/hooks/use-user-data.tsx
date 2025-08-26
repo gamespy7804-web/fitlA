@@ -239,5 +239,3 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
-
-    
