@@ -23,14 +23,12 @@ export default function RootLayout({
           rel="stylesheet"
         />
         {/* 
-          PASO FINAL PARA ADSENSE:
-          Una vez que tu dominio personalizado (ej. www.tu-app.com) esté conectado y aprobado por AdSense,
-          debes reemplazar "ca-pub-XXXXXXXXXXXXXXXX" con tu propio ID de editor de AdSense.
-          Este ID lo encontrarás en tu cuenta de AdSense.
+          AdSense Code Added.
+          This script connects the application to your AdSense account.
         */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9675156642757442"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
