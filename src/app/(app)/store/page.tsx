@@ -112,7 +112,7 @@ export default function StorePage() {
                                  <p className="text-5xl font-bold text-primary flex items-center justify-center gap-2">
                                     <span>💎</span>
                                     <span>{pkg.credits}</span>
-                                </p>
+                                 </p>
                                  <p className="text-lg font-medium text-muted-foreground">{t('store.credits')}</p>
                             </div>
                            
@@ -135,5 +135,3 @@ export default function StorePage() {
         </div>
     )
 }
-
-    
