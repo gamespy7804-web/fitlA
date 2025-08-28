@@ -210,38 +210,34 @@ export default function OnboardingPage() {
                           <FormControl>
                             <RadioGroup
                               onValueChange={(value) => {
-                                field.onChange(value);
-                                handleAutoNext();
+                                if (value !== 'other') {
+                                    field.onChange(value);
+                                    handleAutoNext();
+                                } else {
+                                    field.onChange('');
+                                }
                               }}
                               value={field.value}
-                              className="grid grid-cols-2 gap-4"
+                              className="grid grid-cols-2 md:grid-cols-4 gap-2"
                             >
-                              {(['weightlifting', 'calisthenics', 'running', 'yoga'] as const).map(option => (
+                              {(['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const).map(option => (
                                 <FormItem key={option}>
                                   <FormControl>
                                     <RadioGroupItem value={option} id={option} className="sr-only" />
                                   </FormControl>
-                                  <Label htmlFor={option} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", field.value === option && "border-primary")}>
+                                  <Label 
+                                    htmlFor={option} 
+                                    className={cn(
+                                        "flex h-20 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-center text-sm", 
+                                        field.value === option && "border-primary",
+                                        option === 'other' && "col-span-2 md:col-span-4"
+                                        )}>
                                     {t(`onboarding.questions.sport.options.${option}`)}
                                   </Label>
                                 </FormItem>
                               ))}
                             </RadioGroup>
                           </FormControl>
-                           <FormField
-                              control={form.control}
-                              name="sport"
-                              render={({ field: otherField }) => (
-                                <FormControl>
-                                    <Input 
-                                        className={cn(isOtherSport ? "opacity-100" : "opacity-0 h-0 p-0 border-0")}
-                                        placeholder={t('onboarding.questions.sport.placeholder')} 
-                                        {...otherField}
-                                        onFocus={() => otherField.onChange('other')}
-                                    />
-                                </FormControl>
-                              )}
-                            />
                           <FormMessage className="text-center"/>
                         </FormItem>
                       )}
@@ -416,3 +412,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    

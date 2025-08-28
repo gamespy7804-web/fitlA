@@ -385,10 +385,14 @@
           "label": "What is your main sport or activity?", 
           "placeholder": "e.g., Soccer, Crossfit",
           "options": {
-            "weightlifting": "Weightlifting",
+            "homeWorkout": "Home Workout",
+            "gym": "Gym",
             "calisthenics": "Calisthenics",
             "running": "Running",
-            "yoga": "Yoga"
+            "boxing": "Boxing",
+            "soccer": "Soccer",
+            "volleyball": "Volleyball",
+            "other": "Other (Specify)"
           }
         },
         "goals": { "label": "What are your main goals?", "placeholder": "e.g., Increase vertical jump, run a 5k" },
@@ -564,3 +568,5 @@
     }
   }
 }
+
+    

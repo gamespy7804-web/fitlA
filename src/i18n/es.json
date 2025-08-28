@@ -385,10 +385,14 @@
           "label": "¿Cuál es tu deporte o actividad principal?", 
           "placeholder": "ej., Fútbol, Crossfit",
           "options": {
-            "weightlifting": "Halterofilia",
+            "homeWorkout": "Entrenamiento en Casa",
+            "gym": "Gimnasio",
             "calisthenics": "Calistenia",
             "running": "Running",
-            "yoga": "Yoga"
+            "boxing": "Boxeo",
+            "soccer": "Fútbol",
+            "volleyball": "Voley",
+            "other": "Otro (Especificar)"
           }
         },
         "goals": { "label": "¿Cuáles son tus metas principales?", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
@@ -564,3 +568,5 @@
     }
   }
 }
+
+    
