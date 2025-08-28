@@ -380,7 +380,6 @@
     "onboarding": {
       "title": "Welcome to workout IA",
       "description": "Let's personalize your fitness journey.",
-      "step": "Step {{step}} of 2",
       "questions": {
         "sport": { 
           "label": "What is your main sport or activity?", 
@@ -389,18 +388,20 @@
             "weightlifting": "Weightlifting",
             "calisthenics": "Calisthenics",
             "running": "Running",
-            "yoga": "Yoga",
-            "other": "Other"
+            "yoga": "Yoga"
           }
         },
         "goals": { "label": "What are your main goals?", "placeholder": "e.g., Increase vertical jump, run a 5k" },
         "fitnessLevel": { 
-          "label": "How long have you been training?",
+          "label": "What's your experience level?",
           "options": {
-            "beginner": "Less than 6 months",
-            "intermediate": "6 months to 2 years",
-            "advanced": "More than 2 years"
+            "beginner": "Beginner (0-6 months)",
+            "intermediate": "Intermediate (6 mo - 2 yr)",
+            "advanced": "Advanced (2+ years)"
           }
+        },
+        "details": {
+          "label": "Tell us a bit more about you"
         },
         "age": {
           "label": "Age",
@@ -419,8 +420,11 @@
             "other": "Other"
           }
         },
-        "trainingDays": { "label": "How many days a week can you train?", "placeholder": "e.g. 3" },
-        "trainingDuration": { "label": "How much time per session (minutes)?", "placeholder": "e.g. 60" }
+        "availability": {
+            "label": "What is your availability?"
+        },
+        "trainingDays": { "label": "Days per week?", "placeholder": "e.g. 3" },
+        "trainingDuration": { "label": "Minutes per session?", "placeholder": "e.g. 60" }
       },
       "buttons": {
         "back": "Back",
