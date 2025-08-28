@@ -14,6 +14,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   Form,
@@ -32,13 +33,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useUserData } from '@/hooks/use-user-data';
 import { useAuth } from '@/hooks/use-auth';
+import { Progress } from '@/components/ui/progress';
 
 // Zod schema creator function to allow for dynamic error messages from i18n
 const createFormSchema = (t: (key: string) => string) => z.object({
@@ -52,13 +54,23 @@ const createFormSchema = (t: (key: string) => string) => z.object({
     gender: z.enum(['male', 'female', 'other'], {required_error: t('onboarding.validation.gender.required')})
 });
 
+const steps = [
+  { id: 'sport', fields: ['sport'] },
+  { id: 'goals', fields: ['goals'] },
+  { id: 'fitnessLevel', fields: ['fitnessLevel'] },
+  { id: 'details', fields: ['age', 'weight', 'gender'] },
+  { id: 'availability', fields: ['trainingDays', 'trainingDuration'] },
+] as const;
+
 
 export default function OnboardingPage() {
   const { t, locale } = useI18n();
   const { user, loading: authLoading } = useAuth();
   const { setOnboardingComplete, saveWorkoutRoutine, setInitialDiamonds } = useUserData();
 
+  const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [direction, setDirection] = useState(1);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -71,7 +83,7 @@ export default function OnboardingPage() {
       goals: '',
       trainingDays: 3,
       trainingDuration: 60,
-      fitnessLevel: 'beginner',
+      fitnessLevel: undefined,
       age: undefined,
       weight: undefined,
       gender: undefined,
@@ -82,6 +94,22 @@ export default function OnboardingPage() {
     control: form.control,
     name: 'sport'
   });
+  const isOtherSport = sportValue === 'other';
+
+
+  const nextStep = async () => {
+    const fieldsToValidate = steps[currentStep].fields;
+    const isValid = await form.trigger(fieldsToValidate as any);
+    if (isValid) {
+      setDirection(1);
+      setCurrentStep(prev => prev + 1);
+    }
+  }
+
+  const prevStep = () => {
+    setDirection(-1);
+    setCurrentStep(prev => prev - 1);
+  }
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
@@ -117,38 +145,58 @@ export default function OnboardingPage() {
     );
   }
 
-  const isOtherSport = sportValue === 'other';
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0,
+    }),
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="font-headline text-3xl">{t('onboarding.title')}</CardTitle>
-          <CardDescription>{t('onboarding.description')}</CardDescription>
+      <Card className="w-full max-w-lg overflow-hidden">
+        <CardHeader>
+          <CardTitle className="font-headline text-3xl text-center">{t('onboarding.title')}</CardTitle>
+          <CardDescription className="text-center">{t('onboarding.description')}</CardDescription>
+          <Progress value={((currentStep + 1) / steps.length) * 100} className="mt-4" />
         </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-                <AnimatePresence mode="wait">
-                 <motion.div
-                    key="onboarding-form"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <FormField
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+            <CardContent className="min-h-[350px]">
+              <AnimatePresence initial={false} custom={direction} mode="wait">
+                <motion.div
+                  key={currentStep}
+                  custom={direction}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className="space-y-6"
+                >
+                  {/* Step 1: Sport */}
+                  {currentStep === 0 && (
+                     <FormField
                       control={form.control}
                       name="sport"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('onboarding.questions.sport.label')}</FormLabel>
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.sport.label')}</FormLabel>
                           <FormControl>
                             <RadioGroup
                               onValueChange={field.onChange}
                               defaultValue={field.value}
-                              className="flex flex-wrap gap-4"
+                              className="flex flex-wrap gap-4 justify-center pt-4"
                             >
                               <FormItem className="flex items-center space-x-2 space-y-0">
                                 <FormControl>
@@ -182,84 +230,83 @@ export default function OnboardingPage() {
                               </FormItem>
                             </RadioGroup>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-center"/>
+                          {isOtherSport && (
+                            <motion.div
+                                className="pt-4"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <FormControl>
+                                    <Input placeholder={t('onboarding.questions.sport.placeholder')} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </motion.div>
+                          )}
                         </FormItem>
                       )}
                     />
-                    
-                    {isOtherSport && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                             <FormField
-                              control={form.control}
-                              name="sport"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder={t('onboarding.questions.sport.placeholder')} {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                        </motion.div>
-                    )}
-
-
-                    <FormField
+                  )}
+                  {/* Step 2: Goals */}
+                  {currentStep === 1 && (
+                     <FormField
                       control={form.control}
                       name="goals"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('onboarding.questions.goals.label')}</FormLabel>
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.goals.label')}</FormLabel>
                           <FormControl>
-                            <Input placeholder={t('onboarding.questions.goals.placeholder')} {...field} />
+                            <Input className="text-center" placeholder={t('onboarding.questions.goals.placeholder')} {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-center"/>
                         </FormItem>
                       )}
                     />
+                  )}
+                  {/* Step 3: Fitness Level */}
+                  {currentStep === 2 && (
                     <FormField
                       control={form.control}
                       name="fitnessLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
-                            <FormControl>
-                                <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                className="flex flex-wrap gap-4"
-                                >
-                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                    <FormControl>
-                                    <RadioGroupItem value="beginner" id="beginner"/>
-                                    </FormControl>
-                                    <Label htmlFor="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</Label>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                    <FormControl>
-                                    <RadioGroupItem value="intermediate" id="intermediate"/>
-                                    </FormControl>
-                                    <Label htmlFor="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</Label>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-2 space-y-0">
-                                    <FormControl>
-                                    <RadioGroupItem value="advanced" id="advanced"/>
-                                    </FormControl>
-                                    <Label htmlFor="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</Label>
-                                </FormItem>
-                                </RadioGroup>
-                            </FormControl>
-                          <FormMessage />
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col gap-4 items-center pt-4"
+                            >
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="beginner" id="beginner"/>
+                                </FormControl>
+                                <Label htmlFor="beginner">{t('onboarding.questions.fitnessLevel.options.beginner')}</Label>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                <RadioGroupItem value="intermediate" id="intermediate"/>
+                                </FormControl>
+                                <Label htmlFor="intermediate">{t('onboarding.questions.fitnessLevel.options.intermediate')}</Label>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                <RadioGroupItem value="advanced" id="advanced"/>
+                                </FormControl>
+                                <Label htmlFor="advanced">{t('onboarding.questions.fitnessLevel.options.advanced')}</Label>
+                            </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage className="text-center"/>
                         </FormItem>
                       )}
                     />
-                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  )}
+                  {/* Step 4: Details */}
+                  {currentStep === 3 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField
                             control={form.control}
                             name="age"
@@ -309,7 +356,10 @@ export default function OnboardingPage() {
                             )}
                         />
                      </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  )}
+                   {/* Step 5: Availability */}
+                  {currentStep === 4 && (
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="trainingDays"
@@ -337,22 +387,31 @@ export default function OnboardingPage() {
                         )}
                       />
                     </div>
-                 </motion.div>
-                </AnimatePresence>
-
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isLoading} size="lg" className="w-full">
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   <Sparkles className="mr-2" />
-                  {t('onboarding.buttons.generate')}
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </CardContent>
+            <CardFooter className="flex justify-between pt-4">
+                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
+                    <ChevronLeft className="mr-2"/>
+                    {t('onboarding.buttons.back')}
                 </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
+                {currentStep < steps.length - 1 ? (
+                    <Button type="button" onClick={nextStep}>
+                        {t('onboarding.buttons.next')}
+                        <ChevronRight className="ml-2"/>
+                    </Button>
+                ) : (
+                    <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Sparkles className="mr-2" />
+                    {t('onboarding.buttons.generate')}
+                    </Button>
+                )}
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
     </div>
   );
 }
-
-    
