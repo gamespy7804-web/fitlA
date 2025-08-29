@@ -11,6 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { DailyWorkoutSchema, WorkoutRoutineOutputSchema } from './types';
 import type { WorkoutRoutineOutput } from './types';
+import { PhysiqueAnalysisOutputSchema } from './physique-analyst-generator';
 
 
 const WorkoutRoutineInputSchema = z.object({
@@ -24,7 +25,8 @@ const WorkoutRoutineInputSchema = z.object({
   gender: z.string().optional().describe("The user's gender."),
   trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
   trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
+  physiqueAnalysis: PhysiqueAnalysisOutputSchema.optional().describe("An optional analysis of the user's physique, including scores and feedback. This should be used to tailor the routine.")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
 
@@ -51,6 +53,17 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 - Gender: {{{gender}}}
 - Training days per week: {{{trainingDays}}}
 - Training duration per session: {{{trainingDuration}}} minutes
+
+{{#if physiqueAnalysis}}
+**CRITICAL: Physique Analysis Data (Use this to customize the plan):**
+- **Potential Score:** {{physiqueAnalysis.potentialScore}}/10
+- **Body Fat % (est.):** {{physiqueAnalysis.bodyFatPercentage}}%
+- **Symmetry Score:** {{physiqueAnalysis.symmetryScore}}/10
+- **Genetics Score:** {{physiqueAnalysis.geneticsScore}}/10
+- **AI Feedback:** "{{physiqueAnalysis.feedback}}"
+
+Based on this analysis, you MUST tailor the workout plan. For example, if the symmetry score is low due to underdeveloped legs, the routine should include more leg volume. If the feedback mentions weak shoulders, add specific shoulder exercises. Use the feedback as a primary guide for exercise selection and volume distribution.
+{{/if}}
 
 **Action: Generate a full, detailed, structured weekly routine.**
 

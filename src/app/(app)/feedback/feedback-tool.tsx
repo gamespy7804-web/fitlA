@@ -4,6 +4,7 @@
 import { useEffect, useState, useRef, Suspense, useCallback, DragEvent } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { realTimeFeedback, type RealTimeFeedbackOutput } from '@/ai/flows/real-time-feedback-generator';
+import { analyzePhysique, type PhysiqueAnalysisOutput } from '@/ai/flows/physique-analyst-generator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft, Image as ImageIcon, Gauge, Percent, BarChart, BrainCircuit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,8 +25,10 @@ import { useUserData } from '@/hooks/use-user-data';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Progress } from '@/components/ui/progress';
 
 type Step = 'selectExercise' | 'provideVideo' | 'analyzing' | 'showResult';
+type PhysiqueStep = 'upload' | 'analyzing' | 'result';
 
 const stepVariants = {
   hidden: (direction: 'forward' | 'backward') => ({
@@ -62,18 +65,28 @@ function FeedbackToolContent() {
   const [feedback, setFeedback] = useState<RealTimeFeedbackOutput | null>(null);
   const [exercisesForFeedback, setExercisesForFeedback] = useState<string[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
-  const [customExercise, setCustomExercise] = useState<string>('');
+  const [customExercise, setCustomExercise] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean>(true); // Assume true initially to avoid flash of error
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   const [videoToAnalyze, setVideoToAnalyze] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   
+  // Physique analysis state
+  const [physiqueStep, setPhysiqueStep] = useState<PhysiqueStep>('upload');
+  const physiqueFileInputRef = useRef<HTMLInputElement>(null);
+  const [isPhysiqueDragging, setIsPhysiqueDragging] = useState(false);
+  const [physiquePhotoToAnalyze, setPhysiquePhotoToAnalyze] = useState<string | null>(null);
+  const [physiquePhotoUrl, setPhysiquePhotoUrl] = useState<string | null>(null);
+  const [physiqueAnalysis, setPhysiqueAnalysis] = useState<PhysiqueAnalysisOutput | null>(null);
+
+
   const { toast } = useToast();
   
   const exerciseFromParam = searchParams.get('exercise');
-  const ANALYSIS_COST = 10;
-  const hasEnoughDiamonds = (diamonds ?? 0) >= ANALYSIS_COST;
+  const TECHNIQUE_ANALYSIS_COST = 10;
+  const PHYSIQUE_ANALYSIS_COST = 25;
+
 
   useEffect(() => {
     setExercisesForFeedback(pendingFeedback ?? []);
@@ -155,12 +168,12 @@ function FeedbackToolContent() {
   }, [isRecording, recordedChunks]);
 
 
-  const handleAnalyze = async () => {
+  const handleTechniqueAnalyze = async () => {
     setDirection('forward');
     setStep('analyzing');
     
     try {
-      consumeDiamonds(ANALYSIS_COST);
+      consumeDiamonds(TECHNIQUE_ANALYSIS_COST);
       const result: RealTimeFeedbackOutput = await realTimeFeedback({
         videoDataUri: videoToAnalyze!,
         exerciseType: customExercise.trim() || selectedExercise,
@@ -185,6 +198,27 @@ function FeedbackToolContent() {
       setStep('provideVideo');
     }
   };
+  
+  const handlePhysiqueAnalyze = async () => {
+    setPhysiqueStep('analyzing');
+    try {
+      consumeDiamonds(PHYSIQUE_ANALYSIS_COST);
+      const result = await analyzePhysique({
+        photoDataUri: physiquePhotoToAnalyze!,
+        language: locale
+      });
+      setPhysiqueAnalysis(result);
+      setPhysiqueStep('result');
+    } catch (error) {
+      console.error('Error analyzing physique:', error);
+      toast({
+        variant: 'destructive',
+        title: t('feedbackTool.physiqueAnalysis.errors.title'),
+        description: t('feedbackTool.physiqueAnalysis.errors.description'),
+      });
+      setPhysiqueStep('upload');
+    }
+  };
 
   const resetFlow = () => {
     setFeedback(null);
@@ -197,7 +231,7 @@ function FeedbackToolContent() {
     setStep('selectExercise');
   }
 
-  const processFile = (file: File) => {
+  const processVideoFile = (file: File) => {
     if (!file.type.startsWith('video/')) {
         toast({ variant: 'destructive', title: t('feedbackTool.upload.invalidFileType') });
         return;
@@ -218,11 +252,38 @@ function FeedbackToolContent() {
     };
     reader.readAsDataURL(file);
   }
+  
+  const processPhysiqueFile = (file: File) => {
+     if (!file.type.startsWith('image/')) {
+        toast({ variant: 'destructive', title: t('feedbackTool.physiqueAnalysis.upload.invalidFileType') });
+        return;
+    }
+    if (physiquePhotoUrl) {
+      URL.revokeObjectURL(physiquePhotoUrl);
+    }
+    const newUrl = URL.createObjectURL(file);
+    setPhysiquePhotoUrl(newUrl);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUri = e.target?.result as string;
+      if (dataUri) {
+        setPhysiquePhotoToAnalyze(dataUri);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    processFile(file);
+    processVideoFile(file);
+  };
+  
+   const handlePhysiqueFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      processPhysiqueFile(file);
+    }
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -230,8 +291,18 @@ function FeedbackToolContent() {
     e.stopPropagation();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        processFile(e.dataTransfer.files[0]);
+        processVideoFile(e.dataTransfer.files[0]);
         e.dataTransfer.clearData();
+    }
+  };
+  
+  const handlePhysiqueDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsPhysiqueDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processPhysiqueFile(e.dataTransfer.files[0]);
+      e.dataTransfer.clearData();
     }
   };
 
@@ -244,6 +315,16 @@ function FeedbackToolContent() {
         setIsDragging(false);
     }
   };
+  
+  const handlePhysiqueDragEvents = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setIsPhysiqueDragging(true);
+    } else if (e.type === 'dragleave') {
+      setIsPhysiqueDragging(false);
+    }
+  };
 
   const handleTabChange = () => {
     setUploadedVideoUrl(null);
@@ -252,8 +333,134 @@ function FeedbackToolContent() {
   }
   
   const exerciseIsSelected = !!customExercise.trim() || !!selectedExercise;
+  
+  const renderTechniqueAnalysis = () => (
+    <div className="w-full max-w-2xl mx-auto space-y-6">
+      <AnimatePresence mode="wait" custom={direction}>
+        {renderStep()}
+      </AnimatePresence>
+    </div>
+  );
+  
+  const renderPhysiqueAnalysis = () => {
+    const hasEnoughDiamonds = (diamonds ?? 0) >= PHYSIQUE_ANALYSIS_COST;
+    
+    switch (physiqueStep) {
+        case 'upload':
+            return (
+                <motion.div key="physiqueUpload" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                     <Card>
+                        <CardHeader>
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="font-headline">{t('feedbackTool.physiqueAnalysis.step1_title')}</CardTitle>
+                                <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border">
+                                    <span role="img" aria-label="diamond">💎</span>
+                                    <span>{diamonds ?? 0}</span>
+                                </div>
+                            </div>
+                           <CardDescription>{t('feedbackTool.physiqueAnalysis.step1_description')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <div onDrop={handlePhysiqueDrop} onDragOver={handlePhysiqueDragEvents} onDragEnter={handlePhysiqueDragEvents} onDragLeave={handlePhysiqueDragEvents} className={cn("aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed transition-colors", isPhysiqueDragging ? 'border-primary bg-primary/10' : 'border-transparent')}>
+                                {physiquePhotoUrl ? <img src={physiquePhotoUrl} alt={t('feedbackTool.physiqueAnalysis.upload.alt')} className="w-full h-full rounded-md object-contain" /> : (<><ImageIcon className="h-12 w-12 text-muted-foreground" /><p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.physiqueAnalysis.upload.description')}</p><Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()} disabled={!hasEnoughDiamonds}>{t('feedbackTool.physiqueAnalysis.upload.selectFile')}</Button></>)}
+                                <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} disabled={!hasEnoughDiamonds} />
+                            </div>
+                            <div className="mt-6 space-y-4">
+                                <Button onClick={handlePhysiqueAnalyze} className="w-full" size="lg" disabled={!physiquePhotoToAnalyze || !hasEnoughDiamonds}>
+                                    <Sparkles className="mr-2" />
+                                    {t('feedbackTool.physiqueAnalysis.buttons.analyze')} ({PHYSIQUE_ANALYSIS_COST} 💎)
+                                </Button>
+                                {!hasEnoughDiamonds && (
+                                    <Alert variant="destructive">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
+                                        <AlertDescription>
+                                            {t('feedbackTool.noCredits.description')}
+                                            <Button variant="secondary" className="mt-2 w-full" onClick={() => router.push('/store')}>
+                                                <ShoppingBag className="mr-2" /> {t('feedbackTool.noCredits.buyMore')}
+                                            </Button>
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+                            </div>
+                        </CardContent>
+                     </Card>
+                </motion.div>
+            );
+        case 'analyzing':
+            return (
+                 <motion.div key="physiqueAnalyzing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center text-center gap-4 text-primary p-8 h-full min-h-[50vh]">
+                    <Loader2 className="h-16 w-16 animate-spin" />
+                    <h3 className="text-2xl font-bold font-headline">{t('feedbackTool.physiqueAnalysis.loading.title')}</h3>
+                    <p className="text-base text-muted-foreground">{t('feedbackTool.physiqueAnalysis.loading.description')}</p>
+                 </motion.div>
+            );
+        case 'result':
+            const StatCard = ({ icon, title, value, unit, progress, color }: { icon: React.ElementType, title: string, value: number, unit: string, progress: number, color: string }) => (
+                <Card className="p-4">
+                    <div className="flex items-center gap-4">
+                        <icon className={cn("w-8 h-8", color)} />
+                        <div>
+                            <p className="text-sm text-muted-foreground">{title}</p>
+                            <p className="text-2xl font-bold">{value}{unit}</p>
+                        </div>
+                    </div>
+                    <Progress value={progress} className="mt-3 h-2"/>
+                </Card>
+            );
+            return (
+                <motion.div key="physiqueResult" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                                <Sparkles className="text-primary" /> {t('feedbackTool.physiqueAnalysis.results.title')}
+                            </CardTitle>
+                            <CardDescription>{t('feedbackTool.physiqueAnalysis.results.description')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {physiqueAnalysis && (
+                                <>
+                                 <Card className="bg-primary/5 border-primary/20">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center justify-between">
+                                            <span>{t('feedbackTool.physiqueAnalysis.results.averageScore')}</span>
+                                            <span className="text-primary">{physiqueAnalysis.averageScore}/10</span>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Progress value={physiqueAnalysis.averageScore * 10} className="h-3"/>
+                                    </CardContent>
+                                 </Card>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <StatCard icon={Gauge} title={t('feedbackTool.physiqueAnalysis.results.potential')} value={physiqueAnalysis.potentialScore} unit="/10" progress={physiqueAnalysis.potentialScore * 10} color="text-green-500" />
+                                     <StatCard icon={BarChart} title={t('feedbackTool.physiqueAnalysis.results.symmetry')} value={physiqueAnalysis.symmetryScore} unit="/10" progress={physiqueAnalysis.symmetryScore * 10} color="text-blue-500" />
+                                     <StatCard icon={BrainCircuit} title={t('feedbackTool.physiqueAnalysis.results.genetics')} value={physiqueAnalysis.geneticsScore} unit="/10" progress={physiqueAnalysis.geneticsScore * 10} color="text-purple-500" />
+                                     <StatCard icon={Percent} title={t('feedbackTool.physiqueAnalysis.results.bodyFat')} value={physiqueAnalysis.bodyFatPercentage} unit="%" progress={physiqueAnalysis.bodyFatPercentage} color="text-orange-500" />
+                                </div>
+                                
+                                <Card className="bg-muted/50">
+                                    <CardHeader>
+                                        <CardTitle className="text-base">{t('feedbackTool.physiqueAnalysis.results.feedbackTitle')}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">{physiqueAnalysis.feedback}</p>
+                                    </CardContent>
+                                </Card>
+                                </>
+                            )}
+                            <Button onClick={() => setPhysiqueStep('upload')} className="w-full">
+                                {t('feedbackTool.buttons.analyzeAnother')}
+                            </Button>
+                        </CardContent>
+                     </Card>
+                </motion.div>
+            );
+    }
+  }
 
   const renderStep = () => {
+    const hasEnoughDiamondsForTechnique = (diamonds ?? 0) >= TECHNIQUE_ANALYSIS_COST;
     switch (step) {
       case 'selectExercise':
         return (
@@ -311,8 +518,8 @@ function FeedbackToolContent() {
               <CardContent>
                 <Tabs defaultValue="camera" className="w-full" onValueChange={handleTabChange}>
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="camera" disabled={!hasEnoughDiamonds}><Camera className="mr-2 h-4 w-4" />{t('feedbackTool.tabs.camera')}</TabsTrigger>
-                    <TabsTrigger value="upload" disabled={!hasEnoughDiamonds}><Upload className="mr-2 h-4 w-4" />{t('feedbackTool.tabs.upload')}</TabsTrigger>
+                    <TabsTrigger value="camera" disabled={!hasEnoughDiamondsForTechnique}><Camera className="mr-2 h-4 w-4" />{t('feedbackTool.tabs.camera')}</TabsTrigger>
+                    <TabsTrigger value="upload" disabled={!hasEnoughDiamondsForTechnique}><Upload className="mr-2 h-4 w-4" />{t('feedbackTool.tabs.upload')}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="camera" className="mt-4">
                     <div className="aspect-video bg-muted rounded-md flex items-center justify-center relative">
@@ -321,7 +528,7 @@ function FeedbackToolContent() {
                     </div>
                     {!hasCameraPermission && <Alert variant="destructive" className="mt-4"><AlertTriangle className="h-4 w-4" /><AlertTitle>{t('feedbackTool.cameraError.title')}</AlertTitle><AlertDescription>{t('feedbackTool.cameraError.description')}</AlertDescription></Alert>}
                     <div className="mt-4 flex gap-4">
-                      <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-full" disabled={!hasEnoughDiamonds || !hasCameraPermission}>
+                      <Button onClick={isRecording ? handleStopRecording : handleStartRecording} className="w-full" disabled={!hasEnoughDiamondsForTechnique || !hasCameraPermission}>
                         {isRecording ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Video className="mr-2" />}
                         {isRecording ? t('feedbackTool.buttons.stop') : t('feedbackTool.buttons.record')}
                       </Button>
@@ -329,17 +536,17 @@ function FeedbackToolContent() {
                   </TabsContent>
                   <TabsContent value="upload" className="mt-4">
                     <div onDrop={handleDrop} onDragOver={handleDragEvents} onDragEnter={handleDragEvents} onDragLeave={handleDragEvents} className={cn("aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed transition-colors", isDragging ? 'border-primary bg-primary/10' : 'border-transparent')}>
-                      {uploadedVideoUrl ? <video src={uploadedVideoUrl} controls className="w-full h-full rounded-md" /> : (<><Upload className="h-12 w-12 text-muted-foreground" /><p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.upload.description')}</p><Button variant="link" size="sm" className="mt-1" onClick={() => fileInputRef.current?.click()} disabled={!hasEnoughDiamonds}>{t('feedbackTool.upload.selectFile')}</Button></>)}
-                      <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={!hasEnoughDiamonds} />
+                      {uploadedVideoUrl ? <video src={uploadedVideoUrl} controls className="w-full h-full rounded-md" /> : (<><Upload className="h-12 w-12 text-muted-foreground" /><p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.upload.description')}</p><Button variant="link" size="sm" className="mt-1" onClick={() => fileInputRef.current?.click()} disabled={!hasEnoughDiamondsForTechnique}>{t('feedbackTool.upload.selectFile')}</Button></>)}
+                      <Input ref={fileInputRef} type="file" accept="video/*" className="sr-only" onChange={handleFileChange} disabled={!hasEnoughDiamondsForTechnique} />
                     </div>
                   </TabsContent>
                 </Tabs>
                 <div className="mt-6 space-y-4">
-                    <Button onClick={handleAnalyze} className="w-full" size="lg" disabled={!videoToAnalyze || !hasEnoughDiamonds}>
+                    <Button onClick={handleTechniqueAnalyze} className="w-full" size="lg" disabled={!videoToAnalyze || !hasEnoughDiamondsForTechnique}>
                         <Sparkles className="mr-2" />
-                        {t('feedbackTool.buttons.analyze')} ({ANALYSIS_COST} 💎)
+                        {t('feedbackTool.buttons.analyze')} ({TECHNIQUE_ANALYSIS_COST} 💎)
                     </Button>
-                    {!hasEnoughDiamonds && (
+                    {!hasEnoughDiamondsForTechnique && (
                         <Alert variant="destructive">
                             <AlertTriangle className="h-4 w-4" />
                             <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
@@ -416,10 +623,19 @@ function FeedbackToolContent() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
-      <AnimatePresence mode="wait" custom={direction}>
-        {renderStep()}
-      </AnimatePresence>
+    <div className='w-full max-w-2xl mx-auto'>
+        <Tabs defaultValue="technique" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="technique">{t('feedbackTool.tabs.techniqueAnalysis')}</TabsTrigger>
+                <TabsTrigger value="physique">{t('feedbackTool.tabs.physiqueAnalysis')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="technique" className="mt-6">
+                {renderTechniqueAnalysis()}
+            </TabsContent>
+            <TabsContent value="physique" className="mt-6">
+                {renderPhysiqueAnalysis()}
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }
@@ -431,5 +647,3 @@ export function FeedbackTool() {
     </Suspense>
   );
 }
-
-    

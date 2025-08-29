@@ -189,11 +189,46 @@
       "volumeLabel": "Volumen de Entrenamiento (kg)",
       "durationLabel": "Duración (min)"
     },
-    "feedbackPage": {
-      "title": "Feedback en Tiempo Real",
-      "description": "Usa tu cámara para obtener feedback de tu técnica de ejercicio con IA."
+     "feedbackPage": {
+      "title": "Herramientas de Evaluación IA",
+      "description": "Usa nuestras herramientas de IA para recibir feedback instantáneo de tu técnica y tu físico."
     },
     "feedbackTool": {
+      "tabs": {
+        "techniqueAnalysis": "Análisis de Técnica",
+        "physiqueAnalysis": "Análisis de Físico"
+      },
+      "physiqueAnalysis": {
+        "step1_title": "Paso 1: Sube tu Foto",
+        "step1_description": "Sube una foto de tu físico para el análisis. Asegúrate de tener buena iluminación y una vista clara.",
+        "upload": {
+          "description": "Arrastra una foto aquí o haz clic abajo para seleccionarla.",
+          "selectFile": "Elegir archivo",
+          "invalidFileType": "Tipo de archivo no válido. Por favor, sube una imagen.",
+          "alt": "Foto del físico del usuario"
+        },
+        "buttons": {
+          "analyze": "Analizar Físico"
+        },
+        "loading": {
+            "title": "Analizando tu físico...",
+            "description": "Nuestro entrenador IA está evaluando tu foto para darte un informe detallado."
+        },
+        "results": {
+          "title": "Resultados del Análisis de Físico",
+          "description": "Aquí está la evaluación de nuestro entrenador IA.",
+          "averageScore": "Puntuación General",
+          "potential": "Potencial",
+          "symmetry": "Simetría",
+          "genetics": "Genética (est.)",
+          "bodyFat": "% Grasa Corporal (est.)",
+          "feedbackTitle": "Feedback del Entrenador IA"
+        },
+        "errors": {
+          "title": "Análisis de Físico Fallido",
+          "description": "No se pudo analizar la foto. Por favor, inténtalo de nuevo con una imagen más clara."
+        }
+      },
       "credits": "Diamantes",
       "credits_one": "1 Crédito",
       "step1": "Paso 1: Elige tu Ejercicio",
@@ -204,7 +239,7 @@
         "title": "Análisis de Forma con IA",
         "description": "Recibe una corrección instantánea de tu técnica para maximizar resultados y prevenir lesiones."
       },
-      "tabs": {
+      "tabs_old": {
         "camera": "Cámara en Vivo",
         "upload": "Subir Video"
       },
@@ -383,7 +418,7 @@
       "questions": {
         "sport": { 
           "label": "¿Cuál es tu deporte o actividad principal?", 
-          "placeholder": "ej., Fútbol, Crossfit",
+          "placeholder": "ej., Powerlifting, Crossfit",
           "options": {
             "homeWorkout": "Entrenamiento en Casa",
             "gym": "Gimnasio",
@@ -568,5 +603,3 @@
     }
   }
 }
-
-    

@@ -10,6 +10,7 @@ import '@/ai/flows/workout-routine-generator.ts';
 import '@/ai/flows/adaptive-progression-generator.ts';
 import '@/ai/flows/real-time-feedback-generator.ts';
 import '@/ai/flows/performance-analyst-generator.ts';
+import '@/ai/flows/physique-analyst-generator.ts';
 import '@/ai/flows/chatbot-flow.ts';
 import '@/ai/flows/trivia-generator.ts';
 import '@/ai/flows/multiple-choice-quiz-generator.ts';

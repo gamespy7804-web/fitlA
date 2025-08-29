@@ -190,10 +190,45 @@
       "durationLabel": "Duration (min)"
     },
     "feedbackPage": {
-      "title": "Real-Time Feedback",
-      "description": "Use your camera to get AI feedback on your exercise technique."
+      "title": "AI Evaluation Tools",
+      "description": "Use our AI tools to get instant feedback on your technique and physique."
     },
     "feedbackTool": {
+      "tabs": {
+        "techniqueAnalysis": "Technique Analysis",
+        "physiqueAnalysis": "Physique Analysis"
+      },
+      "physiqueAnalysis": {
+        "step1_title": "Step 1: Upload Your Photo",
+        "step1_description": "Upload a photo of your physique for analysis. Ensure good lighting and a clear view.",
+        "upload": {
+          "description": "Drag a photo here or click below to select it.",
+          "selectFile": "Choose file",
+          "invalidFileType": "Invalid file type. Please upload an image.",
+          "alt": "User's physique photo"
+        },
+        "buttons": {
+          "analyze": "Analyze Physique"
+        },
+        "loading": {
+            "title": "Analyzing your physique...",
+            "description": "Our AI coach is evaluating your photo to provide a detailed report."
+        },
+        "results": {
+          "title": "Physique Analysis Results",
+          "description": "Here is the evaluation from our AI coach.",
+          "averageScore": "Overall Score",
+          "potential": "Potential",
+          "symmetry": "Symmetry",
+          "genetics": "Genetics (est.)",
+          "bodyFat": "Body Fat (est.)",
+          "feedbackTitle": "AI Coach Feedback"
+        },
+        "errors": {
+          "title": "Physique Analysis Failed",
+          "description": "Could not analyze the photo. Please try again with a clearer image."
+        }
+      },
       "credits": "Diamonds",
       "credits_one": "1 Credit",
       "step1": "Step 1: Choose Your Exercise",
@@ -204,7 +239,7 @@
         "title": "AI Form Analysis",
         "description": "Get instant feedback on your technique to maximize results and prevent injuries."
       },
-       "tabs": {
+       "tabs_old": {
         "camera": "Live Camera",
         "upload": "Upload Video"
       },
@@ -383,7 +418,7 @@
       "questions": {
         "sport": { 
           "label": "What is your main sport or activity?", 
-          "placeholder": "e.g., Soccer, Crossfit",
+          "placeholder": "e.g., Powerlifting, Crossfit",
           "options": {
             "homeWorkout": "Home Workout",
             "gym": "Gym",
@@ -568,5 +603,3 @@
     }
   }
 }
-
-    
