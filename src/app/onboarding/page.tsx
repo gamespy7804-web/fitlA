@@ -83,8 +83,8 @@ export default function OnboardingPage() {
     defaultValues: {
       sport: '',
       goals: '',
-      trainingDays: 3,
-      trainingDuration: 60,
+      trainingDays: undefined,
+      trainingDuration: undefined,
       fitnessLevel: undefined,
       age: undefined,
       weight: undefined,
@@ -422,4 +422,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
