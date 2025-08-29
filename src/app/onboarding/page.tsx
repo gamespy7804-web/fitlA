@@ -72,6 +72,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [direction, setDirection] = useState(1);
+  const [selectedSport, setSelectedSport] = useState('');
   const router = useRouter();
   const { toast } = useToast();
 
@@ -91,15 +92,15 @@ export default function OnboardingPage() {
     },
   });
 
-  const sportValue = useWatch({
-    control: form.control,
-    name: 'sport'
-  });
-  const isOtherSport = sportValue === 'other';
-
   const nextStep = async () => {
-    const fieldsToValidate = steps[currentStep].fields;
+    let fieldsToValidate = steps[currentStep].fields;
+    // Special handling for 'other' sport
+    if (currentStep === 0 && selectedSport === 'other') {
+      fieldsToValidate = ['sport'];
+    }
+
     const isValid = await form.trigger(fieldsToValidate as any);
+
     if (isValid) {
       if (currentStep < steps.length - 1) {
         setDirection(1);
@@ -139,16 +140,11 @@ export default function OnboardingPage() {
     }
   };
   
-  const handleAutoNext = async () => {
-    const isAutoNextStep = steps[currentStep].autoNext ?? false;
-    const fieldsToValidate = steps[currentStep].fields;
-    const isStepValid = await form.trigger(fieldsToValidate as any);
-
-    if (isAutoNextStep && isStepValid) {
-        // A small delay to show the selection feedback
-        setTimeout(() => {
-            nextStep();
-        }, 300);
+  const handleAutoNext = (isAuto: boolean) => {
+    if (isAuto) {
+      setTimeout(() => {
+          nextStep();
+      }, 300);
     }
   };
 
@@ -176,6 +172,8 @@ export default function OnboardingPage() {
       opacity: 0,
     }),
   };
+
+  const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -210,18 +208,19 @@ export default function OnboardingPage() {
                           <FormControl>
                             <RadioGroup
                               onValueChange={(value) => {
+                                setSelectedSport(value);
                                 if (value !== 'other') {
-                                    field.onChange(value);
-                                    handleAutoNext();
+                                  field.onChange(value);
+                                  handleAutoNext(true);
                                 } else {
-                                    field.onChange('');
+                                  field.onChange(''); // Clear value to allow custom input
                                 }
                               }}
-                              value={field.value}
+                              value={selectedSport}
                               className="grid grid-cols-2 md:grid-cols-4 gap-2"
                             >
-                              {(['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const).map(option => (
-                                <FormItem key={option}>
+                              {sportOptions.map(option => (
+                                <FormItem key={option} className={cn(option === 'other' && "col-span-2 md:col-span-4")}>
                                   <FormControl>
                                     <RadioGroupItem value={option} id={option} className="sr-only" />
                                   </FormControl>
@@ -229,8 +228,7 @@ export default function OnboardingPage() {
                                     htmlFor={option} 
                                     className={cn(
                                         "flex h-20 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-center text-sm", 
-                                        field.value === option && "border-primary",
-                                        option === 'other' && "col-span-2 md:col-span-4"
+                                        selectedSport === option && "border-primary",
                                         )}>
                                     {t(`onboarding.questions.sport.options.${option}`)}
                                   </Label>
@@ -238,6 +236,18 @@ export default function OnboardingPage() {
                               ))}
                             </RadioGroup>
                           </FormControl>
+                          {selectedSport === 'other' && (
+                             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pt-2">
+                                <FormControl>
+                                    <Input 
+                                      className="text-center text-lg h-12" 
+                                      placeholder={t('onboarding.questions.sport.placeholder')}
+                                      onChange={e => field.onChange(e.target.value)}
+                                      value={field.value}
+                                    />
+                                </FormControl>
+                             </motion.div>
+                          )}
                           <FormMessage className="text-center"/>
                         </FormItem>
                       )}
@@ -271,7 +281,7 @@ export default function OnboardingPage() {
                             <RadioGroup
                                 onValueChange={(value) => {
                                     field.onChange(value);
-                                    handleAutoNext();
+                                    handleAutoNext(true);
                                 }}
                                 value={field.value}
                                 className="flex flex-col gap-4 items-center"
@@ -296,7 +306,7 @@ export default function OnboardingPage() {
                   {/* Step 4: Details */}
                   {currentStep === 3 && (
                     <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label', 'Cuéntanos un poco más sobre ti')}</FormLabel>
+                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <FormField
                                 control={form.control}
@@ -352,7 +362,7 @@ export default function OnboardingPage() {
                    {/* Step 5: Availability */}
                   {currentStep === 4 && (
                      <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label', '¿Cuál es tu disponibilidad?')}</FormLabel>
+                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
@@ -392,12 +402,12 @@ export default function OnboardingPage() {
                     {t('onboarding.buttons.back')}
                 </Button>
                 {currentStep < steps.length - 1 ? (
-                   !steps[currentStep].autoNext && (
+                   (selectedSport === 'other' && currentStep === 0) || !steps[currentStep].autoNext ? (
                     <Button type="button" onClick={nextStep}>
                         {t('onboarding.buttons.next')}
                         <ChevronRight className="ml-2"/>
                     </Button>
-                   )
+                   ) : null
                 ) : (
                     <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -413,4 +423,3 @@ export default function OnboardingPage() {
   );
 }
 
-    
