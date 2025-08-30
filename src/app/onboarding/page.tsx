@@ -351,11 +351,11 @@ export default function OnboardingPage() {
                                     </Button>
                                     <ScrollArea className="h-64">
                                         <div className="space-y-4">
-                                            {Object.entries(equipmentCategories).map(([category, { icon: Icon, items }]) => (
+                                            {Object.entries(equipmentCategories).map(([category, { icon: Icon, items: equipmentItems }]) => (
                                             <div key={category} className="space-y-2">
                                                 <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Icon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                {items.map((item) => (
+                                                {equipmentItems.map((item) => (
                                                     <FormField
                                                         key={item}
                                                         control={form.control}
@@ -459,7 +459,7 @@ export default function OnboardingPage() {
                             <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
                                 <FormControl>
-                                <Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
+                                <Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -472,7 +472,7 @@ export default function OnboardingPage() {
                             <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
                                 <FormControl>
-                                <Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                <Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -510,3 +510,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
