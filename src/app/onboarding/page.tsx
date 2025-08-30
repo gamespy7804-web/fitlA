@@ -352,10 +352,10 @@ export default function OnboardingPage() {
                                     <ScrollArea className="h-64">
                                         <div className="space-y-4">
                                             {Object.entries(equipmentCategories).map(([category, value]) => {
-                                                const Icon = value.icon;
+                                                const CategoryIcon = value.icon;
                                                 return (
                                                     <div key={category} className="space-y-2">
-                                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Icon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
+                                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><CategoryIcon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {value.items.map((item) => (
                                                                 <FormField
