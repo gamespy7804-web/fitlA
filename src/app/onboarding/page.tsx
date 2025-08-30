@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane, Barbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -42,12 +42,15 @@ import { useUserData } from '@/hooks/use-user-data';
 import { useAuth } from '@/hooks/use-auth';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Zod schema creator function to allow for dynamic error messages from i18n
 const createFormSchema = (t: (key: string) => string) => z.object({
     sport: z.string().min(1, t('onboarding.validation.sport.min')),
     goals: z.string().min(3, t('onboarding.validation.goals.min')),
     fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required')}),
+    equipment: z.array(z.string()).min(1, t('onboarding.validation.equipment.required')),
     trainingDays: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDays.required')}).int().min(1, t('onboarding.validation.trainingDays.min')).max(7, t('onboarding.validation.trainingDays.max')),
     trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
     age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
@@ -59,6 +62,7 @@ const steps = [
   { id: 'sport', fields: ['sport'], autoNext: true },
   { id: 'goals', fields: ['goals'] },
   { id: 'fitnessLevel', fields: ['fitnessLevel'], autoNext: true },
+  { id: 'equipment', fields: ['equipment'] },
   { id: 'details', fields: ['age', 'weight', 'gender'] },
   { id: 'availability', fields: ['trainingDays', 'trainingDuration'] },
 ] as const;
@@ -83,9 +87,10 @@ export default function OnboardingPage() {
     defaultValues: {
       sport: '',
       goals: '',
-      trainingDays: undefined,
-      trainingDuration: undefined,
+      trainingDays: 3,
+      trainingDuration: 60,
       fitnessLevel: undefined,
+      equipment: [],
       age: undefined,
       weight: undefined,
       gender: undefined,
@@ -93,12 +98,18 @@ export default function OnboardingPage() {
   });
 
   const nextStep = async () => {
-    let fieldsToValidate = steps[currentStep].fields;
-    // Special handling for 'other' sport
-    if (currentStep === 0 && selectedSport === 'other') {
-      fieldsToValidate = ['sport'];
-    }
+    const currentStepInfo = steps[currentStep];
+    const fieldsToValidate = currentStepInfo.fields;
 
+    // Special handling for 'other' sport
+    if (currentStepInfo.id === 'sport' && selectedSport === 'other') {
+      const sportValue = form.getValues('sport');
+      if (!sportValue || sportValue.trim().length < 3) {
+        form.setError('sport', { type: 'manual', message: t('onboarding.validation.sport.min') });
+        return;
+      }
+    }
+    
     const isValid = await form.trigger(fieldsToValidate as any);
 
     if (isValid) {
@@ -175,6 +186,13 @@ export default function OnboardingPage() {
 
   const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
+  const equipmentCategories = {
+    'basics': { icon: Dumbbell, items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
+    'gym': { icon: Barbell, items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
+    'cardio': { icon: HeartPulse, items: ['treadmill', 'stationaryBike', 'elliptical', 'rowingMachine'] },
+    'accessories': { icon: Puzzle, items: ['kettlebell', 'foamRoller'] },
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg overflow-hidden">
@@ -210,7 +228,7 @@ export default function OnboardingPage() {
                               onValueChange={(value) => {
                                 setSelectedSport(value);
                                 if (value !== 'other') {
-                                  field.onChange(value);
+                                  field.onChange(t(`onboarding.questions.sport.options.${value}` as any));
                                   handleAutoNext(true);
                                 } else {
                                   field.onChange(''); // Clear value to allow custom input
@@ -220,7 +238,7 @@ export default function OnboardingPage() {
                               className="grid grid-cols-2 md:grid-cols-4 gap-2"
                             >
                               {sportOptions.map(option => (
-                                <FormItem key={option} className={cn(option === 'other' && "col-span-2 md:col-span-4")}>
+                                <FormItem key={option} className={cn(option === 'other' && "col-span-full")}>
                                   <FormControl>
                                     <RadioGroupItem value={option} id={option} className="sr-only" />
                                   </FormControl>
@@ -236,6 +254,7 @@ export default function OnboardingPage() {
                               ))}
                             </RadioGroup>
                           </FormControl>
+                           <AnimatePresence>
                           {selectedSport === 'other' && (
                              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pt-2">
                                 <FormControl>
@@ -248,6 +267,7 @@ export default function OnboardingPage() {
                                 </FormControl>
                              </motion.div>
                           )}
+                           </AnimatePresence>
                           <FormMessage className="text-center"/>
                         </FormItem>
                       )}
@@ -303,8 +323,75 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 4: Details */}
+                  {/* Step 4: Equipment */}
                   {currentStep === 3 && (
+                    <FormField
+                      control={form.control}
+                      name="equipment"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
+                            <FormControl>
+                                <div className="space-y-4">
+                                     <Button
+                                        type="button"
+                                        variant={form.getValues('equipment').includes('none') ? 'destructive' : 'outline'}
+                                        className="w-full"
+                                        onClick={() => {
+                                            const hasNone = form.getValues('equipment').includes('none');
+                                            if (hasNone) {
+                                                form.setValue('equipment', [], { shouldValidate: true });
+                                            } else {
+                                                form.setValue('equipment', ['none'], { shouldValidate: true });
+                                            }
+                                        }}
+                                    >
+                                        {t('onboarding.questions.equipment.options.none')}
+                                    </Button>
+                                    <ScrollArea className="h-64">
+                                        <div className="space-y-4">
+                                            {Object.entries(equipmentCategories).map(([category, { icon: Icon, items }]) => (
+                                            <div key={category} className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Icon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                {items.map((item) => (
+                                                    <FormField
+                                                        key={item}
+                                                        control={form.control}
+                                                        name="equipment"
+                                                        render={({ field }) => (
+                                                            <Button
+                                                                type="button"
+                                                                variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                className="h-auto py-3 justify-start text-left"
+                                                                onClick={() => {
+                                                                    const currentValues = field.value || [];
+                                                                    const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                    const newValue = withoutNone.includes(item)
+                                                                        ? withoutNone.filter((value) => value !== item)
+                                                                        : [...withoutNone, item];
+                                                                    field.onChange(newValue);
+                                                                }}
+                                                            >
+                                                                {t(`onboarding.questions.equipment.items.${item}`)}
+                                                            </Button>
+                                                        )}
+                                                    />
+                                                ))}
+                                                </div>
+                                            </div>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+                            </FormControl>
+                          <FormMessage className="text-center"/>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {/* Step 5: Details */}
+                  {currentStep === 4 && (
                     <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -315,7 +402,7 @@ export default function OnboardingPage() {
                                     <FormItem>
                                     <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder={t('onboarding.questions.age.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                        <Input type="number" placeholder="25" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -328,7 +415,7 @@ export default function OnboardingPage() {
                                     <FormItem>
                                     <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder={t('onboarding.questions.weight.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                        <Input type="number" placeholder="70" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
                                     </FormControl>
                                     <FormMessage />
                                     </FormItem>
@@ -359,8 +446,8 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                   )}
-                   {/* Step 5: Availability */}
-                  {currentStep === 4 && (
+                   {/* Step 6: Availability */}
+                  {currentStep === 5 && (
                      <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -371,7 +458,7 @@ export default function OnboardingPage() {
                             <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
                                 <FormControl>
-                                <Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
+                                <Input type="number" placeholder="3" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -384,7 +471,7 @@ export default function OnboardingPage() {
                             <FormItem>
                                 <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
                                 <FormControl>
-                                <Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                <Input type="number" placeholder="60" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -402,12 +489,12 @@ export default function OnboardingPage() {
                     {t('onboarding.buttons.back')}
                 </Button>
                 {currentStep < steps.length - 1 ? (
-                   (selectedSport === 'other' && currentStep === 0) || !steps[currentStep].autoNext ? (
+                   ( (selectedSport === 'other' && currentStep === 0) || !steps[currentStep].autoNext) ? (
                     <Button type="button" onClick={nextStep}>
                         {t('onboarding.buttons.next')}
                         <ChevronRight className="ml-2"/>
                     </Button>
-                   ) : null
+                   ) : <div />
                 ) : (
                     <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

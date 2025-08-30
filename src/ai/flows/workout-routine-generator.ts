@@ -20,6 +20,7 @@ const WorkoutRoutineInputSchema = z.object({
     .describe('The user goals, e.g., lose weight, gain muscle, improve endurance'),
   sport: z.string().describe('The sport the user is training for.'),
   fitnessLevel: z.string().describe('The current fitness level of the user (beginner, intermediate, advanced).'),
+  equipment: z.array(z.string()).optional().describe("A list of available equipment for the user. If the list contains only 'none', the user has no equipment."),
   age: z.coerce.number().optional().describe("The user's age."),
   weight: z.coerce.number().optional().describe("The user's weight in kg."),
   gender: z.string().optional().describe("The user's gender."),
@@ -36,7 +37,10 @@ export async function generateWorkoutRoutine(input: WorkoutRoutineInput): Promis
 
 const prompt = ai.definePrompt({
   name: 'workoutRoutinePrompt',
-  input: {schema: WorkoutRoutineInputSchema},
+  input: {schema: z.object({
+    ...WorkoutRoutineInputSchema.shape,
+    equipmentList: z.string(),
+  })},
   output: {schema: WorkoutRoutineOutputSchema},
   prompt: `You are an expert sports trainer and physiologist, specializing in generating safe, effective, and personalized training routines.
 Your responses MUST be in the user's specified language: {{language}}.
@@ -48,11 +52,17 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 - Sport: {{{sport}}}
 - Goals: {{{goals}}}
 - Stated Fitness Level: {{{fitnessLevel}}}
+- Available Equipment: {{{equipmentList}}}
 - Age: {{{age}}}
 - Weight: {{{weight}}} kg
 - Gender: {{{gender}}}
 - Training days per week: {{{trainingDays}}}
 - Training duration per session: {{{trainingDuration}}} minutes
+
+**CRITICAL: Equipment Constraints:**
+- The generated routine MUST ONLY use exercises that can be performed with the user's available equipment.
+- If the equipment list is 'none' or empty, you MUST generate a routine based exclusively on bodyweight exercises.
+- Do NOT suggest exercises that require equipment the user does not have.
 
 {{#if physiqueAnalysis}}
 **CRITICAL: Physique Analysis Data (Use this to customize the plan):**
@@ -69,7 +79,7 @@ Based on this analysis, you MUST tailor the workout plan. For example, if the sy
 
 **CRITICAL INSTRUCTIONS:**
 1.  **Structured Output ONLY**: You MUST generate a detailed plan in the 'structuredRoutine' field. The 'routine' and 'isWeightTraining' fields are deprecated and must not be used.
-2.  **Adherence to Constraints**: The plan MUST strictly adhere to the user's 'trainingDays' and 'trainingDuration'.
+2.  **Adherence to Constraints**: The plan MUST strictly adhere to the user's 'trainingDays', 'trainingDuration', and 'equipment' constraints.
 3.  **Weekly Structure**: Organize the training days logically throughout the week to allow for adequate muscle recovery. Avoid scheduling two high-intensity workouts for the same muscle group on consecutive days.
 4.  **Warm-up and Cool-down**: EACH daily workout MUST begin with a specific 'Warm-up' phase (3-5 minutes of light cardio and dynamic stretches) and end with a 'Cool-down' phase (3-5 minutes of static stretches for the muscles worked). These should be included as exercises in the list. For warm-up/cool-down exercises, set 'reps' to a duration string (e.g., "60 sec").
 5.  **Exercise Selection**:
@@ -88,7 +98,19 @@ const workoutRoutineFlow = ai.defineFlow(
     outputSchema: WorkoutRoutineOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    let equipmentList = 'none';
+    if (input.equipment && input.equipment.length > 0) {
+      if (input.equipment.length === 1 && input.equipment[0] === 'none') {
+        equipmentList = 'none';
+      } else {
+        equipmentList = input.equipment.join(', ');
+      }
+    }
+    
+    const {output} = await prompt({
+      ...input,
+      equipmentList,
+    });
     return output!;
   }
 );

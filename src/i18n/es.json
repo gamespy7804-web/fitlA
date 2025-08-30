@@ -439,6 +439,34 @@
             "advanced": "Avanzado (+2 años)"
           }
         },
+        "equipment": {
+          "label": "¿Qué equipamiento tienes?",
+          "options": {
+            "none": "No tengo ningún equipo"
+          },
+          "categories": {
+            "basics": "Básicos",
+            "gym": "Gimnasio",
+            "cardio": "Cardio",
+            "accessories": "Accesorios"
+          },
+          "items": {
+            "dumbbells": "Mancuernas",
+            "resistanceBands": "Bandas Elásticas",
+            "yogaMat": "Mat de Yoga",
+            "pullUpBar": "Barra de Dominadas",
+            "benchPress": "Banco de Press",
+            "squatRack": "Rack de Sentadillas",
+            "cableMachine": "Máquina de Cables",
+            "legPress": "Prensa de Piernas",
+            "treadmill": "Caminadora",
+            "stationaryBike": "Bicicleta Estática",
+            "elliptical": "Elíptica",
+            "rowingMachine": "Remo",
+            "kettlebell": "Pesa Rusa",
+            "foamRoller": "Rodillo de Espuma"
+          }
+        },
         "details": {
           "label": "Cuéntanos un poco más sobre ti"
         },
@@ -491,6 +519,7 @@
       "validation": {
         "sport": { "min": "El deporte debe tener al menos 3 caracteres." },
         "goals": { "min": "Los objetivos deben tener al menos 3 caracteres." },
+        "equipment": { "required": "Por favor, selecciona tu equipamiento disponible." },
         "age": { "required": "La edad es requerida", "min": "Debes tener al menos 10 años", "max": "Debes tener 100 años o menos" },
         "weight": { "required": "El peso es requerido", "min": "Debe ser al menos 30kg", "max": "Debe ser 200kg o menos" },
         "gender": { "required": "El género es requerido" },
