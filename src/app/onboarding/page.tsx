@@ -87,8 +87,8 @@ export default function OnboardingPage() {
     defaultValues: {
       sport: '',
       goals: '',
-      trainingDays: 3,
-      trainingDuration: 60,
+      trainingDays: undefined,
+      trainingDuration: undefined,
       fitnessLevel: undefined,
       equipment: [],
       age: undefined,
@@ -247,6 +247,7 @@ export default function OnboardingPage() {
                                     className={cn(
                                         "flex h-20 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-center text-sm", 
                                         selectedSport === option && "border-primary",
+                                        option === 'other' && "col-span-2 md:col-span-4",
                                         )}>
                                     {t(`onboarding.questions.sport.options.${option}`)}
                                   </Label>
