@@ -351,37 +351,40 @@ export default function OnboardingPage() {
                                     </Button>
                                     <ScrollArea className="h-64">
                                         <div className="space-y-4">
-                                            {Object.entries(equipmentCategories).map(([category, { icon: Icon, items: equipmentItems }]) => (
-                                            <div key={category} className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Icon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                {equipmentItems.map((item) => (
-                                                    <FormField
-                                                        key={item}
-                                                        control={form.control}
-                                                        name="equipment"
-                                                        render={({ field }) => (
-                                                            <Button
-                                                                type="button"
-                                                                variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                className="h-auto py-3 justify-start text-left"
-                                                                onClick={() => {
-                                                                    const currentValues = field.value || [];
-                                                                    const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                    const newValue = withoutNone.includes(item)
-                                                                        ? withoutNone.filter((value) => value !== item)
-                                                                        : [...withoutNone, item];
-                                                                    field.onChange(newValue);
-                                                                }}
-                                                            >
-                                                                {t(`onboarding.questions.equipment.items.${item}`)}
-                                                            </Button>
-                                                        )}
-                                                    />
-                                                ))}
-                                                </div>
-                                            </div>
-                                            ))}
+                                            {Object.entries(equipmentCategories).map(([category, value]) => {
+                                                const Icon = value.icon;
+                                                return (
+                                                    <div key={category} className="space-y-2">
+                                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Icon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {value.items.map((item) => (
+                                                                <FormField
+                                                                    key={item}
+                                                                    control={form.control}
+                                                                    name="equipment"
+                                                                    render={({ field }) => (
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                            className="h-auto py-3 justify-start text-left"
+                                                                            onClick={() => {
+                                                                                const currentValues = field.value || [];
+                                                                                const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                                const newValue = withoutNone.includes(item)
+                                                                                    ? withoutNone.filter((value) => value !== item)
+                                                                                    : [...withoutNone, item];
+                                                                                field.onChange(newValue);
+                                                                            }}
+                                                                        >
+                                                                            {t(`onboarding.questions.equipment.items.${item}`)}
+                                                                        </Button>
+                                                                    )}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </ScrollArea>
                                 </div>
@@ -510,5 +513,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
