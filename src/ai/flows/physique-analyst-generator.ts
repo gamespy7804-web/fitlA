@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for analyzing a user's physique from a photo.
@@ -7,26 +8,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-
-export const PhysiqueAnalysisInputSchema = z.object({
-  photoDataUri: z
-    .string()
-    .describe(
-      "A photo of the user's physique, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type PhysiqueAnalysisInput = z.infer<typeof PhysiqueAnalysisInputSchema>;
-
-export const PhysiqueAnalysisOutputSchema = z.object({
-  potentialScore: z.number().min(0).max(10).describe("A score from 0 to 10 representing the user's overall muscle-building potential based on their frame and current state."),
-  bodyFatPercentage: z.number().min(0).max(100).describe("An estimated body fat percentage based on visual analysis."),
-  symmetryScore: z.number().min(0).max(10).describe("A score from 0 to 10 evaluating the muscular symmetry and balance between different body parts."),
-  geneticsScore: z.number().min(0).max(10).describe("An estimated score from 0 to 10 for genetic potential, considering factors like muscle insertions and bone structure."),
-  averageScore: z.number().min(0).max(10).describe("The average of the potential, symmetry, and genetics scores."),
-  feedback: z.string().describe("Concise, actionable feedback for the user, highlighting strengths and areas for improvement based on the analysis."),
-});
-export type PhysiqueAnalysisOutput = z.infer<typeof PhysiqueAnalysisOutputSchema>;
+import { PhysiqueAnalysisInputSchema, PhysiqueAnalysisOutputSchema, type PhysiqueAnalysisInput, type PhysiqueAnalysisOutput } from './types';
 
 
 export async function analyzePhysique(input: PhysiqueAnalysisInput): Promise<PhysiqueAnalysisOutput> {

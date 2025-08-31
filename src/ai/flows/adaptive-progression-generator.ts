@@ -8,31 +8,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { WorkoutRoutineOutputSchema } from './types';
-import type { WorkoutRoutineOutput } from './types';
+import { WorkoutRoutineOutputSchema, AdaptiveProgressionInputSchema, type WorkoutRoutineOutput, type AdaptiveProgressionInput } from './types';
 import { i18n } from '@/i18n/server';
-
-const AdaptiveProgressionInputSchema = z.object({
-  trainingData: z
-    .string()
-    .describe(
-      'A JSON string of an array of completed workout logs. Each log contains the exercises, sets, reps, and weight completed by the user.'
-    ),
-  adherence: z
-    .number()
-    .describe('The percentage of workouts completed by the user in the last cycle (e.g., 0.8 for 80%).'),
-  selfReportedFitness: z
-    .string()
-    .describe(
-      'The user\'s self-reported fitness level after the last cycle (e.g., "easy", "just right", "hard").'
-    ),
-  originalRoutine: z.string().describe("The user's original workout routine, used as a baseline for the new progression."),
-  trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train for the new cycle."),
-  trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes for the new cycle."),
-  userFeedback: z.string().optional().describe("Free-text feedback from the user about the last cycle and what they'd like to change."),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type AdaptiveProgressionInput = z.infer<typeof AdaptiveProgressionInputSchema>;
 
 
 export async function adaptiveProgressionGenerator(input: AdaptiveProgressionInput): Promise<WorkoutRoutineOutput> {

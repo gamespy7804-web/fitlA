@@ -8,21 +8,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { PerformanceAnalystInputSchema, PerformanceAnalystOutputSchema, type PerformanceAnalystInput, type PerformanceAnalystOutput } from './types';
 
-const PerformanceAnalystInputSchema = z.object({
-  trainingData: z
-    .string()
-    .describe(
-      'A JSON string of an array of completed workout logs. Each log contains the exercises, sets, reps, and weight completed by the user.'
-    ),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type PerformanceAnalystInput = z.infer<typeof PerformanceAnalystInputSchema>;
-
-const PerformanceAnalystOutputSchema = z.object({
-  analysis: z.string().describe("A concise analysis of the user's performance, highlighting strengths, weaknesses, and the proposed training methodology for the next cycle."),
-});
-export type PerformanceAnalystOutput = z.infer<typeof PerformanceAnalystOutputSchema>;
 
 export async function performanceAnalystGenerator(input: PerformanceAnalystInput): Promise<PerformanceAnalystOutput> {
     return performanceAnalystFlow(input);

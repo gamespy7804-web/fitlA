@@ -8,28 +8,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { RealTimeFeedbackInputSchema, RealTimeFeedbackOutputSchema, type RealTimeFeedbackInput, type RealTimeFeedbackOutput } from './types';
 
-const RealTimeFeedbackInputSchema = z.object({
-  videoDataUri: z
-    .string()
-    .describe(
-      'A video of the user performing an exercise, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'    ),
-  exerciseType: z.string().describe('The type of exercise being performed.'),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type RealTimeFeedbackInput = z.infer<typeof RealTimeFeedbackInputSchema>;
-
-const FeedbackPointSchema = z.object({
-    point: z.string().describe('A one-sentence description of the mistake or point of feedback (e.g., "Your hips are rising faster than your chest.")'),
-    correction: z.string().describe('A brief explanation of why this is a problem and a clear, actionable instruction on how to fix it (e.g., "This puts strain on your lower back. Focus on lifting your chest and hips at the same rate.")'),
-    summary: z.string().describe("A very short (2-3 word) summary of the feedback point. E.g., 'Hip Rise', 'Back Arch', 'Knee Valgus'"),
-});
-
-const RealTimeFeedbackOutputSchema = z.object({
-  isCorrect: z.boolean().describe("Set to true if the user's form is perfect and there are no corrections to be made. Otherwise, set to false."),
-  feedback: z.array(FeedbackPointSchema).describe('An array of specific, actionable feedback points on the user\'s exercise form. If the form is correct, this array can be empty.'),
-});
-export type RealTimeFeedbackOutput = z.infer<typeof RealTimeFeedbackOutputSchema>;
 
 export async function realTimeFeedback(input: RealTimeFeedbackInput): Promise<RealTimeFeedbackOutput> {
   return realTimeFeedbackFlow(input);

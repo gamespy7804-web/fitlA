@@ -3,8 +3,10 @@
 
 import { useEffect, useState, useRef, Suspense, useCallback, DragEvent } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { realTimeFeedback, type RealTimeFeedbackOutput } from '@/ai/flows/real-time-feedback-generator';
-import { analyzePhysique, type PhysiqueAnalysisOutput } from '@/ai/flows/physique-analyst-generator';
+import { realTimeFeedback } from '@/ai/flows/real-time-feedback-generator';
+import type { RealTimeFeedbackOutput } from '@/ai/flows/types';
+import { analyzePhysique } from '@/ai/flows/physique-analyst-generator';
+import type { PhysiqueAnalysisOutput } from '@/ai/flows/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {

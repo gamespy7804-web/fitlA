@@ -9,27 +9,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { DailyWorkoutSchema, WorkoutRoutineOutputSchema } from './types';
-import type { WorkoutRoutineOutput } from './types';
-import { PhysiqueAnalysisOutputSchema } from './physique-analyst-generator';
+import { WorkoutRoutineOutputSchema, WorkoutRoutineInputSchema, type WorkoutRoutineOutput, type WorkoutRoutineInput } from './types';
 
-
-const WorkoutRoutineInputSchema = z.object({
-  goals: z
-    .string()
-    .describe('The user goals, e.g., lose weight, gain muscle, improve endurance'),
-  sport: z.string().describe('The sport the user is training for.'),
-  fitnessLevel: z.string().describe('The current fitness level of the user (beginner, intermediate, advanced).'),
-  equipment: z.array(z.string()).optional().describe("A list of available equipment for the user. If the list contains only 'none', the user has no equipment. If it contains 'gym', the user has full gym access."),
-  age: z.coerce.number().optional().describe("The user's age."),
-  weight: z.coerce.number().optional().describe("The user's weight in kg."),
-  gender: z.string().optional().describe("The user's gender."),
-  trainingDays: z.coerce.number().optional().describe("How many days per week the user wants to train."),
-  trainingDuration: z.coerce.number().optional().describe("How long each training session should be in minutes."),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-  physiqueAnalysis: PhysiqueAnalysisOutputSchema.optional().describe("An optional analysis of the user's physique, including scores and feedback. This should be used to tailor the routine.")
-});
-export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
 
 export async function generateWorkoutRoutine(input: WorkoutRoutineInput): Promise<WorkoutRoutineOutput> {
   return workoutRoutineFlow(input);

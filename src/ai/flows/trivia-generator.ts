@@ -4,33 +4,12 @@
  * @fileOverview This file defines a Genkit flow for generating trivia questions about fitness.
  *
  * - generateTrivia - A function that generates a set of myth/fact trivia questions.
- * - TriviaInput - The input type for the trivia generator function.
- * - TriviaOutput - The return type for the trivia generator function.
- * - TriviaQuestion - A single trivia question object.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { TriviaInputSchema, TriviaOutputSchema, type TriviaInput, type TriviaOutput } from './types';
 
-const TriviaInputSchema = z.object({
-  sport: z.string().describe('The sport to generate trivia questions about. Should be broad, e.g., "powerlifting", "running", "general fitness".'),
-  history: z.string().optional().describe("A JSON string of previously answered questions and whether the user was correct. Used to generate more advanced or targeted questions."),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type TriviaInput = z.infer<typeof TriviaInputSchema>;
-
-const TriviaQuestionSchema = z.object({
-    statement: z.string().describe("The statement to be evaluated as a myth or fact."),
-    isMyth: z.boolean().describe("True if the statement is a myth, false if it's a fact."),
-    explanation: z.string().describe("A concise explanation of why the statement is a myth or a fact."),
-});
-export type TriviaQuestion = z.infer<typeof TriviaQuestionSchema>;
-
-
-const TriviaOutputSchema = z.object({
-  questions: z.array(TriviaQuestionSchema).describe('A list of 5-10 trivia questions.'),
-});
-export type TriviaOutput = z.infer<typeof TriviaOutputSchema>;
 
 export async function generateTrivia(input: TriviaInput): Promise<TriviaOutput> {
     return triviaFlow(input);

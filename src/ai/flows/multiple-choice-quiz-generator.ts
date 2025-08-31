@@ -4,35 +4,12 @@
  * @fileOverview This file defines a Genkit flow for generating multiple choice quiz questions about fitness.
  *
  * - generateMultipleChoiceQuiz - A function that generates a set of multiple choice quiz questions.
- * - MultipleChoiceQuizInput - The input type for the quiz generator function.
- * - MultipleChoiceQuizOutput - The return type for the quiz generator function.
- * - MultipleChoiceQuestion - A single quiz question object.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { MultipleChoiceQuizInputSchema, MultipleChoiceQuizOutputSchema, type MultipleChoiceQuizInput, type MultipleChoiceQuizOutput } from './types';
 
-const MultipleChoiceQuizInputSchema = z.object({
-  sport: z.string().describe('The sport to generate quiz questions about. Should be broad, e.g., "powerlifting", "running", "general fitness".'),
-  history: z.string().optional().describe("A JSON string of previously answered questions and whether the user was correct. Used to generate more advanced or targeted questions."),
-  difficulty: z.enum(['easy', 'normal', 'hard']).optional().default('normal').describe("The desired difficulty for the new quiz questions."),
-  language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
-});
-export type MultipleChoiceQuizInput = z.infer<typeof MultipleChoiceQuizInputSchema>;
-
-const MultipleChoiceQuestionSchema = z.object({
-    question: z.string().describe("The multiple choice question."),
-    options: z.array(z.string()).length(4).describe("An array of 4 possible answers."),
-    correctAnswerIndex: z.number().min(0).max(3).describe("The index of the correct answer in the 'options' array."),
-    explanation: z.string().describe("A concise explanation of why the answer is correct."),
-});
-export type MultipleChoiceQuestion = z.infer<typeof MultipleChoiceQuestionSchema>;
-
-
-const MultipleChoiceQuizOutputSchema = z.object({
-  questions: z.array(MultipleChoiceQuestionSchema).describe('A list of 5-10 multiple choice questions.'),
-});
-export type MultipleChoiceQuizOutput = z.infer<typeof MultipleChoiceQuizOutputSchema>;
 
 export async function generateMultipleChoiceQuiz(input: MultipleChoiceQuizInput): Promise<MultipleChoiceQuizOutput> {
     return multipleChoiceQuizFlow(input);
