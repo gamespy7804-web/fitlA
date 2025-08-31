@@ -187,10 +187,10 @@ export default function OnboardingPage() {
   const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
   const equipmentCategories = {
-    'basics': { icon: Dumbbell, items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
-    'gym': { icon: Barbell, items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
-    'cardio': { icon: HeartPulse, items: ['treadmill', 'stationaryBike', 'elliptical', 'rowingMachine'] },
-    'accessories': { icon: Puzzle, items: ['kettlebell', 'foamRoller'] },
+    'basics': { items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
+    'gym': { items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
+    'cardio': { items: ['treadmill', 'stationaryBike', 'elliptical', 'rowingMachine'] },
+    'accessories': { items: ['kettlebell', 'foamRoller'] },
   };
 
   return (
@@ -331,65 +331,142 @@ export default function OnboardingPage() {
                       name="equipment"
                       render={() => (
                         <FormItem>
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
+                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
                             <FormControl>
                                 <div className="space-y-4">
-                                     <Button
+                                    <Button
                                         type="button"
                                         variant={form.getValues('equipment').includes('none') ? 'destructive' : 'outline'}
                                         className="w-full"
                                         onClick={() => {
                                             const hasNone = form.getValues('equipment').includes('none');
-                                            if (hasNone) {
-                                                form.setValue('equipment', [], { shouldValidate: true });
-                                            } else {
-                                                form.setValue('equipment', ['none'], { shouldValidate: true });
-                                            }
+                                            form.setValue('equipment', hasNone ? [] : ['none'], { shouldValidate: true });
                                         }}
                                     >
                                         {t('onboarding.questions.equipment.options.none')}
                                     </Button>
-                                    <ScrollArea className="h-64">
+                                    <ScrollArea className="h-64 pr-3">
                                         <div className="space-y-4">
-                                            {Object.entries(equipmentCategories).map(([category, value]) => {
-                                                const CategoryIcon = value.icon;
-                                                return (
-                                                    <div key={category} className="space-y-2">
-                                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><CategoryIcon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {value.items.map((item) => (
-                                                                <FormField
-                                                                    key={item}
-                                                                    control={form.control}
-                                                                    name="equipment"
-                                                                    render={({ field }) => (
-                                                                        <Button
-                                                                            type="button"
-                                                                            variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                            className="h-auto py-3 justify-start text-left"
-                                                                            onClick={() => {
-                                                                                const currentValues = field.value || [];
-                                                                                const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                                const newValue = withoutNone.includes(item)
-                                                                                    ? withoutNone.filter((value) => value !== item)
-                                                                                    : [...withoutNone, item];
-                                                                                field.onChange(newValue);
-                                                                            }}
-                                                                        >
-                                                                            {t(`onboarding.questions.equipment.items.${item}`)}
-                                                                        </Button>
-                                                                    )}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                            {/* Basics Category */}
+                                            <div className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {equipmentCategories.basics.items.map((item) => (
+                                                        <FormField
+                                                            key={item}
+                                                            control={form.control}
+                                                            name="equipment"
+                                                            render={({ field }) => (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                    className="h-auto py-3 justify-start text-left"
+                                                                    onClick={() => {
+                                                                        const currentValues = field.value || [];
+                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
+                                                                        field.onChange(newValue.length > 0 ? newValue : []);
+                                                                    }}
+                                                                >
+                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                                </Button>
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Gym Category */}
+                                            <div className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Barbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {equipmentCategories.gym.items.map((item) => (
+                                                        <FormField
+                                                            key={item}
+                                                            control={form.control}
+                                                            name="equipment"
+                                                            render={({ field }) => (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                    className="h-auto py-3 justify-start text-left"
+                                                                    onClick={() => {
+                                                                        const currentValues = field.value || [];
+                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
+                                                                        field.onChange(newValue.length > 0 ? newValue : []);
+                                                                    }}
+                                                                >
+                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                                </Button>
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Cardio Category */}
+                                            <div className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {equipmentCategories.cardio.items.map((item) => (
+                                                        <FormField
+                                                            key={item}
+                                                            control={form.control}
+                                                            name="equipment"
+                                                            render={({ field }) => (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                    className="h-auto py-3 justify-start text-left"
+                                                                    onClick={() => {
+                                                                        const currentValues = field.value || [];
+                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
+                                                                        field.onChange(newValue.length > 0 ? newValue : []);
+                                                                    }}
+                                                                >
+                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                                </Button>
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Accessories Category */}
+                                            <div className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {equipmentCategories.accessories.items.map((item) => (
+                                                        <FormField
+                                                            key={item}
+                                                            control={form.control}
+                                                            name="equipment"
+                                                            render={({ field }) => (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                    className="h-auto py-3 justify-start text-left"
+                                                                    onClick={() => {
+                                                                        const currentValues = field.value || [];
+                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
+                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
+                                                                        field.onChange(newValue.length > 0 ? newValue : []);
+                                                                    }}
+                                                                >
+                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                                </Button>
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </ScrollArea>
                                 </div>
                             </FormControl>
-                          <FormMessage className="text-center"/>
+                            <FormMessage className="text-center"/>
                         </FormItem>
                       )}
                     />
@@ -513,3 +590,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
