@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft, Image as ImageIcon, Gauge, Percent, BarChart, BrainCircuit } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft, Image as ImageIcon, Gauge, Percent, BarChart, BrainCircuit, Construction } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -343,120 +343,22 @@ function FeedbackToolContent() {
   );
   
   const renderPhysiqueAnalysis = () => {
-    const hasEnoughDiamonds = (diamonds ?? 0) >= PHYSIQUE_ANALYSIS_COST;
-    
-    switch (physiqueStep) {
-        case 'upload':
-            return (
-                <motion.div key="physiqueUpload" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                     <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-center">
-                                <CardTitle className="font-headline">{t('feedbackTool.physiqueAnalysis.step1_title')}</CardTitle>
-                                <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border">
-                                    <span role="img" aria-label="diamond">💎</span>
-                                    <span>{diamonds ?? 0}</span>
-                                </div>
-                            </div>
-                           <CardDescription>{t('feedbackTool.physiqueAnalysis.step1_description')}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <div onDrop={handlePhysiqueDrop} onDragOver={handlePhysiqueDragEvents} onDragEnter={handlePhysiqueDragEvents} onDragLeave={handlePhysiqueDragEvents} className={cn("aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed transition-colors", isPhysiqueDragging ? 'border-primary bg-primary/10' : 'border-transparent')}>
-                                {physiquePhotoUrl ? <img src={physiquePhotoUrl} alt={t('feedbackTool.physiqueAnalysis.upload.alt')} className="w-full h-full rounded-md object-contain" /> : (<><ImageIcon className="h-12 w-12 text-muted-foreground" /><p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.physiqueAnalysis.upload.description')}</p><Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()} disabled={!hasEnoughDiamonds}>{t('feedbackTool.physiqueAnalysis.upload.selectFile')}</Button></>)}
-                                <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} disabled={!hasEnoughDiamonds} />
-                            </div>
-                            <div className="mt-6 space-y-4">
-                                <Button onClick={handlePhysiqueAnalyze} className="w-full" size="lg" disabled={!physiquePhotoToAnalyze || !hasEnoughDiamonds}>
-                                    <Sparkles className="mr-2" />
-                                    {t('feedbackTool.physiqueAnalysis.buttons.analyze')} ({PHYSIQUE_ANALYSIS_COST} 💎)
-                                </Button>
-                                {!hasEnoughDiamonds && (
-                                    <Alert variant="destructive">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
-                                        <AlertDescription>
-                                            {t('feedbackTool.noCredits.description')}
-                                            <Button variant="secondary" className="mt-2 w-full" onClick={() => router.push('/store')}>
-                                                <ShoppingBag className="mr-2" /> {t('feedbackTool.noCredits.buyMore')}
-                                            </Button>
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                            </div>
-                        </CardContent>
-                     </Card>
-                </motion.div>
-            );
-        case 'analyzing':
-            return (
-                 <motion.div key="physiqueAnalyzing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center text-center gap-4 text-primary p-8 h-full min-h-[50vh]">
-                    <Loader2 className="h-16 w-16 animate-spin" />
-                    <h3 className="text-2xl font-bold font-headline">{t('feedbackTool.physiqueAnalysis.loading.title')}</h3>
-                    <p className="text-base text-muted-foreground">{t('feedbackTool.physiqueAnalysis.loading.description')}</p>
-                 </motion.div>
-            );
-        case 'result':
-            const StatCard = ({ icon, title, value, unit, progress, color }: { icon: React.ElementType, title: string, value: number, unit: string, progress: number, color: string }) => (
-                <Card className="p-4">
-                    <div className="flex items-center gap-4">
-                        <icon className={cn("w-8 h-8", color)} />
-                        <div>
-                            <p className="text-sm text-muted-foreground">{title}</p>
-                            <p className="text-2xl font-bold">{value}{unit}</p>
-                        </div>
-                    </div>
-                    <Progress value={progress} className="mt-3 h-2"/>
-                </Card>
-            );
-            return (
-                <motion.div key="physiqueResult" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="font-headline text-2xl flex items-center gap-2">
-                                <Sparkles className="text-primary" /> {t('feedbackTool.physiqueAnalysis.results.title')}
-                            </CardTitle>
-                            <CardDescription>{t('feedbackTool.physiqueAnalysis.results.description')}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {physiqueAnalysis && (
-                                <>
-                                 <Card className="bg-primary/5 border-primary/20">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg flex items-center justify-between">
-                                            <span>{t('feedbackTool.physiqueAnalysis.results.averageScore')}</span>
-                                            <span className="text-primary">{physiqueAnalysis.averageScore}/10</span>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Progress value={physiqueAnalysis.averageScore * 10} className="h-3"/>
-                                    </CardContent>
-                                 </Card>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                     <StatCard icon={Gauge} title={t('feedbackTool.physiqueAnalysis.results.potential')} value={physiqueAnalysis.potentialScore} unit="/10" progress={physiqueAnalysis.potentialScore * 10} color="text-green-500" />
-                                     <StatCard icon={BarChart} title={t('feedbackTool.physiqueAnalysis.results.symmetry')} value={physiqueAnalysis.symmetryScore} unit="/10" progress={physiqueAnalysis.symmetryScore * 10} color="text-blue-500" />
-                                     <StatCard icon={BrainCircuit} title={t('feedbackTool.physiqueAnalysis.results.genetics')} value={physiqueAnalysis.geneticsScore} unit="/10" progress={physiqueAnalysis.geneticsScore * 10} color="text-purple-500" />
-                                     <StatCard icon={Percent} title={t('feedbackTool.physiqueAnalysis.results.bodyFat')} value={physiqueAnalysis.bodyFatPercentage} unit="%" progress={physiqueAnalysis.bodyFatPercentage} color="text-orange-500" />
-                                </div>
-                                
-                                <Card className="bg-muted/50">
-                                    <CardHeader>
-                                        <CardTitle className="text-base">{t('feedbackTool.physiqueAnalysis.results.feedbackTitle')}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">{physiqueAnalysis.feedback}</p>
-                                    </CardContent>
-                                </Card>
-                                </>
-                            )}
-                            <Button onClick={() => setPhysiqueStep('upload')} className="w-full">
-                                {t('feedbackTool.buttons.analyzeAnother')}
-                            </Button>
-                        </CardContent>
-                     </Card>
-                </motion.div>
-            );
-    }
+    return (
+      <Card>
+          <CardHeader>
+              <CardTitle className="font-headline flex items-center gap-2">
+                <ImageIcon className="text-primary"/>
+                {t('feedbackTool.physiqueAnalysis.title')}
+              </CardTitle>
+              <CardDescription>{t('feedbackTool.physiqueAnalysis.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px] space-y-4">
+              <Construction className="h-16 w-16" />
+              <p className="font-bold text-lg">{t('feedbackTool.physiqueAnalysis.wip.title')}</p>
+              <p className="text-sm max-w-sm">{t('feedbackTool.physiqueAnalysis.wip.description')}</p>
+          </CardContent>
+      </Card>
+    )
   }
 
   const renderStep = () => {

@@ -199,6 +199,12 @@
         "physiqueAnalysis": "Physique Analysis"
       },
       "physiqueAnalysis": {
+        "title": "Physique Analysis",
+        "description": "Upload a photo and receive a detailed analysis of your physique.",
+        "wip": {
+          "title": "Feature in Development",
+          "description": "We are working hard to bring you this incredible feature. Come back soon!"
+        },
         "step1_title": "Step 1: Upload Your Photo",
         "step1_description": "Upload a photo of your physique for analysis. Ensure good lighting and a clear view.",
         "upload": {

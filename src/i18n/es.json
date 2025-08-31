@@ -199,6 +199,12 @@
         "physiqueAnalysis": "Análisis de Físico"
       },
       "physiqueAnalysis": {
+        "title": "Análisis de Físico",
+        "description": "Sube una foto y recibe un análisis detallado de tu físico.",
+        "wip": {
+          "title": "Función en Desarrollo",
+          "description": "Estamos trabajando para traerte esta increíble funcionalidad. ¡Vuelve pronto!"
+        },
         "step1_title": "Paso 1: Sube tu Foto",
         "step1_description": "Sube una foto de tu físico para el análisis. Asegúrate de tener buena iluminación y una vista clara.",
         "upload": {
