@@ -601,38 +601,28 @@
       },
       "actions": {
         "title": "Acciones Principales",
-        "description": "Desde este botón podrás generar una nueva rutina o ir a la herramienta de análisis de técnica.",
-        "openMenu": "Abrir Menú"
-      },
-      "feedback": {
-        "title": "Análisis de Forma",
-        "description": "Esta opción te lleva a la herramienta para grabar tus ejercicios y recibir correcciones de la IA. ¡Así aseguras una buena técnica! Pulsa aquí para continuar."
-      },
-      "feedbackPage": {
-        "title": "Herramientas de Evaluación",
-        "description": "Aquí podrás grabar videos para analizar tu técnica o, en el futuro, subir fotos para analizar tu físico. Volvamos al panel principal.",
-        "nextBtnText": "Ir al Panel"
-      },
-      "log": {
-        "title": "Registro de Entrenamiento",
-        "description": "Aquí podrás ver un historial de todos tus entrenamientos completados y tu progreso en el tiempo."
-      },
-      "games": {
-        "title": "Zona de Juegos",
-        "description": "Pon a prueba tus conocimientos de fitness y diviértete con nuestros juegos educativos."
+        "description": "Desde este botón puedes generar una nueva rutina o ir a la herramienta para analizar tu técnica."
       },
       "chatbot": {
         "title": "Asistente de IA",
         "description": "¿Tienes alguna duda? Haz clic aquí para chatear con nuestro asistente de IA en cualquier momento."
       },
-      "startWorkout": {
-        "title": "Comienza tu Entrenamiento",
-        "description": "Este es tu primer día. ¡Haz clic en él para empezar a entrenar, el tour continuará dentro!"
-      },
       "end": {
         "title": "¡Ya estás listo!",
-        "description": "Ya conoces lo básico. Es hora de empezar a entrenar. ¡A por ello!",
-        "description_no_workout": "Parece que hubo un problema al generar tu primera rutina. Ve al botón '+' para intentarlo de nuevo. ¡Ya estás listo para explorar por tu cuenta!"
+        "description_dashboard": "Ya conoces lo básico del panel principal. ¡Explora las demás secciones para descubrir todo lo que puedes hacer!",
+        "description_workout": "¡Ahora sabes cómo registrar un ejercicio y pedir feedback! ¡A por ello!"
+      },
+      "feedbackPage": {
+        "title": "Herramientas de Evaluación",
+        "description": "¡Bienvenido a la sección de análisis! Aquí es donde la magia de la IA ocurre.",
+        "techniqueTab": {
+            "title": "Análisis de Técnica",
+            "description": "En esta pestaña, puedes seleccionar un ejercicio, grabar un video y nuestra IA te dará correcciones para mejorar tu forma y prevenir lesiones."
+        },
+        "physiqueTab": {
+            "title": "Análisis de Físico",
+            "description": "Próximamente, podrás subir una foto para que la IA analice tu físico, estime tu porcentaje de grasa y te dé recomendaciones para mejorar."
+        }
       },
       "technique": {
         "title": "Ver Técnica",

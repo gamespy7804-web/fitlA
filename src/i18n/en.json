@@ -597,42 +597,32 @@
       },
       "dashboard": {
         "title": "Your Training Path",
-        "description": "This is your main screen. Here you will see your training plan day by day. Complete them to advance!"
+        "description": "This is your main screen. You'll see your training plan day by day here. Complete them to advance!"
       },
       "actions": {
         "title": "Main Actions",
-        "description": "From this button you can generate a new routine or go to the technique analysis tool.",
-        "openMenu": "Open Menu"
-      },
-      "feedback": {
-        "title": "Form Analysis",
-        "description": "This option takes you to the tool to record your exercises and receive AI corrections. This ensures good technique! Click here to continue."
-      },
-      "feedbackPage": {
-        "title": "Evaluation Tools",
-        "description": "Here you can record videos to analyze your technique or, in the future, upload photos to analyze your physique. Let's go back to the dashboard.",
-        "nextBtnText": "Go to Dashboard"
-      },
-      "log": {
-        "title": "Training Log",
-        "description": "Here you can see a history of all your completed workouts and your progress over time."
-      },
-      "games": {
-        "title": "Game Zone",
-        "description": "Test your fitness knowledge and have fun with our educational games."
+        "description": "From this button, you can generate a new routine or go to the technique analysis tool."
       },
       "chatbot": {
         "title": "AI Assistant",
-        "description": "Have any questions? Click here to chat with our AI assistant at any time."
-      },
-      "startWorkout": {
-        "title": "Start Your Workout",
-        "description": "This is your first day. Click on it to start training. The tour will continue inside!"
+        "description": "Have questions? Click here to chat with our AI assistant at any time."
       },
       "end": {
         "title": "You're Ready!",
-        "description": "You now know the basics. It's time to start training. Let's go for it!",
-        "description_no_workout": "It seems there was an issue generating your first routine. Go to the '+' button to try again. Now you're ready to explore on your own!"
+        "description_dashboard": "You now know the basics of the main dashboard. Explore the other sections to discover everything you can do!",
+        "description_workout": "Now you know how to log an exercise and request feedback! Go for it!"
+      },
+      "feedbackPage": {
+        "title": "Evaluation Tools",
+        "description": "Welcome to the analysis section! This is where the AI magic happens.",
+        "techniqueTab": {
+          "title": "Technique Analysis",
+          "description": "In this tab, you can select an exercise, record a video, and our AI will give you corrections to improve your form and prevent injuries."
+        },
+        "physiqueTab": {
+          "title": "Physique Analysis",
+          "description": "Soon, you'll be able to upload a photo for the AI to analyze your physique, estimate your body fat percentage, and give you recommendations for improvement."
+        }
       },
       "technique": {
         "title": "View Technique",
