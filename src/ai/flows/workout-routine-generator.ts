@@ -20,7 +20,7 @@ const WorkoutRoutineInputSchema = z.object({
     .describe('The user goals, e.g., lose weight, gain muscle, improve endurance'),
   sport: z.string().describe('The sport the user is training for.'),
   fitnessLevel: z.string().describe('The current fitness level of the user (beginner, intermediate, advanced).'),
-  equipment: z.array(z.string()).optional().describe("A list of available equipment for the user. If the list contains only 'none', the user has no equipment."),
+  equipment: z.array(z.string()).optional().describe("A list of available equipment for the user. If the list contains only 'none', the user has no equipment. If it contains 'gym', the user has full gym access."),
   age: z.coerce.number().optional().describe("The user's age."),
   weight: z.coerce.number().optional().describe("The user's weight in kg."),
   gender: z.string().optional().describe("The user's gender."),
@@ -61,6 +61,7 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 
 **CRITICAL: Equipment Constraints:**
 - The generated routine MUST ONLY use exercises that can be performed with the user's available equipment.
+- If the equipment list is 'Full Gym Access', you can use any standard commercial gym equipment.
 - If the equipment list is 'none' or empty, you MUST generate a routine based exclusively on bodyweight exercises.
 - Do NOT suggest exercises that require equipment the user does not have.
 
@@ -100,7 +101,9 @@ const workoutRoutineFlow = ai.defineFlow(
   async input => {
     let equipmentList = 'none';
     if (input.equipment && input.equipment.length > 0) {
-      if (input.equipment.length === 1 && input.equipment[0] === 'none') {
+      if (input.equipment.includes('gym')) {
+        equipmentList = 'Full Gym Access';
+      } else if (input.equipment.length === 1 && input.equipment[0] === 'none') {
         equipmentList = 'none';
       } else {
         equipmentList = input.equipment.join(', ');

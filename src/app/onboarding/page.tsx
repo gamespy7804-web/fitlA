@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane, Barbell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -193,17 +193,24 @@ export default function OnboardingPage() {
     'accessories': { items: ['kettlebell', 'foamRoller'] },
   };
 
-  const allGymEquipment = Object.values(equipmentCategories).flatMap(category => category.items);
 
-  const handleSelectAllGym = () => {
-    const currentValues = form.getValues('equipment');
-    // If all are already selected, deselect them. Otherwise, select all.
-    if (currentValues.length === allGymEquipment.length) {
-      form.setValue('equipment', [], { shouldValidate: true });
-    } else {
-      form.setValue('equipment', allGymEquipment, { shouldValidate: true });
+  const handleEquipmentButtonClick = (item: string) => {
+    const currentValues = form.getValues('equipment') || [];
+    // These options are mutually exclusive
+    if (item === 'none' || item === 'gym') {
+      form.setValue('equipment', [item], { shouldValidate: true });
+      return;
     }
+
+    // If 'none' or 'gym' is selected, and user clicks something else, deselect 'none'/'gym'
+    const withoutSpecialOptions = currentValues.filter(v => v !== 'none' && v !== 'gym');
+    const newValue = withoutSpecialOptions.includes(item)
+      ? withoutSpecialOptions.filter(value => value !== item)
+      : [...withoutSpecialOptions, item];
+      
+    form.setValue('equipment', newValue.length > 0 ? newValue : [], { shouldValidate: true });
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -341,152 +348,102 @@ export default function OnboardingPage() {
                     <FormField
                       control={form.control}
                       name="equipment"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
-                            <FormControl>
-                                <div className="space-y-3">
-                                    <div className="grid grid-cols-2 gap-3">
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
+                          <FormControl>
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <Button
+                                  type="button"
+                                  variant={(field.value || []).includes('gym') ? 'default' : 'outline'}
+                                  onClick={() => handleEquipmentButtonClick('gym')}
+                                >
+                                  {t('onboarding.questions.equipment.options.gymAccess')}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={(field.value || []).includes('none') ? 'destructive' : 'outline'}
+                                  onClick={() => handleEquipmentButtonClick('none')}
+                                >
+                                  {t('onboarding.questions.equipment.options.none')}
+                                </Button>
+                              </div>
+                              <ScrollArea className="h-56 pr-3">
+                                <div className="space-y-4">
+                                  {/* Basics Category */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {equipmentCategories.basics.items.map((item) => (
                                         <Button
-                                            type="button"
-                                            variant={form.getValues('equipment').length === allGymEquipment.length ? 'default' : 'outline'}
-                                            onClick={handleSelectAllGym}
+                                          key={item}
+                                          type="button"
+                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                          className="h-auto py-3 justify-start text-left"
+                                          onClick={() => handleEquipmentButtonClick(item)}
                                         >
-                                            {t('onboarding.questions.equipment.options.gymAccess')}
+                                          {t(`onboarding.questions.equipment.items.${item}`)}
                                         </Button>
-                                        <Button
-                                            type="button"
-                                            variant={form.getValues('equipment').includes('none') ? 'destructive' : 'outline'}
-                                            onClick={() => {
-                                                const hasNone = form.getValues('equipment').includes('none');
-                                                form.setValue('equipment', hasNone ? [] : ['none'], { shouldValidate: true });
-                                            }}
-                                        >
-                                            {t('onboarding.questions.equipment.options.none')}
-                                        </Button>
+                                      ))}
                                     </div>
-                                    <ScrollArea className="h-56 pr-3">
-                                        <div className="space-y-4">
-                                             {/* Basics Category */}
-                                            <div className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {equipmentCategories.basics.items.map((item) => (
-                                                        <FormField
-                                                            key={item}
-                                                            control={form.control}
-                                                            name="equipment"
-                                                            render={({ field }) => (
-                                                                <Button
-                                                                    type="button"
-                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                    className="h-auto py-3 justify-start text-left"
-                                                                    onClick={() => {
-                                                                        const currentValues = field.value || [];
-                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
-                                                                        field.onChange(newValue.length > 0 ? newValue : []);
-                                                                    }}
-                                                                >
-                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                                </Button>
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Gym Category */}
-                                            <div className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {equipmentCategories.gym.items.map((item) => (
-                                                        <FormField
-                                                            key={item}
-                                                            control={form.control}
-                                                            name="equipment"
-                                                            render={({ field }) => (
-                                                                <Button
-                                                                    type="button"
-                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                    className="h-auto py-3 justify-start text-left"
-                                                                    onClick={() => {
-                                                                        const currentValues = field.value || [];
-                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
-                                                                        field.onChange(newValue.length > 0 ? newValue : []);
-                                                                    }}
-                                                                >
-                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                                </Button>
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Cardio Category */}
-                                            <div className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {equipmentCategories.cardio.items.map((item) => (
-                                                        <FormField
-                                                            key={item}
-                                                            control={form.control}
-                                                            name="equipment"
-                                                            render={({ field }) => (
-                                                                <Button
-                                                                    type="button"
-                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                    className="h-auto py-3 justify-start text-left"
-                                                                    onClick={() => {
-                                                                        const currentValues = field.value || [];
-                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
-                                                                        field.onChange(newValue.length > 0 ? newValue : []);
-                                                                    }}
-                                                                >
-                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                                </Button>
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Accessories Category */}
-                                            <div className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {equipmentCategories.accessories.items.map((item) => (
-                                                        <FormField
-                                                            key={item}
-                                                            control={form.control}
-                                                            name="equipment"
-                                                            render={({ field }) => (
-                                                                <Button
-                                                                    type="button"
-                                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                                    className="h-auto py-3 justify-start text-left"
-                                                                    onClick={() => {
-                                                                        const currentValues = field.value || [];
-                                                                        const withoutNone = currentValues.filter(v => v !== 'none');
-                                                                        const newValue = withoutNone.includes(item) ? withoutNone.filter((value) => value !== item) : [...withoutNone, item];
-                                                                        field.onChange(newValue.length > 0 ? newValue : []);
-                                                                    }}
-                                                                >
-                                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                                </Button>
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </ScrollArea>
+                                  </div>
+                                  {/* Gym Category */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {equipmentCategories.gym.items.map((item) => (
+                                        <Button
+                                          key={item}
+                                          type="button"
+                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                          className="h-auto py-3 justify-start text-left"
+                                          onClick={() => handleEquipmentButtonClick(item)}
+                                        >
+                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  {/* Cardio Category */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {equipmentCategories.cardio.items.map((item) => (
+                                        <Button
+                                          key={item}
+                                          type="button"
+                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                          className="h-auto py-3 justify-start text-left"
+                                          onClick={() => handleEquipmentButtonClick(item)}
+                                        >
+                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  {/* Accessories Category */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {equipmentCategories.accessories.items.map((item) => (
+                                        <Button
+                                          key={item}
+                                          type="button"
+                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                          className="h-auto py-3 justify-start text-left"
+                                          onClick={() => handleEquipmentButtonClick(item)}
+                                        >
+                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
-                            </FormControl>
-                            <FormMessage className="text-center"/>
+                              </ScrollArea>
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-center"/>
                         </FormItem>
                       )}
                     />
