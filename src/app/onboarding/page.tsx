@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane, Barbell } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Plane, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -55,7 +55,7 @@ const createFormSchema = (t: (key: string) => string) => z.object({
     trainingDuration: z.coerce.number({invalid_type_error: t('onboarding.validation.trainingDuration.required')}).int().min(15, t('onboarding.validation.trainingDuration.min')).max(240, t('onboarding.validation.trainingDuration.max')),
     age: z.coerce.number({invalid_type_error: t('onboarding.validation.age.required')}).int().min(10, t('onboarding.validation.age.min')).max(100, t('onboarding.validation.age.max')),
     weight: z.coerce.number({invalid_type_error: t('onboarding.validation.weight.required')}).int().min(30, t('onboarding.validation.weight.min')).max(200, t('onboarding.validation.weight.max')),
-    gender: z.enum(['male', 'female', 'other'], {required_error: t('onboarding.validation.gender.required')})
+    gender: z.enum(['male', 'female'], {required_error: t('onboarding.validation.gender.required')})
 });
 
 const steps = [
@@ -187,10 +187,10 @@ export default function OnboardingPage() {
   const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
   const equipmentCategories = {
-    'basics': { items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
-    'gym': { items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
-    'cardio': { items: ['treadmill', 'stationaryBike', 'elliptical', 'rowingMachine'] },
-    'accessories': { items: ['kettlebell', 'foamRoller'] },
+    'basics': { icon: Dumbbell, items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
+    'gym': { icon: Dumbbell, items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
+    'cardio': { icon: HeartPulse, items: ['treadmill', 'stationaryBike', 'elliptical', 'rowingMachine'] },
+    'accessories': { icon: Puzzle, items: ['kettlebell', 'foamRoller'] },
   };
 
 
@@ -370,76 +370,76 @@ export default function OnboardingPage() {
                                 </Button>
                               </div>
                               <ScrollArea className="h-56 pr-3">
-                                <div className="space-y-4">
-                                  {/* Basics Category */}
-                                  <div className="space-y-2">
-                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {equipmentCategories.basics.items.map((item) => (
-                                        <Button
-                                          key={item}
-                                          type="button"
-                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                          className="h-auto py-3 justify-start text-left"
-                                          onClick={() => handleEquipmentButtonClick(item)}
-                                        >
-                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                        </Button>
-                                      ))}
-                                    </div>
+                                  <div className="space-y-4">
+                                      {/* Basics Category */}
+                                      <div className="space-y-2">
+                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              {equipmentCategories.basics.items.map((item) => (
+                                                      <Button
+                                                          key={item}
+                                                          type="button"
+                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                          className="h-auto py-3 justify-start text-left"
+                                                          onClick={() => handleEquipmentButtonClick(item)}
+                                                      >
+                                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                                      </Button>
+                                              ))}
+                                          </div>
+                                      </div>
+                                      {/* Gym Category */}
+                                      <div className="space-y-2">
+                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              {equipmentCategories.gym.items.map((item) => (
+                                                      <Button
+                                                          key={item}
+                                                          type="button"
+                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                          className="h-auto py-3 justify-start text-left"
+                                                          onClick={() => handleEquipmentButtonClick(item)}
+                                                      >
+                                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                                      </Button>
+                                              ))}
+                                          </div>
+                                      </div>
+                                      {/* Cardio Category */}
+                                      <div className="space-y-2">
+                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              {equipmentCategories.cardio.items.map((item) => (
+                                                      <Button
+                                                          key={item}
+                                                          type="button"
+                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                          className="h-auto py-3 justify-start text-left"
+                                                          onClick={() => handleEquipmentButtonClick(item)}
+                                                      >
+                                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                                      </Button>
+                                              ))}
+                                          </div>
+                                      </div>
+                                      {/* Accessories Category */}
+                                      <div className="space-y-2">
+                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
+                                          <div className="grid grid-cols-2 gap-2">
+                                              {equipmentCategories.accessories.items.map((item) => (
+                                                      <Button
+                                                          key={item}
+                                                          type="button"
+                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                          className="h-auto py-3 justify-start text-left"
+                                                          onClick={() => handleEquipmentButtonClick(item)}
+                                                      >
+                                                          {t(`onboarding.questions.equipment.items.${item}`)}
+                                                      </Button>
+                                              ))}
+                                          </div>
+                                      </div>
                                   </div>
-                                  {/* Gym Category */}
-                                  <div className="space-y-2">
-                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {equipmentCategories.gym.items.map((item) => (
-                                        <Button
-                                          key={item}
-                                          type="button"
-                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                          className="h-auto py-3 justify-start text-left"
-                                          onClick={() => handleEquipmentButtonClick(item)}
-                                        >
-                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  {/* Cardio Category */}
-                                  <div className="space-y-2">
-                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {equipmentCategories.cardio.items.map((item) => (
-                                        <Button
-                                          key={item}
-                                          type="button"
-                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                          className="h-auto py-3 justify-start text-left"
-                                          onClick={() => handleEquipmentButtonClick(item)}
-                                        >
-                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                  {/* Accessories Category */}
-                                  <div className="space-y-2">
-                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {equipmentCategories.accessories.items.map((item) => (
-                                        <Button
-                                          key={item}
-                                          type="button"
-                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                          className="h-auto py-3 justify-start text-left"
-                                          onClick={() => handleEquipmentButtonClick(item)}
-                                        >
-                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
                               </ScrollArea>
                             </div>
                           </FormControl>
@@ -494,7 +494,6 @@ export default function OnboardingPage() {
                                             <SelectContent>
                                                 <SelectItem value="male">{t('onboarding.questions.gender.options.male')}</SelectItem>
                                                 <SelectItem value="female">{t('onboarding.questions.gender.options.female')}</SelectItem>
-                                                <SelectItem value="other">{t('onboarding.questions.gender.options.other')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

@@ -490,8 +490,7 @@
           "placeholder": "Seleccionar género",
           "options": {
             "male": "Masculino",
-            "female": "Femenino",
-            "other": "Otro"
+            "female": "Femenino"
           }
         },
         "availability": {
