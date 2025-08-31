@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2 } from 'lucide-react';
+import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -30,7 +30,7 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
     { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
     { href: '/log', icon: BarChart2, label: t('nav.log'), id: 'nav-log' },
     { href: null, icon: Plus, label: 'Actions', id: 'nav-actions' }, // Placeholder for the action button
-    { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
+    { href: '/ranking', icon: Trophy, label: t('nav.ranking'), id: 'nav-ranking'},
     { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
 
@@ -66,6 +66,12 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                             {pendingFeedbackCount > 0 && (
                                 <Badge variant="destructive" className='h-6 w-6 flex items-center justify-center p-0'>{pendingFeedbackCount}</Badge>
                             )}
+                          </Link>
+                      </DropdownMenuItem>
+                       <DropdownMenuItem asChild>
+                          <Link href="/games" onClick={() => playSound('swoosh')} className="w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted">
+                            <Gamepad2 />
+                            <span>{t('nav.games')}</span>
                           </Link>
                       </DropdownMenuItem>
                   </DropdownMenuContent>

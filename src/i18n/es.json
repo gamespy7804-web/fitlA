@@ -6,6 +6,7 @@
       "log": "Registro",
       "games": "Juegos",
       "profile": "Perfil",
+      "ranking": "Ranking",
       "actions": {
         "generate": "Generar Nuevo Entrenamiento",
         "feedback": "Análisis de Forma"
@@ -362,6 +363,17 @@
         "generationFailed": "No se pudieron generar las preguntas. Inténtalo de nuevo."
       }
     },
+    "ranking": {
+      "title": "Ranking",
+      "description": "Compite con otros usuarios y demuestra quién es el más disciplinado.",
+      "leaderboard": "Tabla de clasificación",
+      "you": "Tú",
+      "table": {
+        "rank": "Puesto",
+        "user": "Usuario",
+        "xp": "XP"
+      }
+    },
     "settings": {
       "title": "Configuración",
       "description": "Gestiona tu cuenta y las preferencias de la aplicación.",
@@ -586,7 +598,8 @@
         "goodJob": "¡Buen trabajo!",
         "pendingFeedback": "Tienes ejercicios pendientes para análisis. Ve a la herramienta de feedback para grabarlos.",
         "workoutComplete": "¡Entrenamiento Completado!",
-        "workoutSaved": "{{title}} ha sido guardado. Redirigiendo..."
+        "workoutSaved": "{{title}} ha sido guardado. Redirigiendo...",
+        "xpGained": "¡+{{count}} XP Ganados!"
       }
     },
     "restTimer": {

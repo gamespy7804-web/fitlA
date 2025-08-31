@@ -37,7 +37,7 @@ function WorkoutPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const playSound = useAudioEffects();
-  const { workoutRoutine, addCompletedWorkout, addDetailedWorkoutLog, pendingFeedback } = useUserData();
+  const { workoutRoutine, addCompletedWorkout, addDetailedWorkoutLog, pendingFeedback, addXP } = useUserData();
   
   const dayParam = searchParams.get('day');
 
@@ -139,6 +139,10 @@ function WorkoutPageContent() {
       });
     });
 
+    // Calculate XP
+    const xpGained = Math.round(totalVolume / 10 + day.duration * 2);
+    addXP(xpGained);
+
     const completedWorkoutSummary = {
       date: new Date().toISOString(),
       workout: day.title,
@@ -160,16 +164,16 @@ function WorkoutPageContent() {
 
     const hasPendingFeedback = pendingFeedback && pendingFeedback.length > 0;
     
+    toast({
+        title: t('workoutPage.toast.workoutComplete'),
+        description: t('workoutPage.toast.xpGained', { count: xpGained }),
+    });
+
     if (hasPendingFeedback) {
         toast({
           title: t('workoutPage.toast.goodJob'),
           description: t('workoutPage.toast.pendingFeedback'),
           duration: 5000,
-        });
-    } else {
-        toast({
-            title: t('workoutPage.toast.workoutComplete'),
-            description: t('workoutPage.toast.workoutSaved', { title: day.title }),
         });
     }
 

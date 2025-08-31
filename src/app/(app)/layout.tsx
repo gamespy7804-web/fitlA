@@ -61,7 +61,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     updateTheme();
     
-    const shouldPlayMusic = !isWorkoutPage;
+    const shouldPlayMusic = !isWorkoutPage && !pathname.includes('/games') && !pathname.includes('/ranking');
 
     if (shouldPlayMusic && audioInitialized.current) {
       startMusic('main');

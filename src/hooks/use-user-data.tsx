@@ -3,8 +3,18 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch } from 'firebase/firestore'; 
+import { db } from '@/lib/firebase';
+import { useAuth } from './use-auth';
+
 
 // Define the shape of your data
+export type UserProfile = {
+    uid: string;
+    displayName: string;
+    photoURL: string;
+    xp: number;
+};
 type CompletedWorkout = { date: string; workout: string; duration: number; volume: number };
 type DetailedWorkoutLog = { date: string; title: string; log: any[] };
 type TriviaHistoryItem = { statement: string; isMyth: boolean; userAnswer: boolean; isCorrect: boolean };
@@ -20,9 +30,11 @@ interface UserDataContextType {
     detailedWorkoutLogs: DetailedWorkoutLog[] | null;
     pendingFeedback: string[] | null;
     diamonds: number | null;
+    xp: number | null;
     triviaHistory: TriviaHistoryItem[] | null;
     quizHistory: QuizHistoryItem[] | null;
-
+    
+    getLeaderboard: (uid: string) => Promise<{topUsers: UserProfile[], currentUserData: UserProfile | null, currentUserRank: number | null}>;
     saveWorkoutRoutine: (routine: WorkoutRoutineOutput & { sport?: string }) => void;
     addCompletedWorkout: (workout: CompletedWorkout) => void;
     addDetailedWorkoutLog: (log: DetailedWorkoutLog) => void;
@@ -35,6 +47,7 @@ interface UserDataContextType {
     setInitialDiamonds: (amount: number) => void;
     consumeDiamonds: (amount: number) => void;
     addDiamonds: (amount: number) => void;
+    addXP: (amount: number) => void;
 
     updateTriviaHistory: (sessionHistory: TriviaHistoryItem[]) => void;
     updateQuizHistory: (sessionHistory: QuizHistoryItem[]) => void;
@@ -75,6 +88,7 @@ const saveToLocalStorage = <T,>(key: string, value: T) => {
 
 
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [onboardingComplete, setOnboardingCompleteState] = useState<boolean | null>(null);
     const [workoutRoutine, setWorkoutRoutineState] = useState<(WorkoutRoutineOutput & { sport?: string }) | null>(null);
@@ -82,6 +96,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [detailedWorkoutLogs, setDetailedWorkoutLogsState] = useState<DetailedWorkoutLog[] | null>(null);
     const [pendingFeedback, setPendingFeedbackState] = useState<string[] | null>(null);
     const [diamonds, setDiamondsState] = useState<number | null>(null);
+    const [xp, setXpState] = useState<number | null>(null);
     const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
 
@@ -93,10 +108,39 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setDetailedWorkoutLogsState(loadFromLocalStorage('detailedWorkoutLogs', []));
         setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
         setDiamondsState(loadFromLocalStorage('diamonds', 0));
+        setXpState(loadFromLocalStorage('xp', 0));
         setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
         setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         setLoading(false);
     }, []);
+    
+    // Update user profile in firestore when user object changes
+    useEffect(() => {
+        const updateUserProfile = async () => {
+            if (user && !user.isAnonymous) {
+                const userRef = doc(db, 'users', user.uid);
+                const userSnap = await getDoc(userRef);
+
+                const profileData = {
+                    uid: user.uid,
+                    displayName: user.displayName || 'Anonymous',
+                    photoURL: user.photoURL || '',
+                    xp: xp ?? 0,
+                };
+                
+                if (userSnap.exists()) {
+                    await updateDoc(userRef, {
+                        displayName: profileData.displayName,
+                        photoURL: profileData.photoURL,
+                    });
+                } else {
+                    await setDoc(userRef, profileData);
+                }
+            }
+        };
+        updateUserProfile();
+    }, [user, xp]);
+
 
      // Listen for storage changes from other tabs
     useEffect(() => {
@@ -107,6 +151,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             setDetailedWorkoutLogsState(loadFromLocalStorage('detailedWorkoutLogs', []));
             setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
             setDiamondsState(loadFromLocalStorage('diamonds', 0));
+            setXpState(loadFromLocalStorage('xp', 0));
             setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
             setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         };
@@ -172,6 +217,16 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setDiamondsState(newDiamonds);
         saveToLocalStorage('diamonds', newDiamonds);
     }, [diamonds]);
+    
+    const addXP = useCallback(async (amount: number) => {
+        const newXP = (xp ?? 0) + amount;
+        setXpState(newXP);
+        saveToLocalStorage('xp', newXP);
+        if (user && !user.isAnonymous) {
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, { xp: newXP });
+        }
+    }, [xp, user]);
 
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
         const updated = [...(triviaHistory ?? []), ...sessionHistory];
@@ -188,7 +243,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const resetAllData = useCallback(() => {
         const keys = [
             'onboardingComplete', 'workoutRoutine', 'completedWorkouts', 
-            'detailedWorkoutLogs', 'pendingFeedbackExercises', 'diamonds',
+            'detailedWorkoutLogs', 'pendingFeedbackExercises', 'diamonds', 'xp',
             'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour'
         ];
         keys.forEach(key => localStorage.removeItem(key));
@@ -199,8 +254,35 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setDetailedWorkoutLogsState([]);
         setPendingFeedbackState([]);
         setDiamondsState(0);
+        setXpState(0);
         setTriviaHistoryState([]);
         setQuizHistoryState([]);
+    }, []);
+    
+    const getLeaderboard = useCallback(async (uid: string) => {
+        setLoading(true);
+        try {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, orderBy('xp', 'desc'), limit(10));
+            const querySnapshot = await getDocs(q);
+            const topUsers = querySnapshot.docs.map(doc => doc.data() as UserProfile);
+
+            const userRef = doc(db, 'users', uid);
+            const userSnap = await getDoc(userRef);
+            const currentUserData = userSnap.exists() ? userSnap.data() as UserProfile : null;
+            
+            // This is a simplified rank calculation. For large datasets, a more scalable solution is needed.
+            const allUsersSnapshot = await getDocs(query(usersRef, orderBy('xp', 'desc')));
+            const currentUserRank = allUsersSnapshot.docs.findIndex(doc => doc.id === uid) + 1;
+
+            return { topUsers, currentUserData, currentUserRank: currentUserRank > 0 ? currentUserRank : null };
+
+        } catch (error) {
+            console.error("Error getting leaderboard:", error);
+            return { topUsers: [], currentUserData: null, currentUserRank: null };
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
 
@@ -212,8 +294,10 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         detailedWorkoutLogs,
         pendingFeedback,
         diamonds,
+        xp,
         triviaHistory,
         quizHistory,
+        getLeaderboard,
         saveWorkoutRoutine,
         addCompletedWorkout,
         addDetailedWorkoutLog,
@@ -224,6 +308,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setInitialDiamonds,
         consumeDiamonds,
         addDiamonds,
+        addXP,
         updateTriviaHistory,
         updateQuizHistory,
         resetAllData,
