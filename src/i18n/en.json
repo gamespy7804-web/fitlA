@@ -448,7 +448,8 @@
         "equipment": {
           "label": "What equipment do you have?",
           "options": {
-            "none": "I don't have any equipment"
+            "none": "I have no equipment",
+            "gymAccess": "I go to the gym"
           },
           "categories": {
             "basics": "Basics",

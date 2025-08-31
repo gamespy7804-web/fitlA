@@ -193,6 +193,18 @@ export default function OnboardingPage() {
     'accessories': { items: ['kettlebell', 'foamRoller'] },
   };
 
+  const allGymEquipment = Object.values(equipmentCategories).flatMap(category => category.items);
+
+  const handleSelectAllGym = () => {
+    const currentValues = form.getValues('equipment');
+    // If all are already selected, deselect them. Otherwise, select all.
+    if (currentValues.length === allGymEquipment.length) {
+      form.setValue('equipment', [], { shouldValidate: true });
+    } else {
+      form.setValue('equipment', allGymEquipment, { shouldValidate: true });
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg overflow-hidden">
@@ -333,21 +345,29 @@ export default function OnboardingPage() {
                         <FormItem>
                             <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
                             <FormControl>
-                                <div className="space-y-4">
-                                    <Button
-                                        type="button"
-                                        variant={form.getValues('equipment').includes('none') ? 'destructive' : 'outline'}
-                                        className="w-full"
-                                        onClick={() => {
-                                            const hasNone = form.getValues('equipment').includes('none');
-                                            form.setValue('equipment', hasNone ? [] : ['none'], { shouldValidate: true });
-                                        }}
-                                    >
-                                        {t('onboarding.questions.equipment.options.none')}
-                                    </Button>
-                                    <ScrollArea className="h-64 pr-3">
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Button
+                                            type="button"
+                                            variant={form.getValues('equipment').length === allGymEquipment.length ? 'default' : 'outline'}
+                                            onClick={handleSelectAllGym}
+                                        >
+                                            {t('onboarding.questions.equipment.options.gymAccess')}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant={form.getValues('equipment').includes('none') ? 'destructive' : 'outline'}
+                                            onClick={() => {
+                                                const hasNone = form.getValues('equipment').includes('none');
+                                                form.setValue('equipment', hasNone ? [] : ['none'], { shouldValidate: true });
+                                            }}
+                                        >
+                                            {t('onboarding.questions.equipment.options.none')}
+                                        </Button>
+                                    </div>
+                                    <ScrollArea className="h-56 pr-3">
                                         <div className="space-y-4">
-                                            {/* Basics Category */}
+                                             {/* Basics Category */}
                                             <div className="space-y-2">
                                                 <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
                                                 <div className="grid grid-cols-2 gap-2">

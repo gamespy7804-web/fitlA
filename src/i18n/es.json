@@ -448,7 +448,8 @@
         "equipment": {
           "label": "¿Qué equipamiento tienes?",
           "options": {
-            "none": "No tengo ningún equipo"
+            "none": "No tengo ningún equipo",
+            "gymAccess": "Voy al gimnasio"
           },
           "categories": {
             "basics": "Básicos",
