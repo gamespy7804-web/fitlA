@@ -601,11 +601,16 @@
       },
       "actions": {
         "title": "Main Actions",
-        "description": "From this button you can generate a new routine from scratch or go to the technique analysis tool. Give it a try!"
+        "description": "From this button you can generate a new routine or go to the technique analysis tool. Click it to continue!"
       },
       "feedback": {
         "title": "Form Analysis",
-        "description": "This option takes you to the tool to record your exercises and receive AI corrections. This ensures good technique!"
+        "description": "This option takes you to the tool to record your exercises and receive AI corrections. This ensures good technique! Click here to continue."
+      },
+      "feedbackPage": {
+          "title": "Evaluation Tools",
+          "description": "Here you can record videos to analyze your technique or, in the future, upload photos to analyze your physique. Let's go back to the dashboard.",
+          "nextBtnText": "Go to Dashboard"
       },
       "log": {
         "title": "Training Log",
@@ -621,15 +626,16 @@
       },
       "startWorkout": {
         "title": "Start Your Workout",
-        "description": "Click here to start the first day of your routine. Inside you will find more tips about the features!"
+        "description": "This is your first day. Click on it to start training. The tour will continue inside!"
       },
       "end": {
         "title": "You're Ready!",
-        "description": "You now know the basics. It's time to start training. Let's go for it!"
+        "description": "You now know the basics. It's time to start training. Let's go for it!",
+        "description_no_workout": "It seems there was an issue generating your first routine. Go to the '+' button to try again. Now you're ready to explore on your own!"
       },
       "technique": {
         "title": "View Technique",
-        "description": "Click here to search for a YouTube video on how to perform the exercise correctly."
+        "description": "If you have doubts about an exercise, click here to search for a YouTube video on how to perform it correctly."
       },
       "formAnalysis": {
         "title": "AI Form Analysis",

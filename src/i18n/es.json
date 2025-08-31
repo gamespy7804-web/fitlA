@@ -601,11 +601,16 @@
       },
       "actions": {
         "title": "Acciones Principales",
-        "description": "Desde este botón podrás generar una nueva rutina desde cero o ir a la herramienta de análisis de técnica. ¡Pruébalo!"
+        "description": "Desde este botón podrás generar una nueva rutina o ir a la herramienta de análisis de técnica. ¡Púlsalo para continuar!"
       },
       "feedback": {
         "title": "Análisis de Forma",
-        "description": "Esta opción te lleva a la herramienta para grabar tus ejercicios y recibir correcciones de la IA. ¡Así aseguras una buena técnica!"
+        "description": "Esta opción te lleva a la herramienta para grabar tus ejercicios y recibir correcciones de la IA. ¡Así aseguras una buena técnica! Pulsa aquí para continuar."
+      },
+      "feedbackPage": {
+        "title": "Herramientas de Evaluación",
+        "description": "Aquí podrás grabar videos para analizar tu técnica o, en el futuro, subir fotos para analizar tu físico. Volvamos al panel principal.",
+        "nextBtnText": "Ir al Panel"
       },
       "log": {
         "title": "Registro de Entrenamiento",
@@ -621,15 +626,16 @@
       },
       "startWorkout": {
         "title": "Comienza tu Entrenamiento",
-        "description": "Haz clic aquí para empezar el primer día de tu rutina. ¡Dentro encontrarás más consejos sobre las funciones!"
+        "description": "Este es tu primer día. ¡Haz clic en él para empezar a entrenar, el tour continuará dentro!"
       },
       "end": {
         "title": "¡Ya estás listo!",
-        "description": "Ya conoces lo básico. Es hora de empezar a entrenar. ¡A por ello!"
+        "description": "Ya conoces lo básico. Es hora de empezar a entrenar. ¡A por ello!",
+        "description_no_workout": "Parece que hubo un problema al generar tu primera rutina. Ve al botón '+' para intentarlo de nuevo. ¡Ya estás listo para explorar por tu cuenta!"
       },
       "technique": {
         "title": "Ver Técnica",
-        "description": "Haz clic aquí para buscar un video en YouTube sobre cómo realizar el ejercicio correctamente."
+        "description": "Si tienes dudas sobre un ejercicio, haz clic aquí para buscar un video en YouTube sobre cómo realizarlo correctamente."
       },
       "formAnalysis": {
         "title": "Análisis de Forma con IA",
