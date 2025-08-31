@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft, Image as ImageIcon, Gauge, Percent, BarChart, BrainCircuit, Construction } from 'lucide-react';
+import { Camera, Loader2, Sparkles, Video, AlertTriangle, Upload, CheckCircle, Info, ShoppingBag, ArrowRight, ArrowLeft, ImageIcon, Gauge, Percent, BarChart, BrainCircuit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useI18n } from '@/i18n/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,6 +76,7 @@ function FeedbackToolContent() {
   
   // Physique analysis state
   const [physiqueStep, setPhysiqueStep] = useState<PhysiqueStep>('upload');
+  const [physiqueDirection, setPhysiqueDirection] = useState<'forward' | 'backward'>('forward');
   const physiqueFileInputRef = useRef<HTMLInputElement>(null);
   const [isPhysiqueDragging, setIsPhysiqueDragging] = useState(false);
   const [physiquePhotoToAnalyze, setPhysiquePhotoToAnalyze] = useState<string | null>(null);
@@ -202,6 +203,7 @@ function FeedbackToolContent() {
   };
   
   const handlePhysiqueAnalyze = async () => {
+    setPhysiqueDirection('forward');
     setPhysiqueStep('analyzing');
     try {
       consumeDiamonds(PHYSIQUE_ANALYSIS_COST);
@@ -218,6 +220,7 @@ function FeedbackToolContent() {
         title: t('feedbackTool.physiqueAnalysis.errors.title'),
         description: t('feedbackTool.physiqueAnalysis.errors.description'),
       });
+      // TODO: refund diamonds
       setPhysiqueStep('upload');
     }
   };
@@ -231,6 +234,14 @@ function FeedbackToolContent() {
     setRecordedChunks([]);
     setDirection('backward');
     setStep('selectExercise');
+  }
+
+  const resetPhysiqueFlow = () => {
+    setPhysiquePhotoUrl(null);
+    setPhysiquePhotoToAnalyze(null);
+    setPhysiqueAnalysis(null);
+    setPhysiqueDirection('backward');
+    setPhysiqueStep('upload');
   }
 
   const processVideoFile = (file: File) => {
@@ -345,21 +356,144 @@ function FeedbackToolContent() {
   );
   
   const renderPhysiqueAnalysis = () => {
+    const hasEnoughDiamonds = (diamonds ?? 0) >= PHYSIQUE_ANALYSIS_COST;
+
     return (
-      <Card>
-          <CardHeader>
-              <CardTitle className="font-headline flex items-center gap-2">
-                <ImageIcon className="text-primary"/>
-                {t('feedbackTool.physiqueAnalysis.title')}
-              </CardTitle>
-              <CardDescription>{t('feedbackTool.physiqueAnalysis.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center text-center text-muted-foreground min-h-[300px] space-y-4">
-              <Construction className="h-16 w-16" />
-              <p className="font-bold text-lg">{t('feedbackTool.physiqueAnalysis.wip.title')}</p>
-              <p className="text-sm max-w-sm">{t('feedbackTool.physiqueAnalysis.wip.description')}</p>
-          </CardContent>
-      </Card>
+        <div className="w-full max-w-2xl mx-auto space-y-6">
+            <AnimatePresence mode="wait" custom={physiqueDirection}>
+            {physiqueStep === 'upload' && (
+                <motion.div key="physiqueUpload" custom={physiqueDirection} variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="font-headline">{t('feedbackTool.physiqueAnalysis.step1_title')}</CardTitle>
+                                <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border">
+                                    <span role="img" aria-label="diamond">💎</span>
+                                    <span>{diamonds ?? 0}</span>
+                                </div>
+                            </div>
+                            <CardDescription>{t('feedbackTool.physiqueAnalysis.step1_description')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div onDrop={handlePhysiqueDrop} onDragOver={handlePhysiqueDragEvents} onDragEnter={handlePhysiqueDragEvents} onDragLeave={handlePhysiqueDragEvents} className={cn("aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed transition-colors", isPhysiqueDragging ? 'border-primary bg-primary/10' : 'border-transparent')}>
+                                {physiquePhotoUrl ? <img src={physiquePhotoUrl} alt={t('feedbackTool.physiqueAnalysis.upload.alt')} className="w-full h-full object-contain rounded-md" /> : (<><ImageIcon className="h-12 w-12 text-muted-foreground" /><p className="mt-2 text-sm text-muted-foreground px-4">{t('feedbackTool.physiqueAnalysis.upload.description')}</p><Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()} >{t('feedbackTool.physiqueAnalysis.upload.selectFile')}</Button></>)}
+                                <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} />
+                            </div>
+                            <div className="mt-6 space-y-4">
+                                <Button onClick={handlePhysiqueAnalyze} className="w-full" size="lg" disabled={!physiquePhotoToAnalyze || !hasEnoughDiamonds}>
+                                    <Sparkles className="mr-2" />
+                                    {t('feedbackTool.physiqueAnalysis.buttons.analyze')} ({PHYSIQUE_ANALYSIS_COST} 💎)
+                                </Button>
+                                {!hasEnoughDiamonds && (
+                                    <Alert variant="destructive">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle>{t('feedbackTool.noCredits.title')}</AlertTitle>
+                                        <AlertDescription>
+                                            {t('feedbackTool.noCredits.description')}
+                                            <Button variant="secondary" className="mt-2 w-full" onClick={() => router.push('/store')}>
+                                                <ShoppingBag className="mr-2" /> {t('feedbackTool.noCredits.buyMore')}
+                                            </Button>
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            )}
+
+            {physiqueStep === 'analyzing' && (
+                <motion.div key="physiqueAnalyzing" custom={physiqueDirection} variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col items-center justify-center text-center gap-4 text-primary p-8 h-full min-h-[50vh]">
+                    <Loader2 className="h-16 w-16 animate-spin" />
+                    <h3 className="text-2xl font-bold font-headline">{t('feedbackTool.physiqueAnalysis.loading.title')}</h3>
+                    <p className="text-base text-muted-foreground">{t('feedbackTool.physiqueAnalysis.loading.description')}</p>
+                </motion.div>
+            )}
+
+            {physiqueStep === 'result' && physiqueAnalysis && (
+                <motion.div key="physiqueResult" custom={physiqueDirection} variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                    <Card className="w-full max-w-2xl mx-auto">
+                        <CardHeader>
+                            <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                                <Sparkles className="text-primary" /> {t('feedbackTool.physiqueAnalysis.results.title')}
+                            </CardTitle>
+                            <CardDescription>{t('feedbackTool.physiqueAnalysis.results.description')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className='text-lg'>{t('feedbackTool.physiqueAnalysis.results.averageScore')}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex items-center justify-center p-6">
+                                     <div className="relative w-40 h-40">
+                                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                                            <circle className="stroke-current text-border" strokeWidth="8" cx="50" cy="50" r="45" fill="transparent" />
+                                            <motion.circle
+                                                className="stroke-current text-primary"
+                                                strokeWidth="8"
+                                                strokeLinecap="round"
+                                                cx="50"
+                                                cy="50"
+                                                r="45"
+                                                fill="transparent"
+                                                strokeDasharray="282.6"
+                                                strokeDashoffset={282.6 * (1 - physiqueAnalysis.averageScore / 10)}
+                                                transform="rotate(-90 50 50)"
+                                                initial={{ strokeDashoffset: 282.6 }}
+                                                animate={{ strokeDashoffset: 282.6 * (1 - physiqueAnalysis.averageScore / 10) }}
+                                                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <span className="text-5xl font-bold font-headline">{physiqueAnalysis.averageScore.toFixed(1)}</span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <div className="grid grid-cols-2 gap-4 text-center">
+                                <Card>
+                                    <CardHeader className='pb-2'>
+                                        <CardTitle className="text-sm font-medium flex items-center justify-center gap-1 text-muted-foreground"><BrainCircuit className='h-4 w-4' />{t('feedbackTool.physiqueAnalysis.results.potential')}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent><p className="text-2xl font-bold">{physiqueAnalysis.potentialScore.toFixed(1)}</p></CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader className='pb-2'>
+                                        <CardTitle className="text-sm font-medium flex items-center justify-center gap-1 text-muted-foreground"><BarChart className='h-4 w-4' />{t('feedbackTool.physiqueAnalysis.results.symmetry')}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent><p className="text-2xl font-bold">{physiqueAnalysis.symmetryScore.toFixed(1)}</p></CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader className='pb-2'>
+                                        <CardTitle className="text-sm font-medium flex items-center justify-center gap-1 text-muted-foreground"><Gauge className='h-4 w-4' />{t('feedbackTool.physiqueAnalysis.results.genetics')}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent><p className="text-2xl font-bold">{physiqueAnalysis.geneticsScore.toFixed(1)}</p></CardContent>
+                                </Card>
+                                 <Card>
+                                    <CardHeader className='pb-2'>
+                                        <CardTitle className="text-sm font-medium flex items-center justify-center gap-1 text-muted-foreground"><Percent className='h-4 w-4' />{t('feedbackTool.physiqueAnalysis.results.bodyFat')}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent><p className="text-2xl font-bold">{physiqueAnalysis.bodyFatPercentage}%</p></CardContent>
+                                </Card>
+                            </div>
+                            <Card>
+                                <CardHeader className='pb-2'>
+                                    <CardTitle className='text-base'>{t('feedbackTool.physiqueAnalysis.results.feedbackTitle')}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">{physiqueAnalysis.feedback}</p>
+                                </CardContent>
+                            </Card>
+
+                            <Button onClick={resetPhysiqueFlow} className="w-full mt-6">
+                                {t('feedbackTool.buttons.analyzeAnother')}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            )}
+        </AnimatePresence>
+        </div>
     )
   }
 
