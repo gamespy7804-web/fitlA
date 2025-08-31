@@ -496,6 +496,14 @@
         "availability": {
             "label": "¿Cuál es tu disponibilidad?"
         },
+        "physique": {
+            "label": "Análisis de Físico (Opcional)",
+            "description": "Sube una foto para que la IA la analice y personalice aún más tu rutina.",
+            "prompt": "Sube una foto de tu físico para un análisis inicial.",
+            "analyzing": "Analizando tu foto...",
+            "complete": "Análisis completado",
+            "score": "Puntuación"
+        },
         "trainingDays": { "label": "¿Días a la semana?", "placeholder": "ej. 3" },
         "trainingDuration": { "label": "¿Minutos por sesión?", "placeholder": "ej. 60" }
       },
@@ -614,7 +622,7 @@
       },
       "feedbackPage": {
         "title": "Herramientas de Evaluación",
-        "description": "¡Bienvenido a la sección de análisis! Aquí es donde la magia de la IA ocurre.",
+        "description": "Bienvenido a la sección de análisis. Aquí es donde la magia de la IA ocurre.",
         "techniqueTab": {
             "title": "Análisis de Técnica",
             "description": "En esta pestaña, puedes seleccionar un ejercicio, grabar un video y nuestra IA te dará correcciones para mejorar tu forma y prevenir lesiones."

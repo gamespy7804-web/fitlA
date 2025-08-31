@@ -496,6 +496,14 @@
         "availability": {
             "label": "What is your availability?"
         },
+        "physique": {
+            "label": "Physique Analysis (Optional)",
+            "description": "Upload a photo for the AI to analyze and further customize your routine.",
+            "prompt": "Upload a photo of your physique for an initial analysis.",
+            "analyzing": "Analyzing your photo...",
+            "complete": "Analysis Complete",
+            "score": "Score"
+        },
         "trainingDays": { "label": "Days per week?", "placeholder": "e.g. 3" },
         "trainingDuration": { "label": "Minutes per session?", "placeholder": "e.g. 60" }
       },

@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { generateWorkoutRoutine } from '@/ai/flows/workout-routine-generator';
+import { analyzePhysique, type PhysiqueAnalysisOutput } from '@/ai/flows/physique-analyst-generator';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -33,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Plane, User } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Plane, User, Upload, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -65,6 +66,7 @@ const steps = [
   { id: 'equipment', fields: ['equipment'] },
   { id: 'details', fields: ['age', 'weight', 'gender'] },
   { id: 'availability', fields: ['trainingDays', 'trainingDuration'] },
+  { id: 'physique', fields: [] }, // New step
 ] as const;
 
 
@@ -79,6 +81,13 @@ export default function OnboardingPage() {
   const [selectedSport, setSelectedSport] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+
+  // Physique analysis state
+  const physiqueFileInputRef = useRef<HTMLInputElement>(null);
+  const [physiquePhoto, setPhysiquePhoto] = useState<string | null>(null);
+  const [physiquePhotoUrl, setPhysiquePhotoUrl] = useState<string | null>(null);
+  const [physiqueAnalysis, setPhysiqueAnalysis] = useState<PhysiqueAnalysisOutput | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const formSchema = createFormSchema((key: string) => t(key as any));
 
@@ -98,6 +107,15 @@ export default function OnboardingPage() {
   });
 
   const nextStep = async () => {
+    // If we're on the physique step and they've completed analysis, move on
+    if (currentStepInfo.id === 'physique') {
+        if (currentStep < steps.length - 1) {
+            setDirection(1);
+            setCurrentStep(prev => prev + 1);
+        }
+        return;
+    }
+
     const currentStepInfo = steps[currentStep];
     const fieldsToValidate = currentStepInfo.fields;
 
@@ -128,9 +146,13 @@ export default function OnboardingPage() {
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const routine = await generateWorkoutRoutine({ ...values, language: locale });
+      const routine = await generateWorkoutRoutine({ 
+        ...values, 
+        language: locale,
+        physiqueAnalysis: physiqueAnalysis ?? undefined,
+      });
+
       if (routine.structuredRoutine && routine.structuredRoutine.length > 0) {
-        
         saveWorkoutRoutine({...routine, sport: values.sport });
         setOnboardingComplete(true);
         setInitialDiamonds(20);
@@ -159,6 +181,41 @@ export default function OnboardingPage() {
     }
   };
 
+  const handlePhysiqueFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        toast({ variant: 'destructive', title: t('feedbackTool.physiqueAnalysis.upload.invalidFileType') });
+        return;
+    }
+    if (physiquePhotoUrl) {
+      URL.revokeObjectURL(physiquePhotoUrl);
+    }
+    const newUrl = URL.createObjectURL(file);
+    setPhysiquePhotoUrl(newUrl);
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUri = e.target?.result as string;
+      if (dataUri) {
+          setPhysiquePhoto(dataUri);
+          setIsAnalyzing(true);
+          try {
+            const result = await analyzePhysique({ photoDataUri: dataUri, language: locale });
+            setPhysiqueAnalysis(result);
+          } catch(err) {
+             toast({ variant: 'destructive', title: t('feedbackTool.physiqueAnalysis.errors.title') });
+             setPhysiquePhoto(null);
+             setPhysiquePhotoUrl(null);
+          } finally {
+            setIsAnalyzing(false);
+          }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  
   if (authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -193,7 +250,6 @@ export default function OnboardingPage() {
     'accessories': { icon: Puzzle, items: ['kettlebell', 'foamRoller'] },
   };
 
-
   const handleEquipmentButtonClick = (item: string) => {
     const currentValues = form.getValues('equipment') || [];
     // These options are mutually exclusive
@@ -211,6 +267,7 @@ export default function OnboardingPage() {
     form.setValue('equipment', newValue.length > 0 ? newValue : [], { shouldValidate: true });
   };
 
+  const currentStepInfo = steps[currentStep];
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -235,7 +292,7 @@ export default function OnboardingPage() {
                   className="space-y-6 flex flex-col"
                 >
                   {/* Step 1: Sport */}
-                  {currentStep === 0 && (
+                  {currentStepInfo.id === 'sport' && (
                      <FormField
                       control={form.control}
                       name="sport"
@@ -294,7 +351,7 @@ export default function OnboardingPage() {
                     />
                   )}
                   {/* Step 2: Goals */}
-                  {currentStep === 1 && (
+                  {currentStepInfo.id === 'goals' && (
                      <FormField
                       control={form.control}
                       name="goals"
@@ -310,7 +367,7 @@ export default function OnboardingPage() {
                     />
                   )}
                   {/* Step 3: Fitness Level */}
-                  {currentStep === 2 && (
+                  {currentStepInfo.id === 'fitnessLevel' && (
                     <FormField
                       control={form.control}
                       name="fitnessLevel"
@@ -344,7 +401,7 @@ export default function OnboardingPage() {
                     />
                   )}
                   {/* Step 4: Equipment */}
-                  {currentStep === 3 && (
+                  {currentStepInfo.id === 'equipment' && (
                     <FormField
                       control={form.control}
                       name="equipment"
@@ -371,74 +428,70 @@ export default function OnboardingPage() {
                               </div>
                               <ScrollArea className="h-56 pr-3">
                                   <div className="space-y-4">
-                                      {/* Basics Category */}
-                                      <div className="space-y-2">
-                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              {equipmentCategories.basics.items.map((item) => (
-                                                      <Button
-                                                          key={item}
-                                                          type="button"
-                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                          className="h-auto py-3 justify-start text-left"
-                                                          onClick={() => handleEquipmentButtonClick(item)}
-                                                      >
-                                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                                      </Button>
-                                              ))}
-                                          </div>
-                                      </div>
-                                      {/* Gym Category */}
-                                      <div className="space-y-2">
-                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              {equipmentCategories.gym.items.map((item) => (
-                                                      <Button
-                                                          key={item}
-                                                          type="button"
-                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                          className="h-auto py-3 justify-start text-left"
-                                                          onClick={() => handleEquipmentButtonClick(item)}
-                                                      >
-                                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                                      </Button>
-                                              ))}
-                                          </div>
-                                      </div>
-                                      {/* Cardio Category */}
-                                      <div className="space-y-2">
-                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              {equipmentCategories.cardio.items.map((item) => (
-                                                      <Button
-                                                          key={item}
-                                                          type="button"
-                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                          className="h-auto py-3 justify-start text-left"
-                                                          onClick={() => handleEquipmentButtonClick(item)}
-                                                      >
-                                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                                      </Button>
-                                              ))}
-                                          </div>
-                                      </div>
-                                      {/* Accessories Category */}
-                                      <div className="space-y-2">
-                                          <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
-                                          <div className="grid grid-cols-2 gap-2">
-                                              {equipmentCategories.accessories.items.map((item) => (
-                                                      <Button
-                                                          key={item}
-                                                          type="button"
-                                                          variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                          className="h-auto py-3 justify-start text-left"
-                                                          onClick={() => handleEquipmentButtonClick(item)}
-                                                      >
-                                                          {t(`onboarding.questions.equipment.items.${item}`)}
-                                                      </Button>
-                                              ))}
-                                          </div>
-                                      </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {equipmentCategories.basics.items.map((item) => (
+                                                <Button
+                                                    key={item}
+                                                    type="button"
+                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                    className="h-auto py-3 justify-start text-left"
+                                                    onClick={() => handleEquipmentButtonClick(item)}
+                                                >
+                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {equipmentCategories.gym.items.map((item) => (
+                                                <Button
+                                                    key={item}
+                                                    type="button"
+                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                    className="h-auto py-3 justify-start text-left"
+                                                    onClick={() => handleEquipmentButtonClick(item)}
+                                                >
+                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {equipmentCategories.cardio.items.map((item) => (
+                                                <Button
+                                                    key={item}
+                                                    type="button"
+                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                    className="h-auto py-3 justify-start text-left"
+                                                    onClick={() => handleEquipmentButtonClick(item)}
+                                                >
+                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {equipmentCategories.accessories.items.map((item) => (
+                                                <Button
+                                                    key={item}
+                                                    type="button"
+                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                    className="h-auto py-3 justify-start text-left"
+                                                    onClick={() => handleEquipmentButtonClick(item)}
+                                                >
+                                                    {t(`onboarding.questions.equipment.items.${item}`)}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
                                   </div>
                               </ScrollArea>
                             </div>
@@ -449,7 +502,7 @@ export default function OnboardingPage() {
                     />
                   )}
                   {/* Step 5: Details */}
-                  {currentStep === 4 && (
+                  {currentStepInfo.id === 'details' && (
                     <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -504,7 +557,7 @@ export default function OnboardingPage() {
                     </div>
                   )}
                    {/* Step 6: Availability */}
-                  {currentStep === 5 && (
+                  {currentStepInfo.id === 'availability' && (
                      <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -537,6 +590,37 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                   )}
+                  {/* Step 7: Physique Analysis */}
+                  {currentStepInfo.id === 'physique' && (
+                    <div className="space-y-4">
+                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.physique.label')}</FormLabel>
+                        <p className="text-sm text-center text-muted-foreground -mt-4">{t('onboarding.questions.physique.description')}</p>
+                        
+                        <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed">
+                           {isAnalyzing ? (
+                                <>
+                                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                                    <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.analyzing')}</p>
+                                </>
+                           ) : physiqueAnalysis ? (
+                                <>
+                                    <CheckCircle className="h-16 w-16 text-green-500" />
+                                    <p className="mt-2 text-sm font-semibold text-muted-foreground px-4">{t('onboarding.questions.physique.complete')}</p>
+                                    <p className="text-xs text-muted-foreground">({t('onboarding.questions.physique.score')}: {physiqueAnalysis.averageScore})</p>
+                                </>
+                           ) : (
+                            <>
+                                <Upload className="h-12 w-12 text-muted-foreground" />
+                                <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.prompt')}</p>
+                                <Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()}>
+                                    {t('feedbackTool.physiqueAnalysis.upload.selectFile')}
+                                </Button>
+                            </>
+                           )}
+                           <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} disabled={isAnalyzing || !!physiqueAnalysis} />
+                        </div>
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </CardContent>
@@ -553,8 +637,8 @@ export default function OnboardingPage() {
                     </Button>
                    ) : <div />
                 ) : (
-                    <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button type="submit" disabled={isLoading || isAnalyzing}>
+                    {(isLoading || isAnalyzing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <Sparkles className="mr-2" />
                     {t('onboarding.buttons.generate')}
                     </Button>
@@ -566,3 +650,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
