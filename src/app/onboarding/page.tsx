@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane, Barbell } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, Weight, HeartPulse, Puzzle, Plane } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -378,7 +378,7 @@ export default function OnboardingPage() {
 
                                             {/* Gym Category */}
                                             <div className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Barbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {equipmentCategories.gym.items.map((item) => (
                                                         <FormField
