@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Plane, User, Upload, CheckCircle } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Upload, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -66,7 +66,7 @@ const steps = [
   { id: 'equipment', fields: ['equipment'] },
   { id: 'details', fields: ['age', 'weight', 'gender'] },
   { id: 'availability', fields: ['trainingDays', 'trainingDuration'] },
-  { id: 'physique', fields: [] }, // New step
+  { id: 'physique', fields: [] },
 ] as const;
 
 
@@ -108,17 +108,15 @@ export default function OnboardingPage() {
 
   const nextStep = async () => {
     const currentStepInfo = steps[currentStep];
+    const fieldsToValidate = currentStepInfo.fields;
     
-    // If we're on the physique step, just move to the next (which is submission)
     if (currentStepInfo.id === 'physique') {
-        if (currentStep < steps.length - 1) {
+        if (currentStep < steps.length) { // Allow moving to the final submission step
             setDirection(1);
             setCurrentStep(prev => prev + 1);
         }
         return;
     }
-
-    const fieldsToValidate = currentStepInfo.fields;
 
     // Special handling for 'other' sport
     if (currentStepInfo.id === 'sport' && selectedSport === 'other') {
@@ -140,8 +138,10 @@ export default function OnboardingPage() {
   }
 
   const prevStep = () => {
-    setDirection(-1);
-    setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+        setDirection(-1);
+        setCurrentStep(prev => prev - 1);
+    }
   }
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -253,13 +253,17 @@ export default function OnboardingPage() {
 
   const handleEquipmentButtonClick = (item: string) => {
     const currentValues = form.getValues('equipment') || [];
-    // These options are mutually exclusive
-    if (item === 'none' || item === 'gym') {
-      form.setValue('equipment', [item], { shouldValidate: true });
+    
+    if (item === 'none') {
+      form.setValue('equipment', ['none'], { shouldValidate: true });
+      return;
+    }
+    
+    if (item === 'gym') {
+      form.setValue('equipment', ['gym'], { shouldValidate: true });
       return;
     }
 
-    // If 'none' or 'gym' is selected, and user clicks something else, deselect 'none'/'gym'
     const withoutSpecialOptions = currentValues.filter(v => v !== 'none' && v !== 'gym');
     const newValue = withoutSpecialOptions.includes(item)
       ? withoutSpecialOptions.filter(value => value !== item)
@@ -429,70 +433,27 @@ export default function OnboardingPage() {
                               </div>
                               <ScrollArea className="h-56 pr-3">
                                   <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.basics')}</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {equipmentCategories.basics.items.map((item) => (
-                                                <Button
-                                                    key={item}
-                                                    type="button"
-                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                    className="h-auto py-3 justify-start text-left"
-                                                    onClick={() => handleEquipmentButtonClick(item)}
-                                                >
-                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Dumbbell className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.gym')}</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {equipmentCategories.gym.items.map((item) => (
-                                                <Button
-                                                    key={item}
-                                                    type="button"
-                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                    className="h-auto py-3 justify-start text-left"
-                                                    onClick={() => handleEquipmentButtonClick(item)}
-                                                >
-                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><HeartPulse className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.cardio')}</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {equipmentCategories.cardio.items.map((item) => (
-                                                <Button
-                                                    key={item}
-                                                    type="button"
-                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                    className="h-auto py-3 justify-start text-left"
-                                                    onClick={() => handleEquipmentButtonClick(item)}
-                                                >
-                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><Puzzle className="h-4 w-4"/> {t('onboarding.questions.equipment.categories.accessories')}</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {equipmentCategories.accessories.items.map((item) => (
-                                                <Button
-                                                    key={item}
-                                                    type="button"
-                                                    variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                    className="h-auto py-3 justify-start text-left"
-                                                    onClick={() => handleEquipmentButtonClick(item)}
-                                                >
-                                                    {t(`onboarding.questions.equipment.items.${item}`)}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    {Object.entries(equipmentCategories).map(([category, value]) => {
+                                        const CategoryIcon = value.icon;
+                                        return (
+                                            <div key={category} className="space-y-2">
+                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><CategoryIcon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {value.items.map((item) => (
+                                                        <Button
+                                                            key={item}
+                                                            type="button"
+                                                            variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                            className="h-auto py-3 justify-start text-left"
+                                                            onClick={() => handleEquipmentButtonClick(item)}
+                                                        >
+                                                            {t(`onboarding.questions.equipment.items.${item}`)}
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
                                   </div>
                               </ScrollArea>
                             </div>
