@@ -64,14 +64,14 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
           description: t('onboardingTour.actions.description'),
           showButtons: [], // Hide buttons, force user to click
         },
-        onHighlightStarted: () => {
-          const actionButton = document.getElementById('nav-actions');
+        onHighlightStarted: (element) => {
+          const actionButton = element as HTMLElement;
           const clickHandler = () => {
-            driverObj.moveNext();
+            setTimeout(() => driverObj.moveNext(), 100); // Give menu time to open
             actionButton?.removeEventListener('click', clickHandler);
           };
           actionButton?.addEventListener('click', clickHandler);
-        }
+        },
       },
       {
         element: '#feedback-action',
@@ -80,8 +80,8 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
           description: t('onboardingTour.feedback.description'),
           showButtons: [],
         },
-        onHighlightStarted: () => {
-          const feedbackButton = document.getElementById('feedback-action');
+        onHighlightStarted: (element) => {
+          const feedbackButton = element as HTMLElement;
           const clickHandler = () => {
             // The link click will navigate, so we don't call moveNext() here.
             // The tour will resume on the next page.
@@ -98,7 +98,6 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
         popover: {
           title: t('onboardingTour.feedbackPage.title'),
           description: t('onboardingTour.feedbackPage.description'),
-          nextBtnText: t('onboardingTour.feedbackPage.nextBtnText'),
           onNextClick: () => {
             router.push('/dashboard');
             // Give router time to navigate before highlighting the next step
@@ -144,7 +143,6 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
         popover: {
           title: t('onboardingTour.end.title'),
           description: t('onboardingTour.end.description'),
-          doneBtnText: t('onboardingTour.done'),
           onDoneClick: () => {
              driverObj.destroy();
           }
@@ -159,7 +157,7 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
          if (!firstWorkoutNode) {
             // If there's no workout node, end the tour after chatbot.
             const initialSteps = [...tourSteps];
-             initialSteps.splice(4, 0, { // Insert chatbot step before end
+             initialSteps.splice(3, 0, { // Insert chatbot step after actions
               element: '#chatbot-button',
               popover: {
                 title: t('onboardingTour.chatbot.title'),
@@ -171,7 +169,6 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
                  popover: {
                    title: t('onboardingTour.end.title'),
                    description: t('onboardingTour.end.description_no_workout'),
-                   doneBtnText: t('onboardingTour.done'),
                  }
             });
             driverObj.setSteps(initialSteps);
