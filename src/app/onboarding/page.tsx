@@ -107,7 +107,9 @@ export default function OnboardingPage() {
   });
 
   const nextStep = async () => {
-    // If we're on the physique step and they've completed analysis, move on
+    const currentStepInfo = steps[currentStep];
+    
+    // If we're on the physique step, just move to the next (which is submission)
     if (currentStepInfo.id === 'physique') {
         if (currentStep < steps.length - 1) {
             setDirection(1);
@@ -116,7 +118,6 @@ export default function OnboardingPage() {
         return;
     }
 
-    const currentStepInfo = steps[currentStep];
     const fieldsToValidate = currentStepInfo.fields;
 
     // Special handling for 'other' sport
@@ -650,4 +651,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
