@@ -305,10 +305,13 @@
       },
       "quiz": {
         "title": "Preguntados"
+      },
+      "debate": {
+        "title": "Debate con IA"
       }
     },
     "games": {
-      "loading": "Generando tu quiz...",
+      "loading": "Generando tu juego...",
       "question": "Pregunta",
       "of": "de",
       "correct": "¡Correcto!",
@@ -320,6 +323,30 @@
       "difficulty": {
         "easy": "Más Fácil",
         "hard": "Más Difícil"
+      },
+      "debate": {
+        "title": "Debate con IA",
+        "description": "Elige un tema y defiende tu postura contra la IA.",
+        "challenge": "La IA tomará la postura contraria. ¡Defiende tu punto!",
+        "placeholder": "Tu argumento...",
+        "topics": {
+          "cardio_vs_weights": {
+            "title": "Cardio vs. Pesas para Perder Grasa",
+            "stance": "El cardio es mejor que las pesas para perder grasa."
+          },
+          "supplements_necessity": {
+            "title": "Necesidad de Suplementos",
+            "stance": "Los suplementos dietéticos son esenciales para los atletas serios."
+          },
+          "rest_days_overrated": {
+            "title": "¿Están sobrevalorados los días de descanso?",
+            "stance": "Los días de descanso son para los débiles; deberías entrenar todos los días."
+          },
+          "free_weights_vs_machines": {
+            "title": "Pesos Libres vs. Máquinas",
+            "stance": "Los pesos libres son muy superiores a las máquinas para construir músculo."
+          }
+        }
       },
       "finished": {
         "title": "¡Juego Terminado!",
@@ -545,7 +572,7 @@
       "exercise": "Ejercicio",
       "of": "de",
       "dayComplete": "¡Día completado!",
-      "allExercisesComplete": "Has completado todos los ejercicios para hoy.",
+      "allExercisesComplete": "Has completado todos los ejercicios de hoy.",
       "finishAndSave": "Finalizar y Guardar Entrenamiento",
       "errors": {
         "routineNotFound": "Rutina no encontrada",

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file imports all the Genkit flows that are used in the application.
@@ -14,3 +15,4 @@ import '@/ai/flows/physique-analyst-generator.ts';
 import '@/ai/flows/chatbot-flow.ts';
 import '@/ai/flows/trivia-generator.ts';
 import '@/ai/flows/multiple-choice-quiz-generator.ts';
+import '@/ai/flows/debate-flow.ts';

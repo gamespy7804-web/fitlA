@@ -4,15 +4,16 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Zap, Lightbulb, Gamepad2, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Zap, Lightbulb, Gamepad2, ArrowLeft, ChevronRight, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TriviaGame } from './trivia-game';
 import { MultipleChoiceQuiz } from './multiple-choice-quiz';
+import { DebateGame } from './debate-game';
 import { cn } from '@/lib/utils';
 import { startMusic, stopMusic } from '@/hooks/use-audio-effects';
 import { useI18n } from '@/i18n/client';
 
-type Game = 'trivia' | 'quiz' | null;
+type Game = 'trivia' | 'quiz' | 'debate' | null;
 
 export default function GamesPage() {
   const { t } = useI18n();
@@ -21,6 +22,7 @@ export default function GamesPage() {
   const games = [
     { id: 'trivia', title: t('gamesPage.trivia.title'), icon: Zap },
     { id: 'quiz', title: t('gamesPage.quiz.title'), icon: Lightbulb },
+    { id: 'debate', title: t('gamesPage.debate.title'), icon: BrainCircuit },
   ]
 
   useEffect(() => {
@@ -48,6 +50,8 @@ export default function GamesPage() {
             return <TriviaGame onGameFinish={handleGoBackToMenu} />;
         case 'quiz':
             return <MultipleChoiceQuiz onGameFinish={handleGoBackToMenu} />;
+        case 'debate':
+            return <DebateGame onGameFinish={handleGoBackToMenu} />;
         default:
             return null;
     }
@@ -66,11 +70,7 @@ export default function GamesPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full min-h-[calc(100vh-120px)] h-full flex flex-col justify-center items-center"
               >
-                  <div className="w-full flex justify-start mb-4">
-                      <Button variant="ghost" size="icon" onClick={handleGoBackToMenu}>
-                          <ArrowLeft />
-                      </Button>
-                  </div>
+                  {/* The back button is now inside each game component */}
                   {renderGame()}
               </motion.div>
           ) : (

@@ -135,7 +135,8 @@ export const RealTimeFeedbackInputSchema = z.object({
   videoDataUri: z
     .string()
     .describe(
-      'A video of the user performing an exercise, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'    ),
+      'A video of the user performing an exercise, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
+    ),
   exerciseType: z.string().describe('The type of exercise being performed.'),
   language: z.string().describe("The user's selected language (e.g., 'en', 'es')."),
 });
@@ -194,3 +195,23 @@ export const WorkoutRoutineInputSchema = z.object({
   physiqueAnalysis: PhysiqueAnalysisOutputSchema.optional().describe("An optional analysis of the user's physique, including scores and feedback. This should be used to tailor the routine.")
 });
 export type WorkoutRoutineInput = z.infer<typeof WorkoutRoutineInputSchema>;
+
+// Debate Game Schemas
+export const DebateMessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.string(),
+});
+export type DebateMessage = z.infer<typeof DebateMessageSchema>;
+
+export const DebateInputSchema = z.object({
+  topic: z.string().describe('The topic of the debate.'),
+  userStance: z.string().describe("The user's initial stance or argument on the topic."),
+  history: z.array(DebateMessageSchema).optional().describe('The conversation history of the debate.'),
+  language: z.string().describe("The user's selected language (e.g., 'en', 'es').")
+});
+export type DebateInput = z.infer<typeof DebateInputSchema>;
+
+export const DebateOutputSchema = z.object({
+  response: z.string().describe("The AI's counter-argument or response in the debate."),
+});
+export type DebateOutput = z.infer<typeof DebateOutputSchema>;
