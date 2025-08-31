@@ -601,7 +601,8 @@
       },
       "actions": {
         "title": "Acciones Principales",
-        "description": "Desde este botón podrás generar una nueva rutina o ir a la herramienta de análisis de técnica. ¡Púlsalo para continuar!"
+        "description": "Desde este botón podrás generar una nueva rutina o ir a la herramienta de análisis de técnica.",
+        "openMenu": "Abrir Menú"
       },
       "feedback": {
         "title": "Análisis de Forma",

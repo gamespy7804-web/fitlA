@@ -62,15 +62,14 @@ export function OnboardingTour({ isReady }: { isReady: boolean }) {
         popover: {
           title: t('onboardingTour.actions.title'),
           description: t('onboardingTour.actions.description'),
-          showButtons: [], // Hide buttons, force user to click
-        },
-        onHighlightStarted: (element) => {
-          const actionButton = element as HTMLElement;
-          const clickHandler = () => {
-            setTimeout(() => driverObj.moveNext(), 100); // Give menu time to open
-            actionButton?.removeEventListener('click', clickHandler);
-          };
-          actionButton?.addEventListener('click', clickHandler);
+          nextBtnText: t('onboardingTour.actions.openMenu'),
+          onNextClick: () => {
+             const actionButton = document.getElementById('nav-actions');
+             if (actionButton) {
+                actionButton.click();
+                setTimeout(() => driverObj.moveNext(), 200); // Give menu time to open
+             }
+          }
         },
       },
       {
