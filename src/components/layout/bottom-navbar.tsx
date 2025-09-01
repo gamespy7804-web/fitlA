@@ -29,31 +29,29 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
     { href: '/log', icon: BarChart2, label: t('nav.log'), id: 'nav-log' },
+    { type: 'action', icon: Plus, label: 'Actions', id: 'nav-actions' },
     { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
     { href: '/ranking', icon: Trophy, label: t('nav.ranking'), id: 'nav-ranking'},
-    { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
 
-  const centralButtonIndex = 2; // The "Games" button
+  const rightNavItem = { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' };
 
   return (
     <div id="bottom-navbar" className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
       <div className="grid h-full grid-cols-5 mx-auto">
-        {navItems.map((item, index) => {
-          
-          if (index === centralButtonIndex) {
+        {navItems.map((item) => {
+          if (item.type === 'action') {
             return (
-              <div key={index} className="flex items-center justify-center">
+              <div key={item.id} className="flex items-center justify-center">
                  <DropdownMenu onOpenChange={(open) => open && playSound('click')}>
                   <DropdownMenuTrigger asChild>
-                    <Link
-                      href={item.href!}
+                    <button
                       id={item.id}
                       className="inline-flex flex-col items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none"
                     >
                       <item.icon className="w-7 h-7" />
                       <span className="sr-only">{item.label}</span>
-                    </Link>
+                    </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="top" align="center" className="mb-4 w-64 p-2 space-y-1">
                        <DropdownMenuItem asChild>
