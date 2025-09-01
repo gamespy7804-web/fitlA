@@ -7,9 +7,9 @@ import { I18nProvider } from '@/i18n/client';
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
-      <UserDataProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </UserDataProvider>
+      <AuthProvider>
+        <UserDataProvider>{children}</UserDataProvider>
+      </AuthProvider>
     </I18nProvider>
   );
 }
