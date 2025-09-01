@@ -132,6 +132,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                     await updateDoc(userRef, {
                         displayName: profileData.displayName,
                         photoURL: profileData.photoURL,
+                        xp: profileData.xp
                     });
                 } else {
                     await setDoc(userRef, profileData);
@@ -223,8 +224,22 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setXpState(newXP);
         saveToLocalStorage('xp', newXP);
         if (user && !user.isAnonymous) {
-            const userRef = doc(db, 'users', user.uid);
-            await updateDoc(userRef, { xp: newXP });
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, { xp: newXP });
+            } catch (error) {
+                if ((error as any).code === 'not-found') {
+                    // The document doesn't exist, so create it.
+                    await setDoc(doc(db, 'users', user.uid), {
+                        uid: user.uid,
+                        displayName: user.displayName || 'Anonymous',
+                        photoURL: user.photoURL || '',
+                        xp: newXP,
+                    });
+                } else {
+                    console.error("Error updating XP in Firestore:", error);
+                }
+            }
         }
     }, [xp, user]);
 

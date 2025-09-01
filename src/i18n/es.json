@@ -6,7 +6,7 @@
       "log": "Registro",
       "games": "Juegos",
       "profile": "Perfil",
-      "multiplayer": "Multijugador",
+      "ranking": "Ranking",
       "actions": {
         "generate": "Generar Nuevo Entrenamiento",
         "feedback": "Análisis de Forma"
@@ -364,7 +364,7 @@
       }
     },
     "ranking": {
-      "title": "Multijugador",
+      "title": "Tabla de Clasificación",
       "description": "Compite con otros usuarios y demuestra quién es el más disciplinado.",
       "leaderboard": "Tabla de clasificación",
       "you": "Tú",

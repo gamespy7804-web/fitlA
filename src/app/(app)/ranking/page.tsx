@@ -51,7 +51,7 @@ export default function RankingPage() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
-                    <Users className="text-primary" />
+                    <Trophy className="text-primary" />
                     {t('ranking.title')}
                 </h1>
                 <p className="text-muted-foreground">

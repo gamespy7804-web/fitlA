@@ -6,7 +6,7 @@
       "log": "Log",
       "games": "Games",
       "profile": "Profile",
-      "multiplayer": "Multiplayer",
+      "ranking": "Ranking",
       "actions": {
         "generate": "Generate New Workout",
         "feedback": "Form Analysis"
@@ -364,7 +364,7 @@
       }
     },
     "ranking": {
-      "title": "Multiplayer",
+      "title": "Leaderboard",
       "description": "Compete with other users and prove who is the most disciplined.",
       "leaderboard": "Leaderboard",
       "you": "You",

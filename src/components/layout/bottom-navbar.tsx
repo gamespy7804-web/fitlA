@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2, Users } from 'lucide-react';
+import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -30,18 +30,18 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
     { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
     { href: '/log', icon: BarChart2, label: t('nav.log'), id: 'nav-log' },
     { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
-    { href: '/ranking', icon: Users, label: t('nav.multiplayer'), id: 'nav-ranking'},
+    { href: '/ranking', icon: Trophy, label: t('nav.ranking'), id: 'nav-ranking'},
     { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
+
+  const centralButtonIndex = 2; // The "Games" button
 
   return (
     <div id="bottom-navbar" className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
       <div className="grid h-full grid-cols-5 mx-auto">
         {navItems.map((item, index) => {
           
-          // Custom central action button if we want it back.
-          // For now, games is the central button.
-          if (item.href === '/games') {
+          if (index === centralButtonIndex) {
             return (
               <div key={index} className="flex items-center justify-center">
                  <DropdownMenu onOpenChange={(open) => open && playSound('click')}>
