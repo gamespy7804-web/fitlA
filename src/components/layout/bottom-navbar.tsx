@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2, Trophy } from 'lucide-react';
+import { Home, BarChart2, Scan, User, Plus, Sparkles, Gamepad2, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -29,8 +29,8 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/dashboard', icon: Home, label: t('nav.home'), id: 'nav-dashboard' },
     { href: '/log', icon: BarChart2, label: t('nav.log'), id: 'nav-log' },
-    { href: null, icon: Plus, label: 'Actions', id: 'nav-actions' }, // Placeholder for the action button
-    { href: '/ranking', icon: Trophy, label: t('nav.ranking'), id: 'nav-ranking'},
+    { href: '/games', icon: Gamepad2, label: t('nav.games'), id: 'nav-games' },
+    { href: '/ranking', icon: Users, label: t('nav.multiplayer'), id: 'nav-ranking'},
     { href: '/settings', icon: User, label: t('nav.profile'), id: 'nav-settings' },
   ];
 
@@ -38,15 +38,22 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
     <div id="bottom-navbar" className="fixed bottom-0 left-0 z-50 w-full h-16 bg-card border-t border-border">
       <div className="grid h-full grid-cols-5 mx-auto">
         {navItems.map((item, index) => {
-          if (!item.href) {
-            // This is the central action button
+          
+          // Custom central action button if we want it back.
+          // For now, games is the central button.
+          if (item.href === '/games') {
             return (
               <div key={index} className="flex items-center justify-center">
                  <DropdownMenu onOpenChange={(open) => open && playSound('click')}>
                   <DropdownMenuTrigger asChild>
-                    <button type="button" id={item.id} className="inline-flex items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none">
-                        <Plus className="w-8 h-8" />
-                    </button>
+                    <Link
+                      href={item.href!}
+                      id={item.id}
+                      className="inline-flex flex-col items-center justify-center w-14 h-14 font-medium bg-primary rounded-full text-primary-foreground hover:bg-primary/90 focus:ring-4 focus:ring-primary/50 focus:outline-none"
+                    >
+                      <item.icon className="w-7 h-7" />
+                      <span className="sr-only">{item.label}</span>
+                    </Link>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent side="top" align="center" className="mb-4 w-64 p-2 space-y-1">
                        <DropdownMenuItem asChild>
@@ -66,12 +73,6 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
                             {pendingFeedbackCount > 0 && (
                                 <Badge variant="destructive" className='h-6 w-6 flex items-center justify-center p-0'>{pendingFeedbackCount}</Badge>
                             )}
-                          </Link>
-                      </DropdownMenuItem>
-                       <DropdownMenuItem asChild>
-                          <Link href="/games" onClick={() => playSound('swoosh')} className="w-full flex items-center gap-2 text-left p-2 rounded-md hover:bg-muted">
-                            <Gamepad2 />
-                            <span>{t('nav.games')}</span>
                           </Link>
                       </DropdownMenuItem>
                   </DropdownMenuContent>
