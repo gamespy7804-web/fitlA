@@ -26,7 +26,8 @@
       "askAi": "Ask AI",
       "signOut": "Sign Out",
       "analysisCredits": "Diamonds",
-      "analysisCredits_beta": "Diamonds. Click to go to the store."
+      "analysisCredits_beta": "Diamonds. Click to go to the store.",
+      "xpPoints": "Experience Points"
     },
     "chatbot": {
       "title": "AI Assistant",
@@ -681,8 +682,8 @@
       }
     },
     "toast": {
-        "xpGained": "XP Gained!",
-        "streakBonus": "Streak bonus"
+      "xpGained": "XP Gained!",
+      "streakBonus": "Streak bonus"
     }
   }
 }

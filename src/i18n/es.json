@@ -26,7 +26,8 @@
       "askAi": "Pregúntale a la IA",
       "signOut": "Cerrar sesión",
       "analysisCredits": "Diamantes",
-      "analysisCredits_beta": "Diamantes. Haz clic para ir a la tienda."
+      "analysisCredits_beta": "Diamantes. Haz clic para ir a la tienda.",
+      "xpPoints": "Puntos de Experiencia"
     },
     "chatbot": {
       "title": "Asistente de IA",

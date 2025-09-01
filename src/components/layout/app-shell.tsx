@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, User, LogOut } from 'lucide-react';
+import { MessageSquare, User, LogOut, Flame, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { useI18n } from '@/i18n/client';
 import { GoogleIcon } from '../icons';
 import { useUserData } from '@/hooks/use-user-data';
+import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -26,7 +27,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const { diamonds } = useUserData();
+  const { diamonds, xp, streak } = useUserData();
   const isGamePage = pathname === '/games';
   const { t } = useI18n();
 
@@ -47,6 +48,35 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
         <header id="app-header" className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
              <span className="font-bold text-primary font-headline">workout IA</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border cursor-default">
+                        <Star className="h-4 w-4 text-yellow-400" />
+                        <span>{xp ?? 0}</span>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    <p>{t('appShell.xpPoints')}</p>
+                </TooltipContent>
+            </Tooltip>
+             {streak && streak > 1 && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                         <div className={cn(
+                            "flex items-center gap-1.5 font-bold px-3 py-1.5 rounded-md text-sm border cursor-default",
+                            "text-orange-400 border-orange-400/50 bg-orange-400/10",
+                            streak > 5 && "text-red-500 border-red-500/50 bg-red-500/10",
+                            "transition-colors duration-500"
+                        )}>
+                            <Flame className="h-4 w-4" />
+                            <span>{streak}</span>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                        <p>{t('dashboard.streakDays')}</p>
+                    </TooltipContent>
+                </Tooltip>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
@@ -126,5 +156,3 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
     </TooltipProvider>
   );
 }
-
-    
