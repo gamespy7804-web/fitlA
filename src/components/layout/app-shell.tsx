@@ -2,7 +2,7 @@
 "use client";
 
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, User, LogOut, Flame, Star } from 'lucide-react';
+import { User, LogOut, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -48,17 +48,6 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
         <header id="app-header" className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2">
              <span className="font-bold text-primary font-headline">workout IA</span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border cursor-default">
-                        <span role="img" aria-label="diamond" className="text-base">💎</span>
-                        <span>{xp ?? 0}</span>
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    <p>{t('appShell.xpPoints')}</p>
-                </TooltipContent>
-            </Tooltip>
              {streak && streak > 1 && (
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -68,7 +57,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
                             streak > 5 && "text-red-500 border-red-500/50 bg-red-500/10",
                             "transition-colors duration-500"
                         )}>
-                            <Flame className="h-4 w-4" />
+                            <span>🔥</span>
                             <span>{streak}</span>
                         </div>
                     </TooltipTrigger>
@@ -80,15 +69,18 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Chatbot" onClick={openChatbot} id="chatbot-button">
-                      <MessageSquare className="w-5 h-5" />
-                  </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                  <p>{t('appShell.askAi')}</p>
-              </TooltipContent>
+             <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" className="h-auto px-2 py-1.5">
+                        <div className="flex items-center gap-2 bg-secondary border border-border text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm">
+                            <span role="img" aria-label="ruby" className="text-base" style={{ filter: 'grayscale(100%) brightness(0.7) sepia(100%) hue-rotate(-50deg) saturate(600%) contrast(1)' }}>💎</span>
+                            <span>{xp ?? 0}</span>
+                        </div>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    <p>{t('appShell.xpPoints')}</p>
+                </TooltipContent>
             </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>

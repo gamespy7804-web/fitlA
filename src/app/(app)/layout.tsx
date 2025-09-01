@@ -5,7 +5,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { AppShell } from '@/components/layout/app-shell';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { WorkoutGeneratorDialog } from './dashboard/workout-generator-dialog';
-import { ChatbotSheet } from '@/components/chatbot/chatbot-sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { getThemeForSport } from '@/lib/theme';
@@ -106,14 +105,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <WorkoutGeneratorDialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen} />
           </BottomNavbar>
         </AppShell>
-        <ChatbotSheet 
-          open={isChatbotOpen} 
-          onOpenChange={setIsChatbotOpen}
-          onOpenGenerator={() => {
-            setIsChatbotOpen(false);
-            setIsGeneratorOpen(true);
-          }} 
-        />
         <Toaster />
         <OnboardingTour isReady={isReadyForTour} />
     </div>
