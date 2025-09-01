@@ -85,13 +85,14 @@ export function BottomNavbar({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href!}
               onClick={() => playSound('click')}
+              aria-label={item.label}
               className={cn(
                 'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
                 pathname === item.href ? 'text-primary' : 'text-muted-foreground'
               )}
             >
-              <item.icon className="w-5 h-5 mb-1" />
-              <span className="text-xs">{item.label}</span>
+              <item.icon className="w-6 h-6" />
+              <span className="sr-only">{item.label}</span>
             </Link>
           );
         })}
