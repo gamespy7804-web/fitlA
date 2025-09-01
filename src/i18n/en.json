@@ -27,7 +27,8 @@
       "signOut": "Sign Out",
       "analysisCredits": "Diamonds",
       "analysisCredits_beta": "Diamonds. Click to go to the store.",
-      "xpPoints": "Experience Points"
+      "xpPoints": "Experience Points",
+      "streak": "Day Streak"
     },
     "chatbot": {
       "title": "AI Assistant",
@@ -684,6 +685,28 @@
     "toast": {
       "xpGained": "XP Gained!",
       "streakBonus": "Streak bonus"
+    },
+    "missions": {
+      "cardTitle": "Weekly Missions",
+      "rewardReason": "Mission: {{mission}}",
+      "missions": {
+        "complete_3_workouts": {
+          "title": "Consistent Athlete",
+          "description": "Complete 3 workouts this week."
+        },
+        "complete_5_workouts": {
+          "title": "Weekly Warrior",
+          "description": "Complete 5 workouts this week."
+        },
+        "lift_10000_kg": {
+          "title": "Volume Builder",
+          "description": "Lift a total of 10,000 kg."
+        },
+        "reach_3_day_streak": {
+          "title": "On Fire",
+          "description": "Reach a 3-day streak."
+        }
+      }
     }
   }
 }

@@ -6,9 +6,10 @@ import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch } from 'firebase/firestore'; 
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
-import { isToday, isYesterday, parseISO } from 'date-fns';
+import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
 import { useToast } from './use-toast';
 import { useI18n } from '@/i18n/client';
+import { weeklyMissions, type Mission, type MissionProgress } from '@/lib/missions';
 
 
 // Define the shape of your data
@@ -22,6 +23,10 @@ type CompletedWorkout = { date: string; workout: string; duration: number; volum
 type DetailedWorkoutLog = { date: string; title: string; log: any[] };
 type TriviaHistoryItem = { statement: string; isMyth: boolean; userAnswer: boolean; isCorrect: boolean };
 type QuizHistoryItem = { question: string; userAnswerIndex: number; correctAnswerIndex: number; isCorrect: boolean };
+type WeeklyMissionData = {
+    weekId: string; // e.g., "2024-07-29"
+    progress: Record<string, MissionProgress>;
+};
 
 
 // Define the shape of the context
@@ -37,6 +42,7 @@ interface UserDataContextType {
     streak: number | null;
     triviaHistory: TriviaHistoryItem[] | null;
     quizHistory: QuizHistoryItem[] | null;
+    missionData: WeeklyMissionData | null;
     
     getLeaderboard: (uid: string) => Promise<{topUsers: UserProfile[], currentUserData: UserProfile | null, currentUserRank: number | null}>;
     saveWorkoutRoutine: (routine: WorkoutRoutineOutput & { sport?: string }) => void;
@@ -106,6 +112,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [streak, setStreakState] = useState<number | null>(null);
     const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
+    const [missionData, setMissionDataState] = useState<WeeklyMissionData | null>(null);
 
     // Initial load from localStorage
     useEffect(() => {
@@ -119,6 +126,22 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setStreakState(loadFromLocalStorage('streak', 0));
         setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
         setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
+
+        // Mission data check
+        const currentWeekId = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
+        const storedMissionData = loadFromLocalStorage<WeeklyMissionData | null>('weeklyMissionData', null);
+        if (storedMissionData && storedMissionData.weekId === currentWeekId) {
+            setMissionDataState(storedMissionData);
+        } else {
+            // Reset missions for the new week
+            const newMissionData = {
+                weekId: currentWeekId,
+                progress: Object.fromEntries(weeklyMissions.map(m => [m.id, { current: 0, completed: false }]))
+            };
+            setMissionDataState(newMissionData);
+            saveToLocalStorage('weeklyMissionData', newMissionData);
+        }
+
         setLoading(false);
     }, []);
     
@@ -164,6 +187,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             setStreakState(loadFromLocalStorage('streak', 0));
             setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
             setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
+            setMissionDataState(loadFromLocalStorage('weeklyMissionData', null));
         };
 
         window.addEventListener('storage', handleStorageChange);
@@ -174,6 +198,94 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setWorkoutRoutineState(routine);
         saveToLocalStorage('workoutRoutine', routine);
     }, []);
+
+    const addXP = useCallback(async (amount: number, bonusReason?: string) => {
+        let totalAmount = amount;
+        
+        // No longer adding streak bonus directly here, it's a mission
+        
+        const newXP = (xp ?? loadFromLocalStorage('xp', 0)) + totalAmount;
+        setXpState(newXP);
+        saveToLocalStorage('xp', newXP);
+
+        let description = `+${amount} XP`;
+        if (bonusReason) {
+            description = `+${amount} XP (${bonusReason})`;
+        } else {
+            const currentStreak = loadFromLocalStorage('streak', 0);
+            const streakBonus = currentStreak > 1 ? currentStreak * 10 : 0;
+            if (streakBonus > 0) {
+                 description += ` (+${streakBonus} ${t('toast.streakBonus')})`;
+            }
+        }
+
+        toast({
+            title: t('toast.xpGained'),
+            description: description
+        });
+
+        if (user && !user.isAnonymous) {
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                await updateDoc(userRef, { xp: newXP });
+            } catch (error) {
+                if ((error as any).code === 'not-found') {
+                    await setDoc(doc(db, 'users', user.uid), {
+                        uid: user.uid,
+                        displayName: user.displayName || 'Anonymous',
+                        photoURL: user.photoURL || '',
+                        xp: newXP,
+                    });
+                } else {
+                    console.error("Error updating XP in Firestore:", error);
+                }
+            }
+        }
+    }, [xp, user, toast, t]);
+
+    const updateMissionProgress = useCallback((newlyCompletedWorkout: CompletedWorkout, currentStreak: number) => {
+        const currentData = loadFromLocalStorage<WeeklyMissionData>('weeklyMissionData', {
+            weekId: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0],
+            progress: Object.fromEntries(weeklyMissions.map(m => [m.id, { current: 0, completed: false }]))
+        });
+
+        const newProgress = { ...currentData.progress };
+
+        weeklyMissions.forEach(mission => {
+            if (newProgress[mission.id]?.completed) return; // Skip completed missions
+
+            let missionUpdated = false;
+            let currentValue = newProgress[mission.id]?.current ?? 0;
+            
+            switch (mission.type) {
+                case 'workoutsCompleted':
+                    currentValue += 1;
+                    missionUpdated = true;
+                    break;
+                case 'totalVolume':
+                    currentValue += newlyCompletedWorkout.volume;
+                    missionUpdated = true;
+                    break;
+                case 'streak':
+                    currentValue = Math.max(currentValue, currentStreak);
+                    missionUpdated = true;
+                    break;
+            }
+
+            if (missionUpdated) {
+                newProgress[mission.id] = { ...newProgress[mission.id], current: currentValue };
+                if (currentValue >= mission.goal) {
+                    newProgress[mission.id].completed = true;
+                    addXP(mission.xpReward, t('missions.rewardReason', { mission: t(`missions.missions.${mission.id}.title`) }));
+                }
+            }
+        });
+        
+        const newMissionData = { ...currentData, progress: newProgress };
+        setMissionDataState(newMissionData);
+        saveToLocalStorage('weeklyMissionData', newMissionData);
+
+    }, [addXP, t]);
 
     const addCompletedWorkout = useCallback((workout: CompletedWorkout) => {
         const updated = [...(completedWorkouts ?? []), workout];
@@ -198,7 +310,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setStreakState(currentStreak);
         saveToLocalStorage('streak', currentStreak);
         saveToLocalStorage('lastWorkoutDate', today.toISOString());
-    }, [completedWorkouts]);
+
+        // Update missions after updating streak
+        updateMissionProgress(workout, currentStreak);
+
+    }, [completedWorkouts, updateMissionProgress]);
 
     const addDetailedWorkoutLog = useCallback((log: DetailedWorkoutLog) => {
         const updated = [...(detailedWorkoutLogs ?? []), log];
@@ -247,52 +363,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         saveToLocalStorage('diamonds', newDiamonds);
     }, [diamonds]);
     
-    const addXP = useCallback(async (amount: number, bonusReason?: string) => {
-        let totalAmount = amount;
-        
-        const currentStreak = loadFromLocalStorage('streak', 0);
-        const streakBonus = currentStreak > 1 ? currentStreak * 10 : 0;
-        
-        if (streakBonus > 0 && !bonusReason) { // Avoid adding streak bonus to other bonuses
-            totalAmount += streakBonus;
-        }
-        
-        const newXP = (xp ?? 0) + totalAmount;
-        setXpState(newXP);
-        saveToLocalStorage('xp', newXP);
-
-        let description = `+${amount} XP`;
-        if (streakBonus > 0 && !bonusReason) {
-            description += ` (+${streakBonus} ${t('toast.streakBonus')})`;
-        }
-        if (bonusReason) {
-            description = `+${amount} XP (${bonusReason})`;
-        }
-
-        toast({
-            title: t('toast.xpGained'),
-            description: description
-        });
-
-        if (user && !user.isAnonymous) {
-            try {
-                const userRef = doc(db, 'users', user.uid);
-                await updateDoc(userRef, { xp: newXP });
-            } catch (error) {
-                if ((error as any).code === 'not-found') {
-                    await setDoc(doc(db, 'users', user.uid), {
-                        uid: user.uid,
-                        displayName: user.displayName || 'Anonymous',
-                        photoURL: user.photoURL || '',
-                        xp: newXP,
-                    });
-                } else {
-                    console.error("Error updating XP in Firestore:", error);
-                }
-            }
-        }
-    }, [xp, user, toast, t]);
-
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
         const updated = [...(triviaHistory ?? []), ...sessionHistory];
         setTriviaHistoryState(updated);
@@ -309,7 +379,8 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         const keys = [
             'onboardingComplete', 'workoutRoutine', 'completedWorkouts', 
             'detailedWorkoutLogs', 'pendingFeedbackExercises', 'diamonds', 'xp',
-            'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour', 'streak', 'lastWorkoutDate'
+            'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour', 'streak', 'lastWorkoutDate',
+            'weeklyMissionData'
         ];
         keys.forEach(key => localStorage.removeItem(key));
         
@@ -323,6 +394,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setStreakState(0);
         setTriviaHistoryState([]);
         setQuizHistoryState([]);
+        setMissionDataState(null);
     }, []);
     
     const getLeaderboard = useCallback(async (uid: string) => {
@@ -364,6 +436,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         streak,
         triviaHistory,
         quizHistory,
+        missionData,
         getLeaderboard,
         saveWorkoutRoutine,
         addCompletedWorkout,
@@ -391,5 +464,3 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
-
-    

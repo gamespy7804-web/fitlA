@@ -10,6 +10,7 @@ import { MessageSquare } from 'lucide-react';
 import { ChatbotSheet } from '@/components/chatbot/chatbot-sheet';
 import { useState } from 'react';
 import { WorkoutGeneratorDialog } from './workout-generator-dialog';
+import { MissionsCard } from './missions-card';
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -30,6 +31,8 @@ export default function DashboardPage() {
           <MessageSquare className="h-6 w-6 text-primary" />
         </Button>
       </div>
+
+      <MissionsCard />
 
       <WorkoutNodePath />
 

@@ -27,7 +27,8 @@
       "signOut": "Cerrar sesión",
       "analysisCredits": "Diamantes",
       "analysisCredits_beta": "Diamantes. Haz clic para ir a la tienda.",
-      "xpPoints": "Puntos de Experiencia"
+      "xpPoints": "Puntos de Experiencia",
+      "streak": "Racha de Días"
     },
     "chatbot": {
       "title": "Asistente de IA",
@@ -683,7 +684,29 @@
     },
     "toast": {
       "xpGained": "¡XP Obtenidos!",
-      "streakBonus": "Bonus de racha"
+      "streakBonus": "Bono de racha"
+    },
+    "missions": {
+      "cardTitle": "Misiones Semanales",
+      "rewardReason": "Misión: {{mission}}",
+      "missions": {
+        "complete_3_workouts": {
+          "title": "Atleta Constante",
+          "description": "Completa 3 entrenamientos esta semana."
+        },
+        "complete_5_workouts": {
+          "title": "Guerrero Semanal",
+          "description": "Completa 5 entrenamientos esta semana."
+        },
+        "lift_10000_kg": {
+          "title": "Constructor de Volumen",
+          "description": "Levanta un total de 10.000 kg."
+        },
+        "reach_3_day_streak": {
+          "title": "En Racha",
+          "description": "Alcanza una racha de 3 días."
+        }
+      }
     }
   }
 }
