@@ -36,7 +36,12 @@ export default function RankingPage() {
         if (rank === 1) return <Trophy className="text-yellow-400" />;
         if (rank === 2) return <Trophy className="text-gray-400" />;
         if (rank === 3) return <Trophy className="text-yellow-600" />;
-        return <span className="font-bold w-6 text-center">{rank}</span>;
+        return (
+            <div className='relative flex items-center justify-center'>
+                <Award className="text-muted-foreground" />
+                <span className="absolute text-xs font-bold text-foreground">{rank}</span>
+            </div>
+        )
     };
 
     return (
@@ -64,15 +69,15 @@ export default function RankingPage() {
                            <Table>
                                <TableHeader>
                                    <TableRow>
-                                       <TableHead className="w-16">{t('ranking.table.rank')}</TableHead>
+                                       <TableHead className="w-16 text-center">{t('ranking.table.rank')}</TableHead>
                                        <TableHead>{t('ranking.table.user')}</TableHead>
                                        <TableHead className="text-right">{t('ranking.table.xp')}</TableHead>
                                    </TableRow>
                                </TableHeader>
                                <TableBody>
                                    {leaderboard.map((profile, index) => (
-                                       <TableRow key={profile.uid}>
-                                           <TableCell className="flex items-center justify-center h-12">
+                                       <TableRow key={profile.uid} className={cn(profile.uid === user?.uid && 'bg-primary/10')}>
+                                           <TableCell className="flex items-center justify-center h-12 font-bold text-lg">
                                                {renderRankIcon(index + 1)}
                                            </TableCell>
                                            <TableCell>
@@ -98,8 +103,8 @@ export default function RankingPage() {
                                         <Table>
                                             <TableBody>
                                                 <TableRow className="hover:bg-transparent">
-                                                    <TableCell className="w-16 flex items-center justify-center h-12">
-                                                        <span className="font-bold w-6 text-center">{currentUserRank}</span>
+                                                    <TableCell className="w-16 flex items-center justify-center h-12 font-bold text-lg">
+                                                        {renderRankIcon(currentUserRank)}
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-3">
@@ -126,3 +131,4 @@ export default function RankingPage() {
         </div>
     );
 }
+
