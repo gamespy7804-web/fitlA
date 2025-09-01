@@ -40,7 +40,8 @@
       }
     },
     "dashboard": {
-      "title": "Tu Camino al Éxito"
+      "title": "Tu Camino al Éxito",
+      "streakDays": "Días de Racha"
     },
     "performanceFeedback": {
       "noWorkouts": "Completa algunos entrenamientos para recibir un análisis de IA de tu rendimiento.",
@@ -597,9 +598,7 @@
       "toast": {
         "goodJob": "¡Buen trabajo!",
         "pendingFeedback": "Tienes ejercicios pendientes para análisis. Ve a la herramienta de feedback para grabarlos.",
-        "workoutComplete": "¡Entrenamiento Completado!",
-        "workoutSaved": "{{title}} ha sido guardado. Redirigiendo...",
-        "xpGained": "¡+{{count}} XP Ganados!"
+        "workoutComplete": "¡Entrenamiento Completado!"
       }
     },
     "restTimer": {
@@ -680,6 +679,10 @@
         "title": "Análisis de Forma con IA",
         "description": "Si un ejercicio tiene este ícono, puedes hacer clic para añadirlo a una lista. Luego, en la herramienta de Análisis de Forma, podrás grabarte para que la IA corrija tu técnica."
       }
+    },
+    "toast": {
+      "xpGained": "¡XP Obtenidos!",
+      "streakBonus": "Bonus de racha"
     }
   }
 }

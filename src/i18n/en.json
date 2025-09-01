@@ -40,7 +40,8 @@
       }
     },
     "dashboard": {
-      "title": "Your Path to Success"
+      "title": "Your Path to Success",
+      "streakDays": "Day Streak"
     },
     "performanceFeedback": {
       "noWorkouts": "Complete some workouts to receive an AI analysis of your performance.",
@@ -597,9 +598,7 @@
       "toast": {
         "goodJob": "Good job!",
         "pendingFeedback": "You have pending exercises for analysis. Go to the feedback tool to record them.",
-        "workoutComplete": "Workout Complete!",
-        "workoutSaved": "{{title}} has been saved. Redirecting...",
-        "xpGained": "+{{count}} XP Gained!"
+        "workoutComplete": "Workout Complete!"
       }
     },
     "restTimer": {
@@ -680,6 +679,10 @@
         "title": "AI Form Analysis",
         "description": "If an exercise has this icon, you can click to add it to a list. Then, in the Form Analysis tool, you can record yourself for the AI to correct your technique."
       }
+    },
+    "toast": {
+        "xpGained": "XP Gained!",
+        "streakBonus": "Streak bonus"
     }
   }
 }

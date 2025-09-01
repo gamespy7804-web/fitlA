@@ -6,6 +6,9 @@ import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch } from 'firebase/firestore'; 
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
+import { isToday, isYesterday, parseISO } from 'date-fns';
+import { useToast } from './use-toast';
+import { useI18n } from '@/i18n/client';
 
 
 // Define the shape of your data
@@ -31,6 +34,7 @@ interface UserDataContextType {
     pendingFeedback: string[] | null;
     diamonds: number | null;
     xp: number | null;
+    streak: number | null;
     triviaHistory: TriviaHistoryItem[] | null;
     quizHistory: QuizHistoryItem[] | null;
     
@@ -47,7 +51,7 @@ interface UserDataContextType {
     setInitialDiamonds: (amount: number) => void;
     consumeDiamonds: (amount: number) => void;
     addDiamonds: (amount: number) => void;
-    addXP: (amount: number) => void;
+    addXP: (amount: number, bonusReason?: string) => Promise<void>;
 
     updateTriviaHistory: (sessionHistory: TriviaHistoryItem[]) => void;
     updateQuizHistory: (sessionHistory: QuizHistoryItem[]) => void;
@@ -89,6 +93,8 @@ const saveToLocalStorage = <T,>(key: string, value: T) => {
 
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth();
+    const { toast } = useToast();
+    const { t } = useI18n();
     const [loading, setLoading] = useState(true);
     const [onboardingComplete, setOnboardingCompleteState] = useState<boolean | null>(null);
     const [workoutRoutine, setWorkoutRoutineState] = useState<(WorkoutRoutineOutput & { sport?: string }) | null>(null);
@@ -97,6 +103,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [pendingFeedback, setPendingFeedbackState] = useState<string[] | null>(null);
     const [diamonds, setDiamondsState] = useState<number | null>(null);
     const [xp, setXpState] = useState<number | null>(null);
+    const [streak, setStreakState] = useState<number | null>(null);
     const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
 
@@ -109,6 +116,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
         setDiamondsState(loadFromLocalStorage('diamonds', 0));
         setXpState(loadFromLocalStorage('xp', 0));
+        setStreakState(loadFromLocalStorage('streak', 0));
         setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
         setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         setLoading(false);
@@ -153,6 +161,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             setPendingFeedbackState(loadFromLocalStorage('pendingFeedbackExercises', []));
             setDiamondsState(loadFromLocalStorage('diamonds', 0));
             setXpState(loadFromLocalStorage('xp', 0));
+            setStreakState(loadFromLocalStorage('streak', 0));
             setTriviaHistoryState(loadFromLocalStorage('triviaHistory', []));
             setQuizHistoryState(loadFromLocalStorage('quizHistory', []));
         };
@@ -170,6 +179,25 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         const updated = [...(completedWorkouts ?? []), workout];
         setCompletedWorkoutsState(updated);
         saveToLocalStorage('completedWorkouts', updated);
+
+        const lastWorkoutDateStr = localStorage.getItem('lastWorkoutDate');
+        const today = new Date();
+        let currentStreak = loadFromLocalStorage('streak', 0);
+        
+        if (lastWorkoutDateStr) {
+            const lastWorkoutDate = parseISO(lastWorkoutDateStr);
+            if (isYesterday(lastWorkoutDate)) {
+                currentStreak++;
+            } else if (!isToday(lastWorkoutDate)) {
+                currentStreak = 1; // Reset if they missed a day
+            }
+        } else {
+            currentStreak = 1; // First workout
+        }
+        
+        setStreakState(currentStreak);
+        saveToLocalStorage('streak', currentStreak);
+        saveToLocalStorage('lastWorkoutDate', today.toISOString());
     }, [completedWorkouts]);
 
     const addDetailedWorkoutLog = useCallback((log: DetailedWorkoutLog) => {
@@ -219,17 +247,39 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         saveToLocalStorage('diamonds', newDiamonds);
     }, [diamonds]);
     
-    const addXP = useCallback(async (amount: number) => {
-        const newXP = (xp ?? 0) + amount;
+    const addXP = useCallback(async (amount: number, bonusReason?: string) => {
+        let totalAmount = amount;
+        
+        const currentStreak = loadFromLocalStorage('streak', 0);
+        const streakBonus = currentStreak > 1 ? currentStreak * 10 : 0;
+        
+        if (streakBonus > 0 && !bonusReason) { // Avoid adding streak bonus to other bonuses
+            totalAmount += streakBonus;
+        }
+        
+        const newXP = (xp ?? 0) + totalAmount;
         setXpState(newXP);
         saveToLocalStorage('xp', newXP);
+
+        let description = `+${amount} XP`;
+        if (streakBonus > 0 && !bonusReason) {
+            description += ` (+${streakBonus} ${t('toast.streakBonus')})`;
+        }
+        if (bonusReason) {
+            description = `+${amount} XP (${bonusReason})`;
+        }
+
+        toast({
+            title: t('toast.xpGained'),
+            description: description
+        });
+
         if (user && !user.isAnonymous) {
             try {
                 const userRef = doc(db, 'users', user.uid);
                 await updateDoc(userRef, { xp: newXP });
             } catch (error) {
                 if ((error as any).code === 'not-found') {
-                    // The document doesn't exist, so create it.
                     await setDoc(doc(db, 'users', user.uid), {
                         uid: user.uid,
                         displayName: user.displayName || 'Anonymous',
@@ -241,7 +291,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
         }
-    }, [xp, user]);
+    }, [xp, user, toast, t]);
 
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
         const updated = [...(triviaHistory ?? []), ...sessionHistory];
@@ -259,7 +309,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         const keys = [
             'onboardingComplete', 'workoutRoutine', 'completedWorkouts', 
             'detailedWorkoutLogs', 'pendingFeedbackExercises', 'diamonds', 'xp',
-            'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour'
+            'triviaHistory', 'quizHistory', 'hasSeenOnboardingTour', 'streak', 'lastWorkoutDate'
         ];
         keys.forEach(key => localStorage.removeItem(key));
         
@@ -270,6 +320,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setPendingFeedbackState([]);
         setDiamondsState(0);
         setXpState(0);
+        setStreakState(0);
         setTriviaHistoryState([]);
         setQuizHistoryState([]);
     }, []);
@@ -310,6 +361,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         pendingFeedback,
         diamonds,
         xp,
+        streak,
         triviaHistory,
         quizHistory,
         getLeaderboard,
@@ -339,3 +391,5 @@ export const useUserData = (): UserDataContextType => {
     }
     return context;
 };
+
+    

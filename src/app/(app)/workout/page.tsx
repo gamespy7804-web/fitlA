@@ -140,7 +140,7 @@ function WorkoutPageContent() {
     });
 
     // Calculate XP
-    const xpGained = Math.round(totalVolume / 10 + day.duration * 2);
+    const xpGained = Math.round(totalVolume / 10 + day.duration / 2);
     addXP(xpGained);
 
     const completedWorkoutSummary = {
@@ -166,7 +166,6 @@ function WorkoutPageContent() {
     
     toast({
         title: t('workoutPage.toast.workoutComplete'),
-        description: t('workoutPage.toast.xpGained', { count: xpGained }),
     });
 
     if (hasPendingFeedback) {
