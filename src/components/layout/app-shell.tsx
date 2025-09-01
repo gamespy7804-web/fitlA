@@ -51,7 +51,7 @@ export function AppShell({ children, openChatbot }: AppShellProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                     <div className="flex items-center gap-2 bg-secondary text-secondary-foreground font-bold px-3 py-1.5 rounded-md text-sm border cursor-default">
-                        <Star className="h-4 w-4 text-yellow-400" />
+                        <span role="img" aria-label="diamond" className="text-base">💎</span>
                         <span>{xp ?? 0}</span>
                     </div>
                 </TooltipTrigger>
