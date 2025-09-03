@@ -137,6 +137,8 @@ export default function OnboardingPage() {
 
   const nextStep = async () => {
     const currentStepInfo = filteredSteps[currentStep];
+    if (!currentStepInfo) return;
+    
     const fieldsToValidate = currentStepInfo.fields;
     
     if (currentStepInfo.id === 'physique') {
@@ -454,7 +456,7 @@ export default function OnboardingPage() {
                                   name="skills"
                                   render={() => (
                                     <FormItem>
-                                      <div className="grid grid-cols-2 gap-3 pt-2">
+                                      <div className="flex flex-col gap-3 pt-2">
                                         {currentSkillOptions.map((item) => (
                                             <FormField
                                                 key={item.id}
@@ -469,7 +471,7 @@ export default function OnboardingPage() {
                                                         <Button
                                                             type="button"
                                                             variant={field.value?.includes(item.label) ? 'default' : 'outline'}
-                                                            className='w-full h-auto py-4'
+                                                            className='w-full h-auto py-3'
                                                             onClick={() => {
                                                                 const currentSkills = field.value || [];
                                                                 const newSkills = currentSkills.includes(item.label)
