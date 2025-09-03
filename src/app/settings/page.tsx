@@ -72,7 +72,7 @@ export default function SettingsPage() {
   const handleResetAccount = async () => {
     setIsResetting(true);
     await resetAllData();
-    await signOut();
+    await signOut(); // signOut will now redirect to /login
     toast({
         title: t('settings.account.reset.confirm.successTitle'),
         description: t('settings.account.reset.confirm.successDescription'),
@@ -263,7 +263,7 @@ export default function SettingsPage() {
              </div>
              <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
+                <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4" disabled={!user}>
                   <RotateCcw className="mr-2" />
                   {t('settings.account.reset.button')}
                 </Button>

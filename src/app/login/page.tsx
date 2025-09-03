@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { useI18n } from '@/i18n/client';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { GoogleIcon } from '@/components/icons';
@@ -18,10 +18,9 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // This page should ideally not be visited if a user (even anonymous) exists.
-    // Redirect to dashboard if the user is already here.
+    // If the user is somehow already logged in, redirect them away from login page
     if (!authLoading && user) {
-      router.replace('/dashboard');
+      router.replace('/');
     }
   }, [authLoading, user, router]);
   
@@ -34,7 +33,6 @@ export default function LoginPage() {
     )
   }
 
-  // This page will now only render if anonymous sign-in fails and there's no user.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-sm">

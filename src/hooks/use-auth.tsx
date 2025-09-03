@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // The onAuthStateChanged listener will handle setting the user to null
+      // and the page routing logic will redirect to /login
       router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);
