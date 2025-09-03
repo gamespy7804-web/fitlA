@@ -130,7 +130,7 @@ export default function OnboardingPage() {
   const filteredSteps = steps.filter(step => {
     if (step.id === 'skills') {
       const sportKey = t(`onboarding.questions.sport.options.homeWorkout`);
-      return sportValue && sportValue.toLowerCase() !== sportKey.toLowerCase();
+      return sportValue && sportValue.toLowerCase() !== sportKey.toLowerCase() && sportHasSkills(sportValue);
     }
     return true;
   });
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
   const prevStep = () => {
     if (currentStep > 0) {
         setDirection(-1);
-        setCurrentStep(prev => prev + 1);
+        setCurrentStep(prev => prev - 1);
     }
   }
 
@@ -287,11 +287,25 @@ export default function OnboardingPage() {
         { id: 'humanFlag', label: 'Human Flag'},
         { id: 'vSit', label: 'V-Sit'}
     ],
+    calisthenics: [
+        { id: 'muscleUp', label: 'Muscle Up'},
+        { id: 'frontLever', label: 'Front Lever'},
+        { id: 'planche', label: 'Planche'},
+        { id: 'handstand', label: 'Handstand'},
+        { id: 'humanFlag', label: 'Human Flag'},
+        { id: 'vSit', label: 'V-Sit'}
+    ],
     gimnasio: [
         { id: 'bench100kg', label: 'Press de Banca con 100kg'},
         { id: 'squat140kg', label: 'Sentadilla con 140kg'},
         { id: 'deadlift180kg', label: 'Peso Muerto con 180kg'},
         { id: 'overhead50kg', label: 'Press Militar con 50kg'},
+    ],
+    gym: [
+        { id: 'bench100kg', label: 'Bench Press 100kg'},
+        { id: 'squat140kg', label: 'Squat 140kg'},
+        { id: 'deadlift180kg', label: 'Deadlift 180kg'},
+        { id: 'overhead50kg', label: 'Overhead Press 50kg'},
     ],
     running: [
         { id: 'run5k', label: 'Correr 5km sin parar'},
@@ -302,6 +316,7 @@ export default function OnboardingPage() {
  };
 
   const getSkillOptionsForSport = (sport: string) => {
+    if (!sport) return [];
     const lowerCaseSport = sport.toLowerCase();
     for (const key in skillOptionsBySport) {
         if (lowerCaseSport.includes(key)) {
@@ -365,357 +380,362 @@ export default function OnboardingPage() {
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   className="space-y-6 flex flex-col"
                 >
-                  {/* Step 1: Sport */}
-                  {currentStepInfo.id === 'sport' && (
-                     <FormField
-                      control={form.control}
-                      name="sport"
-                      render={({ field }) => (
-                        <FormItem className="space-y-4">
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.sport.label')}</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={(value) => {
-                                setSelectedSport(value);
-                                if (value !== 'other') {
-                                  field.onChange(t(`onboarding.questions.sport.options.${value}` as any));
-                                  handleAutoNext(true);
-                                } else {
-                                  field.onChange(''); // Clear value to allow custom input
-                                }
-                              }}
-                              value={selectedSport}
-                              className="grid grid-cols-2 md:grid-cols-4 gap-2"
-                            >
-                              {sportOptions.map(option => (
-                                <FormItem key={option} className={cn(option === 'other' && "col-span-full")}>
-                                  <FormControl>
-                                    <RadioGroupItem value={option} id={option} className="sr-only" />
-                                  </FormControl>
-                                  <Label 
-                                    htmlFor={option} 
-                                    className={cn(
-                                        "flex h-20 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-center text-sm", 
-                                        selectedSport === option && "border-primary",
-                                        option === 'other' && "col-span-2 md:col-span-4",
-                                        )}>
-                                    {t(`onboarding.questions.sport.options.${option}`)}
-                                  </Label>
-                                </FormItem>
-                              ))}
-                            </RadioGroup>
-                          </FormControl>
-                           <AnimatePresence>
-                          {selectedSport === 'other' && (
-                             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pt-2">
-                                <FormControl>
-                                    <Input 
-                                      className="text-center text-lg h-12" 
-                                      placeholder={t('onboarding.questions.sport.placeholder')}
-                                      onChange={e => field.onChange(e.target.value)}
-                                      value={field.value}
-                                    />
-                                </FormControl>
-                             </motion.div>
-                          )}
-                           </AnimatePresence>
-                          <FormMessage className="text-center"/>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                   {/* Step 2: Skills (Conditional) */}
-                   {currentStepInfo.id === 'skills' && (
-                    <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.skills.label')}</FormLabel>
-                        <FormDescription className='text-center -mt-4'>{t('onboarding.questions.skills.description')}</FormDescription>
-                        
-                        {currentSkillOptions.length > 0 ? (
-                             <FormField
-                              control={form.control}
-                              name="skills"
-                              render={() => (
-                                <FormItem>
-                                  <div className="grid grid-cols-2 gap-3 pt-2">
-                                     {currentSkillOptions.map((item) => (
-                                        <FormField
-                                            key={item.id}
-                                            control={form.control}
-                                            name="skills"
-                                            render={({ field }) => (
-                                                <FormItem
-                                                    key={item.id}
-                                                    className="flex flex-row items-center space-x-3 space-y-0"
-                                                >
-                                                    <FormControl>
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value?.includes(item.label) ? 'default' : 'outline'}
-                                                        className='w-full h-auto py-4'
-                                                        onClick={() => {
-                                                            const currentSkills = field.value || [];
-                                                            const newSkills = currentSkills.includes(item.label)
-                                                                ? currentSkills.filter(value => value !== item.label)
-                                                                : [...currentSkills, item.label];
-                                                            field.onChange(newSkills);
-                                                        }}
-                                                        >
-                                                        {item.label}
-                                                    </Button>
-                                                    </FormControl>
-                                                </FormItem>
-                                            )}
-                                        />
-                                     ))}
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                        ) : (
-                             <FormField
-                              control={form.control}
-                              name="otherSkills"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm text-muted-foreground">{t('onboarding.questions.skills.otherLabel')}</FormLabel>
-                                  <FormControl>
-                                    <Textarea placeholder={t('onboarding.questions.skills.otherPlaceholder')} {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                        )}
-                    </div>
-                  )}
-                  {/* Step 3: Goals */}
-                  {currentStepInfo.id === 'goals' && (
-                     <FormField
-                      control={form.control}
-                      name="goals"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.goals.label')}</FormLabel>
-                          <FormControl>
-                            <Input className="text-center text-lg h-12" placeholder={t('onboarding.questions.goals.placeholder')} {...field} />
-                          </FormControl>
-                          <FormMessage className="text-center"/>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  {/* Step 4: Fitness Level */}
-                  {currentStepInfo.id === 'fitnessLevel' && (
-                    <FormField
-                      control={form.control}
-                      name="fitnessLevel"
-                      render={({ field }) => (
-                        <FormItem className="space-y-4">
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                                onValueChange={(value) => {
-                                    field.onChange(value);
-                                    handleAutoNext(true);
-                                }}
-                                value={field.value}
-                                className="flex flex-col gap-4 items-center"
-                            >
-                                {(['beginner', 'intermediate', 'advanced'] as const).map(option => (
-                                    <FormItem key={option} className="w-full">
+                  {/* Render steps only if currentStepInfo is defined */}
+                  {currentStepInfo && (
+                    <>
+                      {/* Step 1: Sport */}
+                      {currentStepInfo.id === 'sport' && (
+                        <FormField
+                          control={form.control}
+                          name="sport"
+                          render={({ field }) => (
+                            <FormItem className="space-y-4">
+                              <FormLabel className="text-lg text-center block">{t('onboarding.questions.sport.label')}</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={(value) => {
+                                    setSelectedSport(value);
+                                    if (value !== 'other') {
+                                      field.onChange(t(`onboarding.questions.sport.options.${value}` as any));
+                                      handleAutoNext(true);
+                                    } else {
+                                      field.onChange(''); // Clear value to allow custom input
+                                    }
+                                  }}
+                                  value={selectedSport}
+                                  className="grid grid-cols-2 md:grid-cols-4 gap-2"
+                                >
+                                  {sportOptions.map(option => (
+                                    <FormItem key={option} className={cn(option === 'other' && "col-span-full")}>
                                       <FormControl>
                                         <RadioGroupItem value={option} id={option} className="sr-only" />
                                       </FormControl>
-                                      <Label htmlFor={option} className={cn("flex w-full items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", field.value === option && "border-primary")}>
-                                        {t(`onboarding.questions.fitnessLevel.options.${option}`)}
+                                      <Label 
+                                        htmlFor={option} 
+                                        className={cn(
+                                            "flex h-20 flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-center text-sm", 
+                                            selectedSport === option && "border-primary",
+                                            option === 'other' && "col-span-2 md:col-span-4",
+                                            )}>
+                                        {t(`onboarding.questions.sport.options.${option}`)}
                                       </Label>
                                     </FormItem>
-                                ))}
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage className="text-center"/>
-                        </FormItem>
+                                  ))}
+                                </RadioGroup>
+                              </FormControl>
+                              <AnimatePresence>
+                                {selectedSport === 'other' && (
+                                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="pt-2">
+                                      <FormControl>
+                                          <Input 
+                                            className="text-center text-lg h-12" 
+                                            placeholder={t('onboarding.questions.sport.placeholder')}
+                                            onChange={e => field.onChange(e.target.value)}
+                                            value={field.value}
+                                          />
+                                      </FormControl>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                              <FormMessage className="text-center"/>
+                            </FormItem>
+                          )}
+                        />
                       )}
-                    />
-                  )}
-                  {/* Step 5: Equipment */}
-                  {currentStepInfo.id === 'equipment' && (
-                    <FormField
-                      control={form.control}
-                      name="equipment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
-                          <FormControl>
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3">
-                                <Button
-                                  type="button"
-                                  variant={(field.value || []).includes('gym') ? 'default' : 'outline'}
-                                  onClick={() => handleEquipmentButtonClick('gym')}
-                                >
-                                  {t('onboarding.questions.equipment.options.gymAccess')}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant={(field.value || []).includes('none') ? 'destructive' : 'outline'}
-                                  onClick={() => handleEquipmentButtonClick('none')}
-                                >
-                                  {t('onboarding.questions.equipment.options.none')}
-                                </Button>
-                              </div>
-                              <ScrollArea className="h-56 pr-3">
-                                  <div className="space-y-4">
-                                    {Object.entries(equipmentCategories).map(([category, value]) => {
-                                        const CategoryIcon = value.icon;
-                                        return (
-                                            <div key={category} className="space-y-2">
-                                                <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><CategoryIcon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {value.items.map((item) => (
+                      {/* Step 2: Skills (Conditional) */}
+                      {currentStepInfo.id === 'skills' && (
+                        <div className="space-y-4">
+                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.skills.label')}</FormLabel>
+                            <FormDescription className='text-center -mt-4'>{t('onboarding.questions.skills.description')}</FormDescription>
+                            
+                            {currentSkillOptions.length > 0 ? (
+                                <FormField
+                                  control={form.control}
+                                  name="skills"
+                                  render={() => (
+                                    <FormItem>
+                                      <div className="grid grid-cols-2 gap-3 pt-2">
+                                        {currentSkillOptions.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="skills"
+                                                render={({ field }) => (
+                                                    <FormItem
+                                                        key={item.id}
+                                                        className="flex flex-row items-center space-x-3 space-y-0"
+                                                    >
+                                                        <FormControl>
                                                         <Button
-                                                            key={item}
                                                             type="button"
-                                                            variant={field.value?.includes(item) ? 'default' : 'outline'}
-                                                            className="h-auto py-3 justify-start text-left"
-                                                            onClick={() => handleEquipmentButtonClick(item)}
-                                                        >
-                                                            {t(`onboarding.questions.equipment.items.${item}`)}
+                                                            variant={field.value?.includes(item.label) ? 'default' : 'outline'}
+                                                            className='w-full h-auto py-4'
+                                                            onClick={() => {
+                                                                const currentSkills = field.value || [];
+                                                                const newSkills = currentSkills.includes(item.label)
+                                                                    ? currentSkills.filter(value => value !== item.label)
+                                                                    : [...currentSkills, item.label];
+                                                                field.onChange(newSkills);
+                                                            }}
+                                                            >
+                                                            {item.label}
                                                         </Button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                  </div>
-                              </ScrollArea>
-                            </div>
-                          </FormControl>
-                          <FormMessage className="text-center"/>
-                        </FormItem>
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            ) : (
+                                <FormField
+                                  control={form.control}
+                                  name="otherSkills"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-sm text-muted-foreground">{t('onboarding.questions.skills.otherLabel')}</FormLabel>
+                                      <FormControl>
+                                        <Textarea placeholder={t('onboarding.questions.skills.otherPlaceholder')} {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                            )}
+                        </div>
                       )}
-                    />
-                  )}
-                  {/* Step 6: Details */}
-                  {currentStepInfo.id === 'details' && (
-                    <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="age"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="25" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="weight"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" placeholder="70" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="gender"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>{t('onboarding.questions.gender.label')}</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={t('onboarding.questions.gender.placeholder')} />
-                                            </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="male">{t('onboarding.questions.gender.options.male')}</SelectItem>
-                                                <SelectItem value="female">{t('onboarding.questions.gender.options.female')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                      {/* Step 3: Goals */}
+                      {currentStepInfo.id === 'goals' && (
+                        <FormField
+                          control={form.control}
+                          name="goals"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-lg text-center block">{t('onboarding.questions.goals.label')}</FormLabel>
+                              <FormControl>
+                                <Input className="text-center text-lg h-12" placeholder={t('onboarding.questions.goals.placeholder')} {...field} />
+                              </FormControl>
+                              <FormMessage className="text-center"/>
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                      {/* Step 4: Fitness Level */}
+                      {currentStepInfo.id === 'fitnessLevel' && (
+                        <FormField
+                          control={form.control}
+                          name="fitnessLevel"
+                          render={({ field }) => (
+                            <FormItem className="space-y-4">
+                              <FormLabel className="text-lg text-center block">{t('onboarding.questions.fitnessLevel.label')}</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                    onValueChange={(value) => {
+                                        field.onChange(value);
+                                        handleAutoNext(true);
+                                    }}
+                                    value={field.value}
+                                    className="flex flex-col gap-4 items-center"
+                                >
+                                    {(['beginner', 'intermediate', 'advanced'] as const).map(option => (
+                                        <FormItem key={option} className="w-full">
+                                          <FormControl>
+                                            <RadioGroupItem value={option} id={option} className="sr-only" />
+                                          </FormControl>
+                                          <Label htmlFor={option} className={cn("flex w-full items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", field.value === option && "border-primary")}>
+                                            {t(`onboarding.questions.fitnessLevel.options.${option}`)}
+                                          </Label>
+                                        </FormItem>
+                                    ))}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage className="text-center"/>
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                      {/* Step 5: Equipment */}
+                      {currentStepInfo.id === 'equipment' && (
+                        <FormField
+                          control={form.control}
+                          name="equipment"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-lg text-center block">{t('onboarding.questions.equipment.label')}</FormLabel>
+                              <FormControl>
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <Button
+                                      type="button"
+                                      variant={(field.value || []).includes('gym') ? 'default' : 'outline'}
+                                      onClick={() => handleEquipmentButtonClick('gym')}
+                                    >
+                                      {t('onboarding.questions.equipment.options.gymAccess')}
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant={(field.value || []).includes('none') ? 'destructive' : 'outline'}
+                                      onClick={() => handleEquipmentButtonClick('none')}
+                                    >
+                                      {t('onboarding.questions.equipment.options.none')}
+                                    </Button>
+                                  </div>
+                                  <ScrollArea className="h-56 pr-3">
+                                      <div className="space-y-4">
+                                        {Object.entries(equipmentCategories).map(([category, value]) => {
+                                            const CategoryIcon = value.icon;
+                                            return (
+                                                <div key={category} className="space-y-2">
+                                                    <h3 className="font-semibold flex items-center gap-2 text-muted-foreground"><CategoryIcon className="h-4 w-4"/> {t(`onboarding.questions.equipment.categories.${category}`)}</h3>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {value.items.map((item) => (
+                                                            <Button
+                                                                key={item}
+                                                                type="button"
+                                                                variant={field.value?.includes(item) ? 'default' : 'outline'}
+                                                                className="h-auto py-3 justify-start text-left"
+                                                                onClick={() => handleEquipmentButtonClick(item)}
+                                                            >
+                                                                {t(`onboarding.questions.equipment.items.${item}`)}
+                                                            </Button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                      </div>
+                                  </ScrollArea>
+                                </div>
+                              </FormControl>
+                              <FormMessage className="text-center"/>
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                      {/* Step 6: Details */}
+                      {currentStepInfo.id === 'details' && (
+                        <div className="space-y-4">
+                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="age"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>{t('onboarding.questions.age.label')}</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="25" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                        </FormControl>
                                         <FormMessage />
-                                    </FormItem>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="weight"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                        <FormLabel>{t('onboarding.questions.weight.label')}</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" placeholder="70" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                        </FormControl>
+                                        <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="gender"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('onboarding.questions.gender.label')}</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('onboarding.questions.gender.placeholder')} />
+                                                </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="male">{t('onboarding.questions.gender.options.male')}</SelectItem>
+                                                    <SelectItem value="female">{t('onboarding.questions.gender.options.female')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                      )}
+                      {/* Step 7: Availability */}
+                      {currentStepInfo.id === 'availability' && (
+                        <div className="space-y-4">
+                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="trainingDays"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                                 )}
                             />
+                            <FormField
+                                control={form.control}
+                                name="trainingDuration"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            </div>
                         </div>
-                    </div>
-                  )}
-                   {/* Step 7: Availability */}
-                  {currentStepInfo.id === 'availability' && (
-                     <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                            control={form.control}
-                            name="trainingDays"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>{t('onboarding.questions.trainingDays.label')}</FormLabel>
-                                <FormControl>
-                                <Input type="number" placeholder={t('onboarding.questions.trainingDays.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="trainingDuration"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>{t('onboarding.questions.trainingDuration.label')}</FormLabel>
-                                <FormControl>
-                                <Input type="number" placeholder={t('onboarding.questions.trainingDuration.placeholder')} {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} value={field.value ?? ''}/>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        </div>
-                    </div>
-                  )}
-                  {/* Step 8: Physique Analysis */}
-                  {currentStepInfo.id === 'physique' && (
-                    <div className="space-y-4">
-                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.physique.label')}</FormLabel>
-                        <p className="text-sm text-center text-muted-foreground -mt-4">{t('onboarding.questions.physique.description')}</p>
-                        
-                        <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed">
-                           {isAnalyzing ? (
+                      )}
+                      {/* Step 8: Physique Analysis */}
+                      {currentStepInfo.id === 'physique' && (
+                        <div className="space-y-4">
+                            <FormLabel className="text-lg text-center block">{t('onboarding.questions.physique.label')}</FormLabel>
+                            <p className="text-sm text-center text-muted-foreground -mt-4">{t('onboarding.questions.physique.description')}</p>
+                            
+                            <div className="aspect-video bg-muted rounded-md flex flex-col items-center justify-center relative p-1 text-center border-2 border-dashed">
+                              {isAnalyzing ? (
+                                    <>
+                                        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                                        <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.analyzing')}</p>
+                                    </>
+                              ) : physiqueAnalysis ? (
+                                    <>
+                                        <CheckCircle className="h-16 w-16 text-green-500" />
+                                        <p className="mt-2 text-sm font-semibold text-muted-foreground px-4">{t('onboarding.questions.physique.complete')}</p>
+                                        <p className="text-xs text-muted-foreground">({t('onboarding.questions.physique.score')}: {physiqueAnalysis.averageScore})</p>
+                                    </>
+                              ) : (
                                 <>
-                                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                                    <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.analyzing')}</p>
+                                    <Upload className="h-12 w-12 text-muted-foreground" />
+                                    <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.prompt')}</p>
+                                    <Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()}>
+                                        {t('feedbackTool.physiqueAnalysis.upload.selectFile')}
+                                    </Button>
                                 </>
-                           ) : physiqueAnalysis ? (
-                                <>
-                                    <CheckCircle className="h-16 w-16 text-green-500" />
-                                    <p className="mt-2 text-sm font-semibold text-muted-foreground px-4">{t('onboarding.questions.physique.complete')}</p>
-                                    <p className="text-xs text-muted-foreground">({t('onboarding.questions.physique.score')}: {physiqueAnalysis.averageScore})</p>
-                                </>
-                           ) : (
-                            <>
-                                <Upload className="h-12 w-12 text-muted-foreground" />
-                                <p className="mt-2 text-sm text-muted-foreground px-4">{t('onboarding.questions.physique.prompt')}</p>
-                                <Button variant="link" size="sm" className="mt-1" onClick={() => physiqueFileInputRef.current?.click()}>
-                                    {t('feedbackTool.physiqueAnalysis.upload.selectFile')}
-                                </Button>
-                            </>
-                           )}
-                           <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} disabled={isAnalyzing || !!physiqueAnalysis} />
+                              )}
+                              <Input ref={physiqueFileInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhysiqueFileChange} disabled={isAnalyzing || !!physiqueAnalysis} />
+                            </div>
                         </div>
-                    </div>
+                      )}
+                    </>
                   )}
                 </motion.div>
               </AnimatePresence>
@@ -726,7 +746,7 @@ export default function OnboardingPage() {
                     {t('onboarding.buttons.back')}
                 </Button>
                 {currentStep < filteredSteps.length - 1 ? (
-                   ( (selectedSport === 'other' && currentStepInfo.id === 'sport') || !currentStepInfo.autoNext) ? (
+                   ( (selectedSport === 'other' && currentStepInfo?.id === 'sport') || !currentStepInfo?.autoNext) ? (
                     <Button type="button" onClick={nextStep}>
                         {t('onboarding.buttons.next')}
                         <ChevronRight className="ml-2"/>
@@ -746,4 +766,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
