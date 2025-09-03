@@ -51,8 +51,8 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 The user wants to learn the following specific skills: {{#each skills}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
 Your primary objective is to create a routine that builds the necessary strength, mobility, and technique to achieve these skills.
 - Structure the entire plan around progressions for these skills.
-- For a 'beginner' user, start with the most basic progressions (e.g., 'Tuck Planche', 'Tuck Front Lever', scapular pulls).
-- For 'intermediate' or 'advanced' users, select more difficult progressions (e.g., 'Straddle Planche', 'Single-Leg Front Lever').
+- For a 'beginner' user, start with the most basic progressions (e.g., 'Tuck Planche', 'Tuck Front Lever', scapular pulls for calisthenics; for running 'run 5k', focus on couch-to-5k style interval training).
+- For 'intermediate' or 'advanced' users, select more difficult progressions (e.g., 'Straddle Planche', 'Single-Leg Front Lever', 'run 10k').
 - If multiple skills are selected, create a balanced routine (e.g., Push-Pull split) that addresses all of them.
 {{/if}}
 

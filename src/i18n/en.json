@@ -449,7 +449,9 @@
         },
         "skills": {
           "label": "What skills do you want to learn?",
-          "description": "Select your main goals. The AI will create a plan to unlock them."
+          "description": "Select your main goals. The AI will create a plan to unlock them.",
+          "otherLabel": "Other goals or skills",
+          "otherPlaceholder": "e.g., Increase my vertical jump, run 10k"
         },
         "goals": { "label": "What are your main goals?", "placeholder": "e.g., Increase vertical jump, run a 5k" },
         "fitnessLevel": { 
@@ -557,127 +559,127 @@
       }
     },
     "workoutPage": {
-      "exercise": "Exercise",
-      "of": "of",
-      "dayComplete": "Day Completed!",
-      "allExercisesComplete": "You have completed all exercises for today.",
-      "finishAndSave": "Finish and Save Workout",
+      "exercise": "Ejercicio",
+      "of": "de",
+      "dayComplete": "¡Día completado!",
+      "allExercisesComplete": "Has completado todos los ejercicios de hoy.",
+      "finishAndSave": "Finalizar y Guardar Entrenamiento",
       "errors": {
-        "routineNotFound": "Routine not found",
-        "routineLoadError": "Error loading routine",
+        "routineNotFound": "Rutina no encontrada",
+        "routineLoadError": "Error al cargar la rutina",
         "loadError": {
-          "title": "Loading Error",
-          "description": "Could not load the day's workout."
+          "title": "Error al Cargar",
+          "description": "No se pudo cargar el entrenamiento del día."
         }
       },
       "toast": {
-        "goodJob": "Good job!",
-        "pendingFeedback": "You have pending exercises for analysis. Go to the feedback tool to record them.",
-        "workoutComplete": "Workout Complete!"
+        "goodJob": "¡Buen trabajo!",
+        "pendingFeedback": "Tienes ejercicios pendientes para análisis. Ve a la herramienta de feedback para grabarlos.",
+        "workoutComplete": "¡Entrenamiento Completado!"
       }
     },
     "restTimer": {
-      "title": "Rest",
-      "skip": "Skip Rest"
+      "title": "Descanso",
+      "skip": "Saltar Descanso"
     },
     "stopwatch": {
-      "title": "Stopwatch",
-      "start": "Start",
-      "pause": "Pause"
+      "title": "Cronómetro",
+      "start": "Iniciar",
+      "pause": "Pausar"
     },
     "workoutExerciseCard": {
-      "set": "Set",
-      "weightLabel": "Weight",
-      "weightPlaceholder": "Weight (kg)",
+      "set": "Serie",
+      "weightLabel": "Peso",
+      "weightPlaceholder": "Peso (kg)",
       "repsLabel": "Reps",
       "repsPlaceholder": "Reps",
-      "secondsLabel": "Seconds",
-      "secondsPlaceholder": "Seconds",
-      "startTimer": "Start Timer",
-      "viewTechnique": "View Technique",
-      "readyToRest": "Ready to Rest",
-      "finishExercise": "Finish Exercise",
-      "feedbackTooltip": "Mark to get AI feedback on your technique",
+      "secondsLabel": "Segundos",
+      "secondsPlaceholder": "Segundos",
+      "startTimer": "Iniciar Cronómetro",
+      "viewTechnique": "Ver Técnica",
+      "readyToRest": "Listo para Descansar",
+      "finishExercise": "Finalizar Ejercicio",
+      "feedbackTooltip": "Marcar para obtener feedback de IA sobre tu técnica",
       "feedbackQueue": {
         "added": {
-          "title": "Exercise Added to Queue",
-          "description": "{{name}} has been added to the pending list for form analysis."
+          "title": "Ejercicio Añadido a la Cola",
+          "description": "{{name}} se ha añadido a la lista de pendientes para análisis de forma."
         },
         "alreadyAdded": {
-          "title": "Exercise Already in Queue",
-          "description": "{{name}} is already in the list to be analyzed."
+          "title": "Ejercicio ya en la cola",
+          "description": "{{name}} ya está en la lista para ser analizado."
         }
       }
     },
      "onboardingTour": {
-      "next": "Next",
-      "prev": "Previous",
-      "done": "Finish",
+      "next": "Siguiente",
+      "prev": "Anterior",
+      "done": "Terminar",
       "welcome": {
-        "title": "Welcome to workout IA!",
-        "description": "Let's take a quick tour of the main features of the app."
+        "title": "¡Bienvenido a workout IA!",
+        "description": "Vamos a dar un rápido recorrido por las funciones principales de la app."
       },
       "dashboard": {
-        "title": "Your Training Path",
-        "description": "This is your main screen. Here you will see your day-by-day training plan. Complete them to advance!"
+        "title": "Tu Senda de Entrenamiento",
+        "description": "Esta es tu pantalla principal. Aquí verás tu plan de entrenamiento día a día. ¡Complétalos para avanzar!"
       },
       "actions": {
-        "title": "Main Actions",
-        "description": "From this button you can generate a new routine or go to the tool to analyze your technique."
+        "title": "Acciones Principales",
+        "description": "Desde este botón puedes generar una nueva rutina o ir a la herramienta para analizar tu técnica."
       },
       "chatbot": {
-        "title": "AI Assistant",
-        "description": "Do you have any questions? Click here to chat with our AI assistant at any time."
+        "title": "Asistente de IA",
+        "description": "¿Tienes alguna duda? Haz clic aquí para chatear con nuestro asistente de IA en cualquier momento."
       },
       "end": {
-        "title": "You're all set!",
-        "description_dashboard": "You know the basics of the main panel. Explore the other sections to discover everything you can do!",
-        "description_workout": "Now you know how to log an exercise and ask for feedback! Go for it!"
+        "title": "¡Ya estás listo!",
+        "description_dashboard": "Ya conoces lo básico del panel principal. ¡Explora las demás secciones para descubrir todo lo que puedes hacer!",
+        "description_workout": "¡Ahora sabes cómo registrar un ejercicio y pedir feedback! ¡A por ello!"
       },
       "feedbackPage": {
-        "title": "Evaluation Tools",
-        "description": "Welcome to the analysis section. This is where the AI magic happens.",
+        "title": "Herramientas de Evaluación",
+        "description": "Bienvenido a la sección de análisis. Aquí es donde la magia de la IA ocurre.",
         "techniqueTab": {
-            "title": "Technique Analysis",
-            "description": "In this tab, you can select an exercise, record a video and our AI will give you corrections to improve your form and prevent injuries."
+            "title": "Análisis de Técnica",
+            "description": "En esta pestaña, puedes seleccionar un ejercicio, grabar un video y nuestra IA te dará correcciones para mejorar tu forma y prevenir lesiones."
         },
         "physiqueTab": {
-            "title": "Physique Analysis",
-            "description": "Soon, you will be able to upload a photo for the AI to analyze your physique, estimate your body fat percentage and give you recommendations for improvement."
+            "title": "Análisis de Físico",
+            "description": "Próximamente, podrás subir una foto para que la IA analice tu físico, estime tu porcentaje de grasa y te dé recomendaciones para mejorar."
         }
       },
       "technique": {
-        "title": "View Technique",
-        "description": "If you have questions about an exercise, click here to search for a YouTube video on how to perform it correctly."
+        "title": "Ver Técnica",
+        "description": "Si tienes dudas sobre un ejercicio, haz clic aquí para buscar un video en YouTube sobre cómo realizarlo correctamente."
       },
       "formAnalysis": {
-        "title": "AI Form Analysis",
-        "description": "If an exercise has this icon, you can click to add it to a list. Then, in the Form Analysis tool, you can record yourself for the AI to correct your technique."
+        "title": "Análisis de Forma con IA",
+        "description": "Si un ejercicio tiene este ícono, puedes hacer clic para añadirlo a una lista. Luego, en la herramienta de Análisis de Forma, podrás grabarte para que la IA corrija tu técnica."
       }
     },
     "toast": {
-      "xpGained": "XP Gained!",
-      "streakBonus": "Streak bonus"
+      "xpGained": "¡XP Obtenidos!",
+      "streakBonus": "Bono de racha"
     },
     "missions": {
-      "cardTitle": "Weekly Missions",
-      "rewardReason": "Mission: {{mission}}",
+      "cardTitle": "Misiones Semanales",
+      "rewardReason": "Misión: {{mission}}",
       "missions": {
         "complete_3_workouts": {
-          "title": "Consistent Athlete",
-          "description": "Complete 3 workouts this week."
+          "title": "Atleta Constante",
+          "description": "Completa 3 entrenamientos esta semana."
         },
         "complete_5_workouts": {
-          "title": "Weekly Warrior",
-          "description": "Complete 5 workouts this week."
+          "title": "Guerrero Semanal",
+          "description": "Completa 5 entrenamientos esta semana."
         },
         "lift_10000_kg": {
-          "title": "Volume Builder",
-          "description": "Lift a total of 10,000 kg."
+          "title": "Constructor de Volumen",
+          "description": "Levanta un total de 10.000 kg."
         },
         "reach_3_day_streak": {
-          "title": "On Fire",
-          "description": "Reach a 3-day streak."
+          "title": "En Racha",
+          "description": "Alcanza una racha de 3 días."
         }
       }
     }

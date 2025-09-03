@@ -167,7 +167,7 @@
         "description": "Tu resumen de progreso ha sido copiado al portapapeles.",
         "error": {
           "title": "Error al Copiar",
-          "description": "No se pudo copiar el texto. Por favor, inténtalo manually."
+          "description": "No se pudo copiar el texto. Por favor, inténtalo manualmente."
         }
       },
       "na": "N/A",
@@ -449,7 +449,9 @@
         },
         "skills": {
             "label": "¿Qué habilidades quieres aprender?",
-            "description": "Selecciona tus objetivos principales. La IA creará un plan para desbloquearlos."
+            "description": "Selecciona tus objetivos principales. La IA creará un plan para desbloquearlos.",
+            "otherLabel": "Otras metas o habilidades",
+            "otherPlaceholder": "ej., Aumentar mi salto vertical, correr 10k"
         },
         "goals": { "label": "¿Cuáles son tus metas principales?", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
         "fitnessLevel": { 

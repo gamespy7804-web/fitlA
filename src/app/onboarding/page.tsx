@@ -46,11 +46,13 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 
 // Zod schema creator function to allow for dynamic error messages from i18n
 const createFormSchema = (t: (key: string) => string) => z.object({
     sport: z.string().min(1, t('onboarding.validation.sport.min')),
     skills: z.array(z.string()).optional(),
+    otherSkills: z.string().optional(),
     goals: z.string().min(3, t('onboarding.validation.goals.min')),
     fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required')}),
     equipment: z.array(z.string()).min(1, t('onboarding.validation.equipment.required')),
@@ -63,7 +65,7 @@ const createFormSchema = (t: (key: string) => string) => z.object({
 
 const steps = [
   { id: 'sport', fields: ['sport'], autoNext: true },
-  { id: 'skills', fields: ['skills'], dependsOn: 'sport', dependsValue: 'Calistenia' },
+  { id: 'skills', fields: ['skills', 'otherSkills'] },
   { id: 'goals', fields: ['goals'] },
   { id: 'fitnessLevel', fields: ['fitnessLevel'], autoNext: true },
   { id: 'equipment', fields: ['equipment'] },
@@ -99,6 +101,7 @@ export default function OnboardingPage() {
     defaultValues: {
       sport: '',
       skills: [],
+      otherSkills: '',
       goals: '',
       trainingDays: undefined,
       trainingDuration: undefined,
@@ -117,10 +120,17 @@ export default function OnboardingPage() {
       router.replace('/login');
     }
   }, [user, authLoading, router]);
+  
+  const sportHasSkills = (sport: string) => {
+    const lowerCaseSport = sport.toLowerCase();
+    const sportsWithSkills = ['calistenia', 'calisthenics', 'gimnasio', 'gym', 'running'];
+    return sportsWithSkills.some(s => lowerCaseSport.includes(s));
+  }
 
   const filteredSteps = steps.filter(step => {
     if (step.id === 'skills') {
-      return sportValue === 'Calistenia';
+      const sportKey = t(`onboarding.questions.sport.options.homeWorkout`);
+      return sportValue && sportValue.toLowerCase() !== sportKey.toLowerCase();
     }
     return true;
   });
@@ -130,14 +140,13 @@ export default function OnboardingPage() {
     const fieldsToValidate = currentStepInfo.fields;
     
     if (currentStepInfo.id === 'physique') {
-        if (currentStep < filteredSteps.length) { // Allow moving to the final submission step
+        if (currentStep < filteredSteps.length) {
             setDirection(1);
             setCurrentStep(prev => prev + 1);
         }
         return;
     }
 
-    // Special handling for 'other' sport
     if (currentStepInfo.id === 'sport' && selectedSport === 'other') {
       const sportValue = form.getValues('sport');
       if (!sportValue || sportValue.trim().length < 3) {
@@ -159,15 +168,21 @@ export default function OnboardingPage() {
   const prevStep = () => {
     if (currentStep > 0) {
         setDirection(-1);
-        setCurrentStep(prev => prev - 1);
+        setCurrentStep(prev => prev + 1);
     }
   }
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
+      const combinedSkills = [...(values.skills || [])];
+      if (values.otherSkills) {
+        combinedSkills.push(values.otherSkills);
+      }
+
       const routine = await generateWorkoutRoutine({ 
         ...values, 
+        skills: combinedSkills,
         language: locale,
         physiqueAnalysis: physiqueAnalysis ?? undefined,
       });
@@ -263,14 +278,40 @@ export default function OnboardingPage() {
 
   const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
-  const skillOptions = [
-      { id: 'muscleUp', label: 'Muscle Up'},
-      { id: 'frontLever', label: 'Front Lever'},
-      { id: 'planche', label: 'Planche'},
-      { id: 'handstand', label: 'Handstand'},
-      { id: 'humanFlag', label: 'Human Flag'},
-      { id: 'vSit', label: 'V-Sit'}
-  ]
+ const skillOptionsBySport: Record<string, { id: string; label: string }[]> = {
+    calistenia: [
+        { id: 'muscleUp', label: 'Muscle Up'},
+        { id: 'frontLever', label: 'Front Lever'},
+        { id: 'planche', label: 'Planche'},
+        { id: 'handstand', label: 'Handstand'},
+        { id: 'humanFlag', label: 'Human Flag'},
+        { id: 'vSit', label: 'V-Sit'}
+    ],
+    gimnasio: [
+        { id: 'bench100kg', label: 'Press de Banca con 100kg'},
+        { id: 'squat140kg', label: 'Sentadilla con 140kg'},
+        { id: 'deadlift180kg', label: 'Peso Muerto con 180kg'},
+        { id: 'overhead50kg', label: 'Press Militar con 50kg'},
+    ],
+    running: [
+        { id: 'run5k', label: 'Correr 5km sin parar'},
+        { id: 'run10k', label: 'Correr 10km'},
+        { id: 'sub25min5k', label: 'Correr 5km en menos de 25min'},
+        { id: 'runHalfMarathon', label: 'Correr una media maratón'},
+    ]
+ };
+
+  const getSkillOptionsForSport = (sport: string) => {
+    const lowerCaseSport = sport.toLowerCase();
+    for (const key in skillOptionsBySport) {
+        if (lowerCaseSport.includes(key)) {
+            return skillOptionsBySport[key];
+        }
+    }
+    return [];
+  };
+
+  const currentSkillOptions = getSkillOptionsForSport(sportValue);
 
   const equipmentCategories = {
     'basics': { icon: Dumbbell, items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
@@ -383,53 +424,70 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 2: Skills (Conditional) */}
-                  {currentStepInfo.id === 'skills' && (
-                     <FormField
-                      control={form.control}
-                      name="skills"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.skills.label')}</FormLabel>
-                          <FormDescription className='text-center -mt-4'>{t('onboarding.questions.skills.description')}</FormDescription>
-                          <div className="grid grid-cols-2 gap-3 pt-2">
-                             {skillOptions.map((item) => (
-                                <FormField
-                                    key={item.id}
-                                    control={form.control}
-                                    name="skills"
-                                    render={({ field }) => {
-                                        return (
-                                        <FormItem
+                   {/* Step 2: Skills (Conditional) */}
+                   {currentStepInfo.id === 'skills' && (
+                    <div className="space-y-4">
+                        <FormLabel className="text-lg text-center block">{t('onboarding.questions.skills.label')}</FormLabel>
+                        <FormDescription className='text-center -mt-4'>{t('onboarding.questions.skills.description')}</FormDescription>
+                        
+                        {currentSkillOptions.length > 0 ? (
+                             <FormField
+                              control={form.control}
+                              name="skills"
+                              render={() => (
+                                <FormItem>
+                                  <div className="grid grid-cols-2 gap-3 pt-2">
+                                     {currentSkillOptions.map((item) => (
+                                        <FormField
                                             key={item.id}
-                                            className="flex flex-row items-center space-x-3 space-y-0"
-                                        >
-                                            <FormControl>
-                                            <Button
-                                                type="button"
-                                                variant={field.value?.includes(item.label) ? 'default' : 'outline'}
-                                                className='w-full h-auto py-4'
-                                                onClick={() => {
-                                                    const currentSkills = field.value || [];
-                                                    const newSkills = currentSkills.includes(item.label)
-                                                        ? currentSkills.filter(value => value !== item.label)
-                                                        : [...currentSkills, item.label];
-                                                    field.onChange(newSkills);
-                                                }}
+                                            control={form.control}
+                                            name="skills"
+                                            render={({ field }) => (
+                                                <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-center space-x-3 space-y-0"
                                                 >
-                                                {item.label}
-                                            </Button>
-                                            </FormControl>
-                                        </FormItem>
-                                        )
-                                    }}
-                                />
-                             ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                                                    <FormControl>
+                                                    <Button
+                                                        type="button"
+                                                        variant={field.value?.includes(item.label) ? 'default' : 'outline'}
+                                                        className='w-full h-auto py-4'
+                                                        onClick={() => {
+                                                            const currentSkills = field.value || [];
+                                                            const newSkills = currentSkills.includes(item.label)
+                                                                ? currentSkills.filter(value => value !== item.label)
+                                                                : [...currentSkills, item.label];
+                                                            field.onChange(newSkills);
+                                                        }}
+                                                        >
+                                                        {item.label}
+                                                    </Button>
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                     ))}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        ) : (
+                             <FormField
+                              control={form.control}
+                              name="otherSkills"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm text-muted-foreground">{t('onboarding.questions.skills.otherLabel')}</FormLabel>
+                                  <FormControl>
+                                    <Textarea placeholder={t('onboarding.questions.skills.otherPlaceholder')} {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        )}
+                    </div>
                   )}
                   {/* Step 3: Goals */}
                   {currentStepInfo.id === 'goals' && (
@@ -688,3 +746,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
