@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { useUserData } from '@/hooks/use-user-data';
 
 export default function Home() {
-  const { loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { onboardingComplete, loading: userDataLoading } = useUserData();
   const router = useRouter();
 
@@ -18,12 +18,17 @@ export default function Home() {
       return; // Wait until all auth and user data state is confirmed
     }
 
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
+
     if (onboardingComplete) {
       router.replace('/dashboard');
     } else {
       router.replace('/onboarding');
     }
-  }, [onboardingComplete, authLoading, userDataLoading, router]);
+  }, [user, onboardingComplete, authLoading, userDataLoading, router]);
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">

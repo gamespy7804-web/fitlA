@@ -58,8 +58,6 @@ interface UserDataContextType {
     missionData: WeeklyMissionData | null;
     
     getLeaderboard: (uid: string) => Promise<{topUsers: UserProfile[], currentUserData: UserProfile | null, currentUserRank: number | null}>;
-    syncLocalToFirestore: (uid: string) => Promise<void>;
-    loadDataFromFirestore: (uid: string) => Promise<void>;
     
     saveWorkoutRoutine: (routine: WorkoutRoutineOutput & { sport?: string }) => void;
     addCompletedWorkout: (workout: CompletedWorkout) => void;
@@ -117,20 +115,19 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const { toast } = useToast();
     const { t } = useI18n();
     const [loading, setLoading] = useState(true);
-    const [isSyncing, setIsSyncing] = useState(false);
 
     // State mirroring UserFirestoreData
-    const [onboardingComplete, setOnboardingCompleteState] = useState<boolean>(false);
+    const [onboardingComplete, setOnboardingCompleteState] = useState<boolean | null>(null);
     const [workoutRoutine, setWorkoutRoutineState] = useState<(WorkoutRoutineOutput & { sport?: string }) | null>(null);
-    const [completedWorkouts, setCompletedWorkoutsState] = useState<CompletedWorkout[]>([]);
-    const [detailedWorkoutLogs, setDetailedWorkoutLogsState] = useState<DetailedWorkoutLog[]>([]);
-    const [pendingFeedback, setPendingFeedbackState] = useState<string[]>([]);
-    const [diamonds, setDiamondsState] = useState<number>(0);
-    const [xp, setXpState] = useState<number>(0);
-    const [streak, setStreakState] = useState<number>(0);
+    const [completedWorkouts, setCompletedWorkoutsState] = useState<CompletedWorkout[] | null>(null);
+    const [detailedWorkoutLogs, setDetailedWorkoutLogsState] = useState<DetailedWorkoutLog[] | null>(null);
+    const [pendingFeedback, setPendingFeedbackState] = useState<string[] | null>(null);
+    const [diamonds, setDiamondsState] = useState<number | null>(null);
+    const [xp, setXpState] = useState<number | null>(null);
+    const [streak, setStreakState] = useState<number | null>(null);
     const [lastWorkoutDate, setLastWorkoutDateState] = useState<string | null>(null);
-    const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[]>([]);
-    const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[]>([]);
+    const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
+    const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
     const [missionData, setMissionDataState] = useState<WeeklyMissionData | null>(null);
 
     const resetAllData = useCallback(() => {
@@ -144,19 +141,18 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const setStateFromData = useCallback((data: Partial<UserFirestoreData>) => {
-        if (data.onboardingComplete !== undefined) setOnboardingCompleteState(data.onboardingComplete);
-        if (data.workoutRoutine !== undefined) setWorkoutRoutineState(data.workoutRoutine);
-        if (data.completedWorkouts !== undefined) setCompletedWorkoutsState(data.completedWorkouts);
-        if (data.detailedWorkoutLogs !== undefined) setDetailedWorkoutLogsState(data.detailedWorkoutLogs);
-        if (data.pendingFeedback !== undefined) setPendingFeedbackState(data.pendingFeedback);
-        if (data.diamonds !== undefined) setDiamondsState(data.diamonds);
-        if (data.xp !== undefined) setXpState(data.xp);
-        if (data.streak !== undefined) setStreakState(data.streak);
-        if (data.lastWorkoutDate !== undefined) setLastWorkoutDateState(data.lastWorkoutDate);
-        if (data.triviaHistory !== undefined) setTriviaHistoryState(data.triviaHistory);
-        if (data.quizHistory !== undefined) setQuizHistoryState(data.quizHistory);
+        setOnboardingCompleteState(data.onboardingComplete ?? false);
+        setWorkoutRoutineState(data.workoutRoutine ?? null);
+        setCompletedWorkoutsState(data.completedWorkouts ?? []);
+        setDetailedWorkoutLogsState(data.detailedWorkoutLogs ?? []);
+        setPendingFeedbackState(data.pendingFeedback ?? []);
+        setDiamondsState(data.diamonds ?? 0);
+        setXpState(data.xp ?? 0);
+        setStreakState(data.streak ?? 0);
+        setLastWorkoutDateState(data.lastWorkoutDate ?? null);
+        setTriviaHistoryState(data.triviaHistory ?? []);
+        setQuizHistoryState(data.quizHistory ?? []);
 
-        // Mission data check
         const currentWeekId = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
         if (data.missionData && data.missionData.weekId === currentWeekId) {
             setMissionDataState(data.missionData);
@@ -170,55 +166,8 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         }
     }, []);
 
-    const syncLocalToFirestore = useCallback(async (uid: string) => {
-        if (!uid || isSyncing) return;
-        setIsSyncing(true);
-        const dataToSync: UserFirestoreData = {
-            onboardingComplete: loadFromLocalStorage('onboardingComplete', false),
-            workoutRoutine: loadFromLocalStorage('workoutRoutine', null),
-            completedWorkouts: loadFromLocalStorage('completedWorkouts', []),
-            detailedWorkoutLogs: loadFromLocalStorage('detailedWorkoutLogs', []),
-            pendingFeedback: loadFromLocalStorage('pendingFeedback', []),
-            diamonds: loadFromLocalStorage('diamonds', 0),
-            xp: loadFromLocalStorage('xp', 0),
-            streak: loadFromLocalStorage('streak', 0),
-            lastWorkoutDate: loadFromLocalStorage('lastWorkoutDate', null),
-            triviaHistory: loadFromLocalStorage('triviaHistory', []),
-            quizHistory: loadFromLocalStorage('quizHistory', []),
-            missionData: loadFromLocalStorage('missionData', null),
-        };
-        
-        try {
-            const userRef = doc(db, 'usersData', uid);
-            await setDoc(userRef, dataToSync, { merge: true });
-
-            const userProfileRef = doc(db, 'users', uid);
-            const userProfileSnap = await getDoc(userProfileRef);
-            const userProfileData: Partial<UserProfile> = {
-                uid: user!.uid,
-                displayName: user!.displayName!,
-                photoURL: user!.photoURL!,
-                xp: dataToSync.xp,
-                lastLogin: serverTimestamp(),
-            };
-
-            if (userProfileSnap.exists()) {
-                await updateDoc(userProfileRef, userProfileData);
-            } else {
-                await setDoc(userProfileRef, userProfileData);
-            }
-
-        } catch (error) {
-            console.error("Error syncing local data to Firestore:", error);
-        } finally {
-            setIsSyncing(false);
-        }
-    }, [isSyncing, user]);
-
     const loadDataFromFirestore = useCallback(async (uid: string) => {
-        if (!uid || isSyncing) return;
         setLoading(true);
-        setIsSyncing(true);
         try {
             const userRef = doc(db, 'usersData', uid);
             const docSnap = await getDoc(userRef);
@@ -226,19 +175,23 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             if (docSnap.exists()) {
                 const firestoreData = docSnap.data() as UserFirestoreData;
                 setStateFromData(firestoreData);
-                keys.forEach(key => {
-                    saveToLocalStorage(key, firestoreData[key] ?? null);
-                });
             } else {
-                await syncLocalToFirestore(uid);
+                const userProfileRef = doc(db, 'users', uid);
+                const userProfileData: UserProfile = {
+                    uid: user!.uid,
+                    displayName: user!.displayName!,
+                    photoURL: user!.photoURL!,
+                    xp: 0,
+                    lastLogin: serverTimestamp(),
+                };
+                await setDoc(userProfileRef, userProfileData);
             }
         } catch (error) {
             console.error("Error loading data from Firestore:", error);
         } finally {
             setLoading(false);
-            setIsSyncing(false);
         }
-    }, [isSyncing, setStateFromData, syncLocalToFirestore]);
+    }, [user, setStateFromData]);
     
      useEffect(() => {
         if (authLoading) {
@@ -247,24 +200,12 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (user) {
-            if (user.isAnonymous) {
-                // For anonymous users, load from local storage
-                const localData: Partial<UserFirestoreData> = {};
-                keys.forEach(key => {
-                    localData[key] = loadFromLocalStorage(key, null);
-                });
-                setStateFromData(localData);
-                setLoading(false);
-            } else {
-                // For real users, load from Firestore
-                loadDataFromFirestore(user.uid);
-            }
+            loadDataFromFirestore(user.uid);
         } else {
-            // No user at all, reset to default state
             resetAllData();
             setLoading(false);
         }
-    }, [user, authLoading, loadDataFromFirestore, setStateFromData, resetAllData]);
+    }, [user, authLoading, loadDataFromFirestore, resetAllData]);
     
      // Listen for storage changes from other tabs
     useEffect(() => {
@@ -282,10 +223,10 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
 
     const addXP = useCallback(async (amount: number, bonusReason?: string) => {
+        if (xp === null) return;
         let totalAmount = amount;
         const newXP = xp + totalAmount;
         setXpState(newXP);
-        saveToLocalStorage('xp', newXP);
 
         let description = `+${amount} XP`;
         if (bonusReason) {
@@ -297,7 +238,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             description: description
         });
 
-        if (user && !user.isAnonymous) {
+        if (user) {
             try {
                 const userProfileRef = doc(db, 'users', user.uid);
                 const userDataRef = doc(db, 'usersData', user.uid);
@@ -312,12 +253,9 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     }, [xp, user, toast, t]);
 
     const updateMissionProgress = useCallback((newlyCompletedWorkout: CompletedWorkout, currentStreakValue: number) => {
-        const currentData = missionData ?? {
-            weekId: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0],
-            progress: Object.fromEntries(weeklyMissions.map(m => [m.id, { current: 0, completed: false }]))
-        };
+        if (!missionData) return;
 
-        const newProgress = { ...currentData.progress };
+        const newProgress = { ...missionData.progress };
 
         weeklyMissions.forEach(mission => {
             if (newProgress[mission.id]?.completed) return;
@@ -340,15 +278,17 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             }
         });
         
-        const newMissionData = { ...currentData, progress: newProgress };
+        const newMissionData = { ...missionData, progress: newProgress };
         setMissionDataState(newMissionData);
-        saveToLocalStorage('missionData', newMissionData);
-    }, [missionData, addXP, t]);
+        if (user) {
+          updateDoc(doc(db, 'usersData', user.uid), { missionData: newMissionData }).catch(console.error);
+        }
+    }, [missionData, addXP, t, user]);
 
     const addCompletedWorkout = useCallback((workout: CompletedWorkout) => {
+        if (completedWorkouts === null || streak === null) return;
         const updated = [...completedWorkouts, workout];
         setCompletedWorkoutsState(updated);
-        saveToLocalStorage('completedWorkouts', updated);
 
         const today = new Date();
         let currentStreakValue = streak;
@@ -364,19 +304,24 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             currentStreakValue = 1;
         }
         
-        setStreakState(currentStreakValue);
-        saveToLocalStorage('streak', currentStreakValue);
         const newLastWorkoutDate = today.toISOString();
+        setStreakState(currentStreakValue);
         setLastWorkoutDateState(newLastWorkoutDate);
-        saveToLocalStorage('lastWorkoutDate', newLastWorkoutDate);
+
+        if (user) {
+            updateDoc(doc(db, 'usersData', user.uid), { 
+                completedWorkouts: updated,
+                streak: currentStreakValue,
+                lastWorkoutDate: newLastWorkoutDate
+             }).catch(console.error);
+        }
 
         updateMissionProgress(workout, currentStreakValue);
 
-    }, [completedWorkouts, streak, lastWorkoutDate, updateMissionProgress]);
+    }, [completedWorkouts, streak, lastWorkoutDate, user, updateMissionProgress]);
 
     const saveData = useCallback((key: keyof UserFirestoreData, value: any) => {
-        saveToLocalStorage(key, value);
-        if (user && !user.isAnonymous) {
+        if (user) {
             updateDoc(doc(db, 'usersData', user.uid), { [key]: value }).catch(console.error);
         }
     }, [user]);
@@ -387,6 +332,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     }, [saveData]);
 
     const addDetailedWorkoutLog = useCallback((log: DetailedWorkoutLog) => {
+        if (detailedWorkoutLogs === null) return;
         const updated = [...detailedWorkoutLogs, log];
         setDetailedWorkoutLogsState(updated);
         saveData('detailedWorkoutLogs', updated);
@@ -405,12 +351,14 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     }, [saveData]);
 
     const addPendingFeedback = useCallback((exercise: string) => {
+        if (pendingFeedback === null) return;
         const updated = [...pendingFeedback, exercise];
         setPendingFeedbackState(updated);
         saveData('pendingFeedback', updated);
     }, [pendingFeedback, saveData]);
 
     const removePendingFeedback = useCallback((exercise: string) => {
+        if (pendingFeedback === null) return;
         const updated = pendingFeedback.filter(ex => ex !== exercise);
         setPendingFeedbackState(updated);
         saveData('pendingFeedback', updated);
@@ -422,24 +370,28 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     }, [saveData]);
     
     const consumeDiamonds = useCallback((amount: number) => {
+        if (diamonds === null) return;
         const newDiamonds = Math.max(0, diamonds - amount);
         setDiamondsState(newDiamonds);
         saveData('diamonds', newDiamonds);
     }, [diamonds, saveData]);
 
     const addDiamonds = useCallback((amount: number) => {
+        if (diamonds === null) return;
         const newDiamonds = diamonds + amount;
         setDiamondsState(newDiamonds);
         saveData('diamonds', newDiamonds);
     }, [diamonds, saveData]);
     
     const updateTriviaHistory = useCallback((sessionHistory: TriviaHistoryItem[]) => {
+        if (triviaHistory === null) return;
         const updated = [...triviaHistory, ...sessionHistory];
         setTriviaHistoryState(updated);
         saveData('triviaHistory', updated);
     }, [triviaHistory, saveData]);
 
     const updateQuizHistory = useCallback((sessionHistory: QuizHistoryItem[]) => {
+        if (quizHistory === null) return;
         const updated = [...quizHistory, ...sessionHistory];
         setQuizHistoryState(updated);
         saveData('quizHistory', updated);
@@ -474,7 +426,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         loading: loading || authLoading, onboardingComplete, workoutRoutine, completedWorkouts,
         detailedWorkoutLogs, pendingFeedback, diamonds, xp, streak,
         triviaHistory, quizHistory, missionData, getLeaderboard,
-        syncLocalToFirestore, loadDataFromFirestore, saveWorkoutRoutine,
+        saveWorkoutRoutine,
         addCompletedWorkout, addDetailedWorkoutLog, clearWorkoutProgress,
         setOnboardingComplete, addPendingFeedback, removePendingFeedback,
         setInitialDiamonds, consumeDiamonds, addDiamonds, addXP,

@@ -70,7 +70,7 @@ export default function SettingsPage() {
   const handleResetAccount = async () => {
     setIsResetting(true);
     await resetAccountData();
-    // The reset function will force a reload, so we don't need to set isResetting to false.
+    setIsResetting(false);
   }
 
   const renderUserCard = () => {
@@ -88,7 +88,7 @@ export default function SettingsPage() {
       )
     }
 
-    if (user && !user.isAnonymous) {
+    if (user) {
       return (
         <Card>
           <CardHeader>
@@ -111,20 +111,8 @@ export default function SettingsPage() {
       )
     }
 
-    return (
-      <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">Guardar Progreso</CardTitle>
-            <CardDescription>Inicia sesión con Google para sincronizar tu progreso y no perder tus datos si cambias de dispositivo.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" onClick={signInWithGoogle} disabled={authLoading}>
-              <GoogleIcon className="mr-2" />
-              Guardar progreso con Google
-            </Button>
-          </CardContent>
-      </Card>
-    )
+    // This case should ideally not be reached if the user is always redirected to /login
+    return null;
   }
 
   return (
@@ -220,7 +208,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="font-headline">{t('settings.language.title')}</CardTitle>
             <CardDescription>{t('settings.language.description')}</CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent className='flex items-center gap-2 rounded-lg border p-4'>
               <Languages className="h-5 w-5 text-primary" />
               <Label className="font-medium mr-auto">{t('settings.language.select')}</Label>
@@ -237,7 +225,7 @@ export default function SettingsPage() {
           <CardDescription>{t('settings.account.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-            {user && !user.isAnonymous && (
+            {user && (
               <div className='flex flex-col md:flex-row md:items-center md:justify-between rounded-lg border border-border p-4'>
                 <div>
                     <h3 className="font-medium">{t('settings.account.signOut.title')}</h3>
