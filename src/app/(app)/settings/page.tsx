@@ -26,12 +26,14 @@ import {
 import { GoogleIcon } from '@/components/icons';
 import { useUserData } from '@/hooks/use-user-data';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
-  const { user, signOut, resetAccountData, signInWithGoogle, loading: authLoading } = useAuth();
+  const { user, signOut, signInWithGoogle, loading: authLoading } = useAuth();
   const { t, setLocale, locale } = useI18n();
   const router = useRouter();
-  const { diamonds } = useUserData();
+  const { diamonds, resetAllData } = useUserData();
+  const { toast } = useToast();
 
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [musicVolume, setMusicVolumeState] = useState(50);
@@ -69,7 +71,12 @@ export default function SettingsPage() {
   
   const handleResetAccount = async () => {
     setIsResetting(true);
-    await resetAccountData();
+    await resetAllData();
+    await signOut();
+    toast({
+        title: t('settings.account.reset.confirm.successTitle'),
+        description: t('settings.account.reset.confirm.successDescription'),
+    });
     setIsResetting(false);
   }
 

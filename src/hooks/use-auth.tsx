@@ -12,14 +12,12 @@ import {
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from './use-toast';
-import { useUserData } from './use-user-data';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  resetAccountData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
-  const { resetAllData } = useUserData();
   
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -59,16 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const resetAccountData = async () => {
-    await resetAllData();
-    await signOut();
-    toast({
-        title: "Datos de la cuenta restablecidos",
-        description: "Todo tu progreso ha sido eliminado. Ahora puedes empezar de nuevo.",
-    });
-  }
-  
-  const value = { user, loading, signInWithGoogle, signOut, resetAccountData };
+  const value = { user, loading, signInWithGoogle, signOut };
   
   return (
     <AuthContext.Provider value={value}>

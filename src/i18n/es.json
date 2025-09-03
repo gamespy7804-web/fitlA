@@ -416,7 +416,9 @@
             "title": "¿Estás seguro?",
             "description": "Esta acción borrará todo tu progreso en la aplicación (rutinas, registros, etc.) y no se puede deshacer. Tu cuenta no será eliminada.",
             "cancel": "Cancelar",
-            "action": "Sí, restablecer datos"
+            "action": "Sí, restablecer datos",
+            "successTitle": "Datos Restablecidos",
+            "successDescription": "Todo tu progreso ha sido eliminado. Serás redirigido a la página de inicio."
           }
         }
       },

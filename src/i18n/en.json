@@ -416,7 +416,9 @@
             "title": "Are you sure?",
             "description": "This action will delete all your progress (routines, logs, etc.) and cannot be undone. Your account will not be deleted.",
             "cancel": "Cancel",
-            "action": "Yes, reset data"
+            "action": "Yes, reset data",
+            "successTitle": "Data Reset",
+            "successDescription": "All your progress has been deleted. You will be redirected to the login page."
           }
         }
       },
