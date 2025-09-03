@@ -35,31 +35,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        setLoading(false);
       } else {
-        // If no user, sign in anonymously
+        // No user is signed in. Create a new anonymous user.
         try {
           const { user: anonUser } = await signInAnonymously(auth);
           setUser(anonUser);
         } catch (error) {
            console.error("Anonymous sign-in failed", error);
            toast({ variant: 'destructive', title: 'Error de conexión', description: 'No se pudo iniciar una sesión. Por favor, revisa tu conexión y recarga la página.'});
-        } finally {
-            setLoading(false);
         }
       }
+      setLoading(false);
     });
     return () => unsubscribe();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
         if (auth.currentUser && auth.currentUser.isAnonymous) {
-            // If the user is anonymous, link the account
+            // User is anonymous, link their data to a new Google account.
+            // Firestore data migration will happen on the next auth state change automatically.
             await linkWithRedirect(auth.currentUser, provider);
         } else {
-            // Otherwise, perform a normal sign-in
+            // No user or a signed-in user wants to sign in again (shouldn't happen often)
             await signInWithRedirect(auth, provider);
         }
     } catch (error: any) {
@@ -69,11 +69,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    const wasRealUser = auth.currentUser && !auth.currentUser.isAnonymous;
     try {
       await firebaseSignOut(auth);
-      // The onAuthStateChanged listener will handle signing in a new anonymous user.
-      toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso ya no está sincronizado." });
-      window.location.href = '/'; // Go to home to restart the flow
+      
+      // The onAuthStateChanged listener will handle signing in a new anonymous user automatically.
+      // The useUserData hook will listen for this user change and reset the data.
+      
+      if (wasRealUser) {
+        toast({ title: "Sesión cerrada", description: "Has cerrado sesión correctamente. Tu progreso ya no está sincronizado." });
+      }
+      // Redirecting to home will ensure a clean state with a new anonymous user.
+      router.push('/');
     } catch (error) {
       console.error('Error signing out', error);
       toast({ variant: "destructive", title: "Error", description: "No se pudo cerrar la sesión." });
@@ -81,30 +88,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetAccountData = async () => {
+    // The actual data reset logic is in useUserData, triggered by signOut.
     const wasRealUser = auth.currentUser && !auth.currentUser.isAnonymous;
     
-    // Clear all localStorage data
-    localStorage.removeItem('onboardingComplete');
-    localStorage.removeItem('workoutRoutine');
-    localStorage.removeItem('completedWorkouts');
-    localStorage.removeItem('detailedWorkoutLogs');
-    localStorage.removeItem('pendingFeedbackExercises');
-    localStorage.removeItem('feedbackCredits');
-    localStorage.removeItem('triviaHistory');
-    localStorage.removeItem('quizHistory');
-    localStorage.removeItem('hasSeenOnboardingTour');
-
+    // If it was a real user, sign them out. This will trigger onAuthStateChanged,
+    // which will create a new anonymous user and trigger a data reset in useUserData.
     if (wasRealUser) {
       await firebaseSignOut(auth);
+    } else {
+        // If the user is anonymous, we just force a reload, which will trigger a reset in useUserData
+        // because all its state is in-memory or tied to the session.
+        localStorage.clear();
+        window.location.href = '/';
     }
     
     toast({
         title: "Datos de la cuenta restablecidos",
         description: "Todo tu progreso ha sido eliminado. Ahora puedes empezar de nuevo.",
     });
-    
-    // Force a reload to ensure the anonymous user starts completely fresh
-    window.location.href = '/';
   }
   
   const value = { user, loading, signInWithGoogle, signOut, resetAccountData };

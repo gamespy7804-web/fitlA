@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AuthProvider } from '@/hooks/use-auth';
@@ -8,6 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <I18nProvider>
       <AuthProvider>
+        {/* UserDataProvider debe estar dentro de AuthProvider para acceder al usuario */}
         <UserDataProvider>{children}</UserDataProvider>
       </AuthProvider>
     </I18nProvider>
