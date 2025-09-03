@@ -110,6 +110,12 @@ export default function OnboardingPage() {
   });
 
   const sportValue = form.watch('sport');
+  
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, authLoading, router]);
 
   const filteredSteps = steps.filter(step => {
     if (step.id === 'skills') {
@@ -229,7 +235,7 @@ export default function OnboardingPage() {
     reader.readAsDataURL(file);
   };
   
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -681,4 +687,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-

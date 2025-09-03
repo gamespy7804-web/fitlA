@@ -70,6 +70,7 @@ export default function SettingsPage() {
   const handleResetAccount = async () => {
     setIsResetting(true);
     await resetAccountData();
+    // The resetAccountData function in useAuth will handle the redirect.
     setIsResetting(false);
   }
 
@@ -111,8 +112,20 @@ export default function SettingsPage() {
       )
     }
 
-    // This case should ideally not be reached if the user is always redirected to /login
-    return null;
+    return (
+      <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">Guardar Progreso</CardTitle>
+            <CardDescription>Inicia sesión para sincronizar tu progreso y no perder tus datos.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" onClick={signInWithGoogle}>
+              <GoogleIcon className="mr-2" />
+              Iniciar Sesión con Google
+            </Button>
+          </CardContent>
+      </Card>
+    )
   }
 
   return (
