@@ -28,7 +28,7 @@
       "analysisCredits": "Diamonds",
       "analysisCredits_beta": "Diamonds. Click to go to the store.",
       "xpPoints": "Experience Points",
-      "streak": "Day Streak"
+      "streakDays": "Day Streak"
     },
     "chatbot": {
       "title": "AI Assistant",
@@ -427,39 +427,6 @@
           "buyMore": "Get More"
       }
     },
-    "store": {
-        "title": "Diamond Store",
-        "description": "Get more diamonds to use the AI form analysis feature.",
-        "credits": "Diamonds",
-        "buyNow": "Buy Now",
-        "watchAd": "Watch Ad",
-        "popular": "Popular",
-        "packages": {
-            "ad": {
-                "name": "Free Reward",
-                "price": "Free",
-                "feature1": "Watch a short ad",
-                "feature2": "Get a small reward"
-            },
-            "small": { "name": "Handful of Diamonds" },
-            "medium": { "name": "Pouch of Diamonds" },
-            "large": { "name": "Chest of Diamonds" },
-            "features": {
-                "instantAnalysis": "Instant analysis",
-                "errorDetection": "Detailed error detection",
-                "prioritySupport": "Priority support",
-                "betaAccess": "Access to beta features"
-            }
-        },
-        "purchaseSuccess": {
-            "title": "Purchase Successful!",
-            "description": "{{count}} diamonds have been added to your account."
-        },
-        "adSuccess": {
-            "title": "Reward Claimed!",
-            "description": "{{count}} diamonds have been added to your account."
-        }
-    },
     "onboarding": {
       "title": "Welcome to workout IA",
       "description": "Let's personalize your fitness journey.",
@@ -477,6 +444,10 @@
             "volleyball": "Volleyball",
             "other": "Other (Specify)"
           }
+        },
+        "skills": {
+          "label": "What skills do you want to learn?",
+          "description": "Select your main goals. The AI will create a plan to unlock them."
         },
         "goals": { "label": "What are your main goals?", "placeholder": "e.g., Increase vertical jump, run a 5k" },
         "fitnessLevel": { 

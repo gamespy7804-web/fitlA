@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Upload, CheckCircle } from 'lucide-react';
+import { Loader2, Sparkles, ChevronLeft, ChevronRight, Dumbbell, HeartPulse, Puzzle, Upload, CheckCircle, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useI18n } from '@/i18n/client';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -49,6 +49,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 // Zod schema creator function to allow for dynamic error messages from i18n
 const createFormSchema = (t: (key: string) => string) => z.object({
     sport: z.string().min(1, t('onboarding.validation.sport.min')),
+    skills: z.array(z.string()).optional(),
     goals: z.string().min(3, t('onboarding.validation.goals.min')),
     fitnessLevel: z.enum(['beginner', 'intermediate', 'advanced'], { required_error: t('workoutGenerator.form.validations.fitnessLevel.required')}),
     equipment: z.array(z.string()).min(1, t('onboarding.validation.equipment.required')),
@@ -61,6 +62,7 @@ const createFormSchema = (t: (key: string) => string) => z.object({
 
 const steps = [
   { id: 'sport', fields: ['sport'], autoNext: true },
+  { id: 'skills', fields: ['skills'], dependsOn: 'sport', dependsValue: 'Calistenia' },
   { id: 'goals', fields: ['goals'] },
   { id: 'fitnessLevel', fields: ['fitnessLevel'], autoNext: true },
   { id: 'equipment', fields: ['equipment'] },
@@ -95,6 +97,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       sport: '',
+      skills: [],
       goals: '',
       trainingDays: undefined,
       trainingDuration: undefined,
@@ -106,12 +109,21 @@ export default function OnboardingPage() {
     },
   });
 
+  const sportValue = form.watch('sport');
+
+  const filteredSteps = steps.filter(step => {
+    if (step.id === 'skills') {
+      return sportValue === 'Calistenia';
+    }
+    return true;
+  });
+
   const nextStep = async () => {
-    const currentStepInfo = steps[currentStep];
+    const currentStepInfo = filteredSteps[currentStep];
     const fieldsToValidate = currentStepInfo.fields;
     
     if (currentStepInfo.id === 'physique') {
-        if (currentStep < steps.length) { // Allow moving to the final submission step
+        if (currentStep < filteredSteps.length) { // Allow moving to the final submission step
             setDirection(1);
             setCurrentStep(prev => prev + 1);
         }
@@ -130,7 +142,7 @@ export default function OnboardingPage() {
     const isValid = await form.trigger(fieldsToValidate as any);
 
     if (isValid) {
-      if (currentStep < steps.length - 1) {
+      if (currentStep < filteredSteps.length - 1) {
         setDirection(1);
         setCurrentStep(prev => prev + 1);
       }
@@ -244,6 +256,15 @@ export default function OnboardingPage() {
 
   const sportOptions = ['homeWorkout', 'gym', 'calisthenics', 'running', 'boxing', 'soccer', 'volleyball', 'other'] as const;
 
+  const skillOptions = [
+      { id: 'muscleUp', label: 'Muscle Up'},
+      { id: 'frontLever', label: 'Front Lever'},
+      { id: 'planche', label: 'Planche'},
+      { id: 'handstand', label: 'Handstand'},
+      { id: 'humanFlag', label: 'Human Flag'},
+      { id: 'vSit', label: 'V-Sit'}
+  ]
+
   const equipmentCategories = {
     'basics': { icon: Dumbbell, items: ['dumbbells', 'resistanceBands', 'yogaMat', 'pullUpBar'] },
     'gym': { icon: Dumbbell, items: ['benchPress', 'squatRack', 'cableMachine', 'legPress'] },
@@ -272,7 +293,7 @@ export default function OnboardingPage() {
     form.setValue('equipment', newValue.length > 0 ? newValue : [], { shouldValidate: true });
   };
 
-  const currentStepInfo = steps[currentStep];
+  const currentStepInfo = filteredSteps[currentStep];
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -280,7 +301,7 @@ export default function OnboardingPage() {
         <CardHeader>
           <CardTitle className="font-headline text-3xl text-center">{t('onboarding.title')}</CardTitle>
           <CardDescription className="text-center">{t('onboarding.description')}</CardDescription>
-          <Progress value={((currentStep + 1) / (steps.length + 1)) * 100} className="mt-4" />
+          <Progress value={((currentStep + 1) / (filteredSteps.length + 1)) * 100} className="mt-4" />
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)}>
@@ -355,7 +376,55 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 2: Goals */}
+                  {/* Step 2: Skills (Conditional) */}
+                  {currentStepInfo.id === 'skills' && (
+                     <FormField
+                      control={form.control}
+                      name="skills"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg text-center block">{t('onboarding.questions.skills.label')}</FormLabel>
+                          <FormDescription className='text-center -mt-4'>{t('onboarding.questions.skills.description')}</FormDescription>
+                          <div className="grid grid-cols-2 gap-3 pt-2">
+                             {skillOptions.map((item) => (
+                                <FormField
+                                    key={item.id}
+                                    control={form.control}
+                                    name="skills"
+                                    render={({ field }) => {
+                                        return (
+                                        <FormItem
+                                            key={item.id}
+                                            className="flex flex-row items-center space-x-3 space-y-0"
+                                        >
+                                            <FormControl>
+                                            <Button
+                                                type="button"
+                                                variant={field.value?.includes(item.label) ? 'default' : 'outline'}
+                                                className='w-full h-auto py-4'
+                                                onClick={() => {
+                                                    const currentSkills = field.value || [];
+                                                    const newSkills = currentSkills.includes(item.label)
+                                                        ? currentSkills.filter(value => value !== item.label)
+                                                        : [...currentSkills, item.label];
+                                                    field.onChange(newSkills);
+                                                }}
+                                                >
+                                                {item.label}
+                                            </Button>
+                                            </FormControl>
+                                        </FormItem>
+                                        )
+                                    }}
+                                />
+                             ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {/* Step 3: Goals */}
                   {currentStepInfo.id === 'goals' && (
                      <FormField
                       control={form.control}
@@ -371,7 +440,7 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 3: Fitness Level */}
+                  {/* Step 4: Fitness Level */}
                   {currentStepInfo.id === 'fitnessLevel' && (
                     <FormField
                       control={form.control}
@@ -405,7 +474,7 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 4: Equipment */}
+                  {/* Step 5: Equipment */}
                   {currentStepInfo.id === 'equipment' && (
                     <FormField
                       control={form.control}
@@ -463,7 +532,7 @@ export default function OnboardingPage() {
                       )}
                     />
                   )}
-                  {/* Step 5: Details */}
+                  {/* Step 6: Details */}
                   {currentStepInfo.id === 'details' && (
                     <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.details.label')}</FormLabel>
@@ -518,7 +587,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                   )}
-                   {/* Step 6: Availability */}
+                   {/* Step 7: Availability */}
                   {currentStepInfo.id === 'availability' && (
                      <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.availability.label')}</FormLabel>
@@ -552,7 +621,7 @@ export default function OnboardingPage() {
                         </div>
                     </div>
                   )}
-                  {/* Step 7: Physique Analysis */}
+                  {/* Step 8: Physique Analysis */}
                   {currentStepInfo.id === 'physique' && (
                     <div className="space-y-4">
                         <FormLabel className="text-lg text-center block">{t('onboarding.questions.physique.label')}</FormLabel>
@@ -591,8 +660,8 @@ export default function OnboardingPage() {
                     <ChevronLeft className="mr-2"/>
                     {t('onboarding.buttons.back')}
                 </Button>
-                {currentStep < steps.length - 1 ? (
-                   ( (selectedSport === 'other' && currentStep === 0) || !steps[currentStep].autoNext) ? (
+                {currentStep < filteredSteps.length - 1 ? (
+                   ( (selectedSport === 'other' && currentStepInfo.id === 'sport') || !currentStepInfo.autoNext) ? (
                     <Button type="button" onClick={nextStep}>
                         {t('onboarding.buttons.next')}
                         <ChevronRight className="ml-2"/>
@@ -612,3 +681,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+

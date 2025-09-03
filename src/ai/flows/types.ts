@@ -184,6 +184,7 @@ export const WorkoutRoutineInputSchema = z.object({
     .string()
     .describe('The user goals, e.g., lose weight, gain muscle, improve endurance'),
   sport: z.string().describe('The sport the user is training for.'),
+  skills: z.array(z.string()).optional().describe("A list of specific, high-level skills the user wants to learn (e.g., 'Planche', 'Front Lever')."),
   fitnessLevel: z.string().describe('The current fitness level of the user (beginner, intermediate, advanced).'),
   equipment: z.array(z.string()).optional().describe("A list of available equipment for the user. If the list contains only 'none', the user has no equipment. If it contains 'gym', the user has full gym access."),
   age: z.coerce.number().optional().describe("The user's age."),

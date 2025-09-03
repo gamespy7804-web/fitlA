@@ -28,7 +28,7 @@
       "analysisCredits": "Diamantes",
       "analysisCredits_beta": "Diamantes. Haz clic para ir a la tienda.",
       "xpPoints": "Puntos de Experiencia",
-      "streak": "Racha de Días"
+      "streakDays": "Racha de Días"
     },
     "chatbot": {
       "title": "Asistente de IA",
@@ -427,39 +427,6 @@
           "buyMore": "Conseguir Más"
       }
     },
-    "store": {
-        "title": "Tienda de Diamantes",
-        "description": "Consigue más diamantes para utilizar la función de análisis de forma con IA.",
-        "credits": "Diamantes",
-        "buyNow": "Comprar Ahora",
-        "watchAd": "Ver Anuncio",
-        "popular": "Popular",
-        "packages": {
-            "ad": {
-                "name": "Recompensa Gratis",
-                "price": "Gratis",
-                "feature1": "Mira un anuncio corto",
-                "feature2": "Consigue una pequeña recompensa"
-            },
-            "small": { "name": "Puñado de Diamantes" },
-            "medium": { "name": "Bolsa de Diamantes" },
-            "large": { "name": "Cofre de Diamantes" },
-            "features": {
-                "instantAnalysis": "Análisis instantáneo",
-                "errorDetection": "Detección de errores detallada",
-                "prioritySupport": "Soporte prioritario",
-                "betaAccess": "Acceso a funciones beta"
-            }
-        },
-        "purchaseSuccess": {
-            "title": "¡Compra Exitosa!",
-            "description": "Se han añadido {{count}} diamantes a tu cuenta."
-        },
-        "adSuccess": {
-            "title": "¡Recompensa Obtenida!",
-            "description": "Se han añadido {{count}} diamantes a tu cuenta."
-        }
-    },
     "onboarding": {
       "title": "Bienvenido a workout IA",
       "description": "Vamos a personalizar tu viaje de fitness.",
@@ -477,6 +444,10 @@
             "volleyball": "Voley",
             "other": "Otro (Especificar)"
           }
+        },
+        "skills": {
+            "label": "¿Qué habilidades quieres aprender?",
+            "description": "Selecciona tus objetivos principales. La IA creará un plan para desbloquearlos."
         },
         "goals": { "label": "¿Cuáles son tus metas principales?", "placeholder": "ej., Aumentar salto vertical, correr 5k" },
         "fitnessLevel": { 

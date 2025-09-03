@@ -46,6 +46,17 @@ The output format MUST always be a 'structuredRoutine'. Do NOT use the 'routine'
 - If the equipment list is 'none' or empty, you MUST generate a routine based exclusively on bodyweight exercises.
 - Do NOT suggest exercises that require equipment the user does not have.
 
+{{#if skills}}
+**CRITICAL: Skill-Based Progression (Highest Priority):**
+The user wants to learn the following specific skills: {{#each skills}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
+Your primary objective is to create a routine that builds the necessary strength, mobility, and technique to achieve these skills.
+- Structure the entire plan around progressions for these skills.
+- For a 'beginner' user, start with the most basic progressions (e.g., 'Tuck Planche', 'Tuck Front Lever', scapular pulls).
+- For 'intermediate' or 'advanced' users, select more difficult progressions (e.g., 'Straddle Planche', 'Single-Leg Front Lever').
+- If multiple skills are selected, create a balanced routine (e.g., Push-Pull split) that addresses all of them.
+{{/if}}
+
+
 {{#if physiqueAnalysis}}
 **CRITICAL: Physique Analysis Data (Use this to customize the plan):**
 - **Potential Score:** {{physiqueAnalysis.potentialScore}}/10
@@ -65,10 +76,10 @@ Based on this analysis, you MUST tailor the workout plan. For example, if the sy
 3.  **Weekly Structure**: Organize the training days logically throughout the week to allow for adequate muscle recovery. Avoid scheduling two high-intensity workouts for the same muscle group on consecutive days.
 4.  **Warm-up and Cool-down**: EACH daily workout MUST begin with a specific 'Warm-up' phase (3-5 minutes of light cardio and dynamic stretches) and end with a 'Cool-down' phase (3-5 minutes of static stretches for the muscles worked). These should be included as exercises in the list. For warm-up/cool-down exercises, set 'reps' to a duration string (e.g., "60 sec").
 5.  **Exercise Selection**:
-    -   Set 'requiresFeedback' to true ONLY for complex, high-injury-risk, free-weight exercises (e.g., Squats, Deadlifts, Bench Press, Olympic Lifts). It should be false for machine exercises, bodyweight exercises, or simple movements.
+    -   Set 'requiresFeedback' to true ONLY for complex, high-injury-risk, free-weight or calisthenics skill-progression exercises (e.g., Squats, Deadlifts, Bench Press, Planche, Front Lever). It should be false for machine exercises, simple bodyweight exercises, or simple movements.
     -   Set 'requiresWeight' to true for any exercise that requires external weights (dumbbells, barbells, machines) and false for bodyweight or cardio exercises.
 6.  **YouTube Query Generation**: For EACH exercise, generate a concise and effective 'youtubeQuery' in the user's specified language ({{language}}) that exactly matches the exercise name to find a high-quality tutorial video. Example for squats in Spanish: "como hacer sentadillas correctamente". If the exercise name is "Tuck Planche", the query must be "como hacer tuck planche".
-7.  **Specific Exercise Naming**: Each exercise 'name' MUST be specific and singular (e.g., "Barbell Squat", "Tuck Planche", "Diamond Push-up"). Do NOT use generic category names or list multiple progressions in one name. For example, do NOT use "Front Lever Progressions". Instead, you must choose ONE specific progression suitable for the user, like "Tuck Front Lever". Be decisive.
+7.  **Specific Exercise Naming**: Each exercise 'name' MUST be specific and singular (e.g., "Barbell Squat", "Tuck Planche", "Diamond Push-up"). Do NOT use generic category names or list multiple progressions in one name. For example, do NOT use "Front Lever Progressions". Instead, you must choose ONE specific progression suitable for the user, like "Tuck Front Lever". Be decisive. This is critical for the skill validation system.
 8.  **Safety First**: Prioritize safety and proper form. The routines should be designed to minimize injury risk.
   `,
 });
