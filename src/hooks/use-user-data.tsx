@@ -3,8 +3,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp } from 'firebase/firestore'; 
-import { db } from '@/lib/firebase';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore'; 
+import { db as getDb } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
 import { useToast } from './use-toast';
@@ -81,35 +81,6 @@ interface UserDataContextType {
 
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
-// Helper function to safely parse JSON from localStorage
-const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
-    if (typeof window === 'undefined') return defaultValue;
-    try {
-        const item = window.localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-        console.warn(`Error reading localStorage key “${key}”:`, error);
-        return defaultValue;
-    }
-};
-
-const saveToLocalStorage = <T,>(key: string, value: T) => {
-    if (typeof window === 'undefined') return;
-    try {
-        const item = JSON.stringify(value);
-        window.localStorage.setItem(key, item);
-        window.dispatchEvent(new Event('storage'));
-    } catch (error) {
-        console.warn(`Error setting localStorage key “${key}”:`, error);
-    }
-};
-
-const keys: Array<keyof UserFirestoreData> = [
-    'onboardingComplete', 'workoutRoutine', 'completedWorkouts', 
-    'detailedWorkoutLogs', 'pendingFeedback', 'diamonds', 'xp',
-    'streak', 'lastWorkoutDate', 'triviaHistory', 'quizHistory', 'missionData'
-];
-
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const { user, loading: authLoading } = useAuth();
     const { toast } = useToast();
@@ -129,16 +100,8 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [triviaHistory, setTriviaHistoryState] = useState<TriviaHistoryItem[] | null>(null);
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
     const [missionData, setMissionDataState] = useState<WeeklyMissionData | null>(null);
-
-    const resetAllData = useCallback(() => {
-        keys.forEach(key => localStorage.removeItem(key));
-        const emptyData = {
-            onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
-            detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
-            lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
-        };
-        setStateFromData(emptyData);
-    }, []);
+    
+    const db = getDb();
 
     const setStateFromData = useCallback((data: Partial<UserFirestoreData>) => {
         setOnboardingCompleteState(data.onboardingComplete ?? false);
@@ -162,9 +125,30 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 progress: Object.fromEntries(weeklyMissions.map(m => [m.id, { current: 0, completed: false }]))
             };
             setMissionDataState(newMissionData);
-            saveToLocalStorage('missionData', newMissionData);
+            if (user) {
+                updateDoc(doc(db, 'usersData', user.uid), { missionData: newMissionData }).catch(console.error);
+            }
         }
-    }, []);
+    }, [user, db]);
+
+    const resetAllData = useCallback(async () => {
+        const emptyData = {
+            onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
+            detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
+            lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
+        };
+        setStateFromData(emptyData);
+        if (user) {
+            try {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'users', user.uid));
+                batch.delete(doc(db, 'usersData', user.uid));
+                await batch.commit();
+            } catch (error) {
+                console.error("Error resetting all user data in Firestore:", error);
+            }
+        }
+    }, [user, db, setStateFromData]);
 
     const loadDataFromFirestore = useCallback(async (uid: string) => {
         setLoading(true);
@@ -176,6 +160,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 const firestoreData = docSnap.data() as UserFirestoreData;
                 setStateFromData(firestoreData);
             } else {
+                // If no data document, create it along with the profile
                 const userProfileRef = doc(db, 'users', uid);
                 const userProfileData: UserProfile = {
                     uid: user!.uid,
@@ -184,14 +169,26 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                     xp: 0,
                     lastLogin: serverTimestamp(),
                 };
-                await setDoc(userProfileRef, userProfileData);
+                const newUserData: UserFirestoreData = {
+                    onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
+                    detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
+                    lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
+                }
+                const batch = writeBatch(db);
+                batch.set(userProfileRef, userProfileData);
+                batch.set(userRef, newUserData);
+                await batch.commit();
+                setStateFromData(newUserData);
             }
         } catch (error) {
             console.error("Error loading data from Firestore:", error);
+            if ((error as any).code === 'unavailable') {
+                 toast({ variant: 'destructive', title: "Offline", description: "Could not connect to the server. Some features might be unavailable." });
+            }
         } finally {
             setLoading(false);
         }
-    }, [user, setStateFromData]);
+    }, [user, setStateFromData, db, toast]);
     
      useEffect(() => {
         if (authLoading) {
@@ -202,35 +199,32 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
             loadDataFromFirestore(user.uid);
         } else {
-            resetAllData();
+            // When user is null (logged out), reset state to default
+             const emptyData = {
+                onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
+                detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
+                lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
+            };
+            setStateFromData(emptyData);
             setLoading(false);
         }
-    }, [user, authLoading, loadDataFromFirestore, resetAllData]);
-    
-     // Listen for storage changes from other tabs
-    useEffect(() => {
-        const handleStorageChange = () => {
-            const localData: Partial<UserFirestoreData> = {};
-            keys.forEach(key => {
-                localData[key] = loadFromLocalStorage(key, null);
-            });
-            setStateFromData(localData);
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, [setStateFromData]);
+    }, [user, authLoading, loadDataFromFirestore, setStateFromData]);
 
 
     const addXP = useCallback(async (amount: number, bonusReason?: string) => {
         if (xp === null) return;
-        let totalAmount = amount;
+        const streakBonus = streak ? streak * 10 : 0;
+        let totalAmount = amount + streakBonus;
+        
         const newXP = xp + totalAmount;
         setXpState(newXP);
 
         let description = `+${amount} XP`;
-        if (bonusReason) {
-            description = `+${amount} XP (${bonusReason})`;
+        if (streakBonus > 0) {
+            description += ` + ${streakBonus} XP (${t('toast.streakBonus')})`;
+        }
+         if (bonusReason) {
+            description += ` (${bonusReason})`;
         }
 
         toast({
@@ -250,7 +244,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Error updating XP in Firestore:", error);
             }
         }
-    }, [xp, user, toast, t]);
+    }, [xp, streak, user, toast, t, db]);
 
     const updateMissionProgress = useCallback((newlyCompletedWorkout: CompletedWorkout, currentStreakValue: number) => {
         if (!missionData) return;
@@ -283,7 +277,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           updateDoc(doc(db, 'usersData', user.uid), { missionData: newMissionData }).catch(console.error);
         }
-    }, [missionData, addXP, t, user]);
+    }, [missionData, addXP, t, user, db]);
 
     const addCompletedWorkout = useCallback((workout: CompletedWorkout) => {
         if (completedWorkouts === null || streak === null) return;
@@ -318,13 +312,13 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
         updateMissionProgress(workout, currentStreakValue);
 
-    }, [completedWorkouts, streak, lastWorkoutDate, user, updateMissionProgress]);
+    }, [completedWorkouts, streak, lastWorkoutDate, user, updateMissionProgress, db]);
 
     const saveData = useCallback((key: keyof UserFirestoreData, value: any) => {
         if (user) {
             updateDoc(doc(db, 'usersData', user.uid), { [key]: value }).catch(console.error);
         }
-    }, [user]);
+    }, [user, db]);
 
     const saveWorkoutRoutine = useCallback((routine: WorkoutRoutineOutput & { sport?: string }) => {
         setWorkoutRoutineState(routine);
@@ -347,8 +341,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     
     const setOnboardingComplete = useCallback((status: boolean) => {
         setOnboardingCompleteState(status);
-        saveData('onboardingComplete', status);
-    }, [saveData]);
+        if (user) {
+            const userRef = doc(db, 'usersData', user.uid);
+            updateDoc(userRef, { onboardingComplete: status });
+        }
+    }, [user, db]);
 
     const addPendingFeedback = useCallback((exercise: string) => {
         if (pendingFeedback === null) return;
@@ -420,7 +417,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [db]);
 
     const value: UserDataContextType = {
         loading: loading || authLoading, onboardingComplete, workoutRoutine, completedWorkouts,
