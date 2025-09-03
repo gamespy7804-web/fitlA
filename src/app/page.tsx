@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -23,11 +22,13 @@ export default function Home() {
       return;
     }
 
-    if (onboardingComplete) {
+    if (onboardingComplete === true) {
       router.replace('/dashboard');
-    } else {
+    } else if (onboardingComplete === false) {
       router.replace('/onboarding');
     }
+    // If onboardingComplete is null, it means data is still loading, so we wait.
+
   }, [user, onboardingComplete, authLoading, userDataLoading, router]);
 
   return (
