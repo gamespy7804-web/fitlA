@@ -101,9 +101,8 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
     const [missionData, setMissionDataState] = useState<WeeklyMissionData | null>(null);
     
-    const db = getDb();
-
-    const setStateFromData = useCallback((data: Partial<UserFirestoreData>) => {
+    const setStateFromData = useCallback(async (data: Partial<UserFirestoreData>) => {
+        const db = await getDb();
         setOnboardingCompleteState(data.onboardingComplete ?? false);
         setWorkoutRoutineState(data.workoutRoutine ?? null);
         setCompletedWorkoutsState(data.completedWorkouts ?? []);
@@ -129,9 +128,10 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 updateDoc(doc(db, 'usersData', user.uid), { missionData: newMissionData }).catch(console.error);
             }
         }
-    }, [user, db]);
+    }, [user]);
 
     const resetAllData = useCallback(async () => {
+        const db = await getDb();
         const emptyData = {
             onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
             detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
@@ -148,10 +148,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Error resetting all user data in Firestore:", error);
             }
         }
-    }, [user, db, setStateFromData]);
+    }, [user, setStateFromData]);
 
     const loadDataFromFirestore = useCallback(async (uid: string) => {
         setLoading(true);
+        const db = await getDb();
         try {
             const userRef = doc(db, 'usersData', uid);
             const docSnap = await getDoc(userRef);
@@ -188,7 +189,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    }, [user, setStateFromData, db, toast]);
+    }, [user, setStateFromData, toast]);
     
      useEffect(() => {
         if (authLoading) {
@@ -213,6 +214,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
     const addXP = useCallback(async (amount: number, bonusReason?: string) => {
         if (xp === null) return;
+        const db = await getDb();
         const streakBonus = streak ? streak * 10 : 0;
         let totalAmount = amount + streakBonus;
         
@@ -244,10 +246,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Error updating XP in Firestore:", error);
             }
         }
-    }, [xp, streak, user, toast, t, db]);
+    }, [xp, streak, user, toast, t]);
 
-    const updateMissionProgress = useCallback((newlyCompletedWorkout: CompletedWorkout, currentStreakValue: number) => {
+    const updateMissionProgress = useCallback(async (newlyCompletedWorkout: CompletedWorkout, currentStreakValue: number) => {
         if (!missionData) return;
+        const db = await getDb();
 
         const newProgress = { ...missionData.progress };
 
@@ -277,10 +280,11 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         if (user) {
           updateDoc(doc(db, 'usersData', user.uid), { missionData: newMissionData }).catch(console.error);
         }
-    }, [missionData, addXP, t, user, db]);
+    }, [missionData, addXP, t, user]);
 
-    const addCompletedWorkout = useCallback((workout: CompletedWorkout) => {
+    const addCompletedWorkout = useCallback(async (workout: CompletedWorkout) => {
         if (completedWorkouts === null || streak === null) return;
+        const db = await getDb();
         const updated = [...completedWorkouts, workout];
         setCompletedWorkoutsState(updated);
 
@@ -312,13 +316,14 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
         updateMissionProgress(workout, currentStreakValue);
 
-    }, [completedWorkouts, streak, lastWorkoutDate, user, updateMissionProgress, db]);
+    }, [completedWorkouts, streak, lastWorkoutDate, user, updateMissionProgress]);
 
-    const saveData = useCallback((key: keyof UserFirestoreData, value: any) => {
+    const saveData = useCallback(async (key: keyof UserFirestoreData, value: any) => {
         if (user) {
+            const db = await getDb();
             updateDoc(doc(db, 'usersData', user.uid), { [key]: value }).catch(console.error);
         }
-    }, [user, db]);
+    }, [user]);
 
     const saveWorkoutRoutine = useCallback((routine: WorkoutRoutineOutput & { sport?: string }) => {
         setWorkoutRoutineState(routine);
@@ -339,13 +344,14 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         saveData('detailedWorkoutLogs', []);
     }, [saveData]);
     
-    const setOnboardingComplete = useCallback((status: boolean) => {
+    const setOnboardingComplete = useCallback(async (status: boolean) => {
         setOnboardingCompleteState(status);
         if (user) {
+            const db = await getDb();
             const userRef = doc(db, 'usersData', user.uid);
             updateDoc(userRef, { onboardingComplete: status });
         }
-    }, [user, db]);
+    }, [user]);
 
     const addPendingFeedback = useCallback((exercise: string) => {
         if (pendingFeedback === null) return;
@@ -396,6 +402,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     
     const getLeaderboard = useCallback(async (uid: string) => {
         setLoading(true);
+        const db = await getDb();
         try {
             const usersRef = collection(db, 'users');
             const q = query(usersRef, orderBy('xp', 'desc'), limit(10));
@@ -417,7 +424,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-    }, [db]);
+    }, []);
 
     const value: UserDataContextType = {
         loading: loading || authLoading, onboardingComplete, workoutRoutine, completedWorkouts,

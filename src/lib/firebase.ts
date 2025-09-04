@@ -17,29 +17,36 @@ const firebaseConfig = {
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth: Auth = getAuth(app);
 
-// Firestore instance variable
-let db: Firestore;
+// Firestore instance promise
+let firestorePromise: Promise<Firestore>;
 
 // Function to get the Firestore instance, enabling persistence on first call
-const getDb = (): Firestore => {
-  if (!db) {
-    // Initialize Firestore
-    db = initializeFirestore(app, {});
-
-    // Enable offline persistence if in a browser environment
-    if (typeof window !== 'undefined') {
-      enableIndexedDbPersistence(db)
-        .catch((err: any) => {
+const getDbWithPersistence = (): Promise<Firestore> => {
+  if (!firestorePromise) {
+    firestorePromise = (async () => {
+      const db = initializeFirestore(app, {});
+      
+      // Enable offline persistence if in a browser environment
+      if (typeof window !== 'undefined') {
+        try {
+          await enableIndexedDbPersistence(db);
+        } catch (err: any) {
           if (err.code == 'failed-precondition') {
             console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
           } else if (err.code == 'unimplemented') {
             console.warn('Firestore persistence is not supported in this browser.');
           }
-        });
-    }
+        }
+      }
+      return db;
+    })();
   }
-  return db;
+  return firestorePromise;
 };
 
+// Legacy db export for simplicity, now points to the promise-based one
+const db = getDbWithPersistence;
+
+
 // Export the initialized services
-export { app, auth, getDb as db };
+export { app, auth, db };
