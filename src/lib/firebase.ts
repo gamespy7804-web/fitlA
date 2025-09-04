@@ -18,35 +18,35 @@ const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : get
 const auth: Auth = getAuth(app);
 
 // Firestore instance promise
-let firestorePromise: Promise<Firestore>;
+let firestoreInstance: Firestore | null = null;
+let persistenceEnabled = false;
 
 // Function to get the Firestore instance, enabling persistence on first call
-const getDbWithPersistence = (): Promise<Firestore> => {
-  if (!firestorePromise) {
-    firestorePromise = (async () => {
-      const db = initializeFirestore(app, {});
-      
-      // Enable offline persistence if in a browser environment
-      if (typeof window !== 'undefined') {
-        try {
-          await enableIndexedDbPersistence(db);
-        } catch (err: any) {
-          if (err.code == 'failed-precondition') {
-            console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
-          } else if (err.code == 'unimplemented') {
-            console.warn('Firestore persistence is not supported in this browser.');
-          }
-        }
-      }
-      return db;
-    })();
-  }
-  return firestorePromise;
-};
+const getDb = async (): Promise<Firestore> => {
+    if (firestoreInstance) {
+        return firestoreInstance;
+    }
 
-// Legacy db export for simplicity, now points to the promise-based one
-const db = getDbWithPersistence;
+    const db = initializeFirestore(app, {});
+    firestoreInstance = db; // Set instance immediately
+
+    if (typeof window !== 'undefined' && !persistenceEnabled) {
+        try {
+            await enableIndexedDbPersistence(db);
+            persistenceEnabled = true;
+        } catch (err: any) {
+            if (err.code === 'failed-precondition') {
+                console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
+                // This is not a fatal error, the app will work but without offline capabilities in this tab.
+            } else if (err.code === 'unimplemented') {
+                console.warn('Firestore persistence is not supported in this browser.');
+            }
+            persistenceEnabled = true; // Mark as "attempted" to not retry
+        }
+    }
+    return db;
+};
 
 
 // Export the initialized services
-export { app, auth, db };
+export { app, auth, getDb };

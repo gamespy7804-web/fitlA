@@ -4,7 +4,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
 import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore'; 
-import { db as getDb } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
 import { useToast } from './use-toast';
