@@ -263,7 +263,7 @@ export default function SettingsPage() {
              </div>
              <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4">
+                <Button variant="destructive" className="mt-2 md:mt-0 md:ml-4" disabled={!user}>
                   <RotateCcw className="mr-2" />
                   {t('settings.account.reset.button')}
                 </Button>

@@ -147,30 +147,13 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             }
         }
     }, [user, setStateFromData]);
-    
-    // Helper function to safely get a document with retries
-    const getDocumentWithRetries = async (docRef: any, retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-            try {
-                await enableNetwork(db); // Try to force online
-                const docSnap = await getDoc(docRef);
-                return docSnap;
-            } catch (error: any) {
-                 if (error.code === 'unavailable' && i < retries - 1) {
-                    console.warn(`Firestore offline, retrying... (${i + 1}/${retries})`);
-                    await new Promise(res => setTimeout(res, 1000 * (i + 1))); // Exponential backoff
-                } else {
-                    throw error;
-                }
-            }
-        }
-        // If all retries fail, get from cache. It might be stale but better than nothing.
-        return getDoc(docRef, { source: 'cache' });
-    }
 
     const loadDataFromFirestore = useCallback(async (uid: string) => {
         setLoading(true);
         try {
+            // This is the key fix: We explicitly wait for the network to be online.
+            await enableNetwork(db); 
+
             const userRef = doc(db, 'usersData', uid);
             const docSnap = await getDoc(userRef);
 
@@ -200,18 +183,15 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (error) {
             console.error("Error loading data from Firestore:", error);
-            if ((error as any).code === 'unavailable' || (error as any).message?.includes('offline')) {
-                 // Try loading from cache if online fails
-                 try {
-                     const docSnap = await getDoc(doc(db, 'usersData', uid), { source: 'cache' });
-                     if (docSnap.exists()) {
-                         setStateFromData(docSnap.data() as UserFirestoreData);
-                         toast({ variant: 'default', title: "Modo sin conexión", description: "Mostrando datos locales. Tu progreso se sincronizará cuando vuelvas a estar en línea." });
-                     }
-                 } catch (cacheError) {
-                     toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor ni cargar datos locales." });
+             try {
+                 const docSnap = await getDoc(doc(db, 'usersData', uid), { source: 'cache' });
+                 if (docSnap.exists()) {
+                     setStateFromData(docSnap.data() as UserFirestoreData);
+                     toast({ variant: 'default', title: "Modo sin conexión", description: "Mostrando datos locales. Tu progreso se sincronizará cuando vuelvas a estar en línea." });
                  }
-            }
+             } catch (cacheError) {
+                 toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor ni cargar datos locales." });
+             }
         } finally {
             setLoading(false);
         }
