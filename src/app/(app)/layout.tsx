@@ -22,15 +22,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [themeClass, setThemeClass] = useState('theme-default');
   const [showWelcome, setShowWelcome] = useState(false);
   const [isReadyForTour, setIsReadyForTour] = useState(false);
-  const { loading } = useAuth();
-  const { workoutRoutine } = useUserData();
+  const { loading: authLoading } = useAuth();
+  const { workoutRoutine, loading: userDataLoading } = useUserData();
   const pathname = usePathname();
   const isWorkoutPage = pathname === '/workout';
   const audioInitialized = useRef(false);
 
+  const isLoading = authLoading || userDataLoading;
+
   useEffect(() => {
     // This check should only happen on the client
-    if (typeof window !== 'undefined' && !loading) {
+    if (typeof window !== 'undefined' && !isLoading) {
       const hasInteracted = sessionStorage.getItem('userInteracted');
       const onboardingComplete = localStorage.getItem('onboardingComplete');
       if (!hasInteracted && onboardingComplete) {
@@ -44,7 +46,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         setIsReadyForTour(true);
       }
     }
-  }, [loading]);
+  }, [isLoading]);
 
   const updateTheme = useCallback(() => {
     let currentTheme = 'theme-default';
@@ -88,7 +90,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setIsReadyForTour(true);
   };
   
-  if (loading) {
+  if (isLoading) {
     return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc, enableNetwork, disableNetwork } from 'firebase/firestore'; 
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore'; 
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
@@ -151,9 +151,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const loadDataFromFirestore = useCallback(async (uid: string) => {
         setLoading(true);
         try {
-            // This is the key fix: We explicitly wait for the network to be online.
-            await enableNetwork(db); 
-
             const userRef = doc(db, 'usersData', uid);
             const docSnap = await getDoc(userRef);
 
