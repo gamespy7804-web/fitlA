@@ -13,38 +13,33 @@ const firebaseConfig = {
   "messagingSenderId": "6010033705"
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth: Auth = getAuth(app);
 
-// Firestore instance promise
-let firestoreInstance: Firestore | null = null;
-let persistenceEnabled = false;
-
-// Function to get the Firestore instance, enabling persistence on first call
+// Initialize Firestore with a function to handle persistence
+let db: Firestore | null = null;
 const getDb = async (): Promise<Firestore> => {
-    if (firestoreInstance) {
-        return firestoreInstance;
-    }
-
-    const db = initializeFirestore(app, {});
-    firestoreInstance = db; // Set instance immediately
-
-    if (typeof window !== 'undefined' && !persistenceEnabled) {
-        try {
-            await enableIndexedDbPersistence(db);
-            persistenceEnabled = true;
-        } catch (err: any) {
-            if (err.code === 'failed-precondition') {
-                console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
-                // This is not a fatal error, the app will work but without offline capabilities in this tab.
-            } else if (err.code === 'unimplemented') {
-                console.warn('Firestore persistence is not supported in this browser.');
-            }
-            persistenceEnabled = true; // Mark as "attempted" to not retry
-        }
-    }
+  if (db) {
     return db;
+  }
+
+  const firestore = initializeFirestore(app, {});
+  
+  if (typeof window !== 'undefined') {
+    try {
+      await enableIndexedDbPersistence(firestore);
+    } catch (err: any) {
+      if (err.code === 'failed-precondition') {
+        console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Firestore persistence is not supported in this browser.');
+      }
+    }
+  }
+  
+  db = firestore;
+  return db;
 };
 
 
