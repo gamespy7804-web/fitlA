@@ -37,24 +37,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInWithGoogle = async () => {
+    setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
         await signInWithRedirect(auth, provider);
     } catch (error: any) {
         console.error('Error initiating Google sign-in/linking', error);
         toast({ variant: 'destructive', title: 'Error de inicio de sesión', description: 'No se pudo iniciar el proceso de inicio de sesión con Google. Por favor, inténtalo de nuevo.'});
+        setLoading(false);
     }
   };
 
   const signOut = async () => {
+    setLoading(true);
     try {
       await firebaseSignOut(auth);
       // The onAuthStateChanged listener will handle setting the user to null
-      // and the page routing logic will redirect to /login
+      // and redirecting.
       router.push('/login');
     } catch (error) {
       console.error('Error signing out', error);
       toast({ variant: "destructive", title: "Error", description: "No se pudo cerrar la sesión." });
+    } finally {
+        setLoading(false);
     }
   };
 

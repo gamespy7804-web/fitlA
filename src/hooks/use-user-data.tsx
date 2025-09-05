@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore'; 
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc, getDocFromCache } from 'firebase/firestore'; 
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
@@ -150,15 +150,25 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
 
     const loadDataFromFirestore = useCallback(async (uid: string) => {
         setLoading(true);
+        const userRef = doc(db, 'usersData', uid);
         try {
-            const userRef = doc(db, 'usersData', uid);
-            const docSnap = await getDoc(userRef);
-
-            if (docSnap.exists()) {
-                const firestoreData = docSnap.data() as UserFirestoreData;
-                setStateFromData(firestoreData);
+            // First, try to get from cache to render UI quickly
+            try {
+                const docSnapFromCache = await getDocFromCache(userRef);
+                if (docSnapFromCache.exists()) {
+                    setStateFromData(docSnapFromCache.data() as UserFirestoreData);
+                }
+            } catch (e) {
+                // If cache fails, it's not a critical error, just log it.
+                console.log("Cache miss or error, fetching from server.", e);
+            }
+            
+            // Then, fetch from server to get the latest data
+            const docSnapFromServer = await getDoc(userRef);
+            if (docSnapFromServer.exists()) {
+                setStateFromData(docSnapFromServer.data() as UserFirestoreData);
             } else {
-                // If no data document, create it along with the profile
+                 // If no data document, create it along with the profile
                 const userProfileRef = doc(db, 'users', uid);
                 const userProfileData: UserProfile = {
                     uid: user!.uid,
@@ -180,15 +190,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (error) {
             console.error("Error loading data from Firestore:", error);
-             try {
-                 const docSnap = await getDoc(doc(db, 'usersData', uid), { source: 'cache' });
-                 if (docSnap.exists()) {
-                     setStateFromData(docSnap.data() as UserFirestoreData);
-                     toast({ variant: 'default', title: "Modo sin conexión", description: "Mostrando datos locales. Tu progreso se sincronizará cuando vuelvas a estar en línea." });
-                 }
-             } catch (cacheError) {
-                 toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor ni cargar datos locales." });
-             }
+            toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor." });
         } finally {
             setLoading(false);
         }
