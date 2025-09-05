@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { WorkoutRoutineOutput } from '@/ai/flows/types';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc, getDocFromCache } from 'firebase/firestore'; 
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, orderBy, limit, writeBatch, serverTimestamp, deleteDoc, getDocFromCache, onSnapshot } from 'firebase/firestore'; 
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { isToday, isYesterday, parseISO, startOfWeek } from 'date-fns';
@@ -101,23 +101,24 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const [quizHistory, setQuizHistoryState] = useState<QuizHistoryItem[] | null>(null);
     const [missionData, setMissionDataState] = useState<WeeklyMissionData | null>(null);
     
-    const setStateFromData = useCallback(async (data: Partial<UserFirestoreData>) => {
-        setOnboardingCompleteState(data.onboardingComplete ?? false);
-        setWorkoutRoutineState(data.workoutRoutine ?? null);
-        setCompletedWorkoutsState(data.completedWorkouts ?? []);
-        setDetailedWorkoutLogsState(data.detailedWorkoutLogs ?? []);
-        setPendingFeedbackState(data.pendingFeedback ?? []);
-        setDiamondsState(data.diamonds ?? 0);
-        setXpState(data.xp ?? 0);
-        setStreakState(data.streak ?? 0);
-        setLastWorkoutDateState(data.lastWorkoutDate ?? null);
-        setTriviaHistoryState(data.triviaHistory ?? []);
-        setQuizHistoryState(data.quizHistory ?? []);
+    const setStateFromData = useCallback((data: Partial<UserFirestoreData> | null) => {
+        const onboarding = data?.onboardingComplete ?? false;
+        setOnboardingCompleteState(onboarding);
+        setWorkoutRoutineState(data?.workoutRoutine ?? null);
+        setCompletedWorkoutsState(data?.completedWorkouts ?? []);
+        setDetailedWorkoutLogsState(data?.detailedWorkoutLogs ?? []);
+        setPendingFeedbackState(data?.pendingFeedback ?? []);
+        setDiamondsState(data?.diamonds ?? 0);
+        setXpState(data?.xp ?? 0);
+        setStreakState(data?.streak ?? 0);
+        setLastWorkoutDateState(data?.lastWorkoutDate ?? null);
+        setTriviaHistoryState(data?.triviaHistory ?? []);
+        setQuizHistoryState(data?.quizHistory ?? []);
 
         const currentWeekId = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().split('T')[0];
-        if (data.missionData && data.missionData.weekId === currentWeekId) {
+        if (data?.missionData && data.missionData.weekId === currentWeekId) {
             setMissionDataState(data.missionData);
-        } else {
+        } else if(onboarding) { // Only reset if onboarding is complete
             const newMissionData = {
                 weekId: currentWeekId,
                 progress: Object.fromEntries(weeklyMissions.map(m => [m.id, { current: 0, completed: false }]))
@@ -129,92 +130,59 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [user]);
 
-    const resetAllData = useCallback(async () => {
-        const emptyData = {
-            onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
-            detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
-            lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
-        };
-        setStateFromData(emptyData);
-        if (user) {
-            try {
-                const batch = writeBatch(db);
-                batch.delete(doc(db, 'users', user.uid));
-                batch.delete(doc(db, 'usersData', user.uid));
-                await batch.commit();
-            } catch (error) {
-                console.error("Error resetting all user data in Firestore:", error);
-            }
-        }
-    }, [user, setStateFromData]);
-
-    const loadDataFromFirestore = useCallback(async (uid: string) => {
-        setLoading(true);
-        const userRef = doc(db, 'usersData', uid);
-        try {
-            // First, try to get from cache to render UI quickly
-            try {
-                const docSnapFromCache = await getDocFromCache(userRef);
-                if (docSnapFromCache.exists()) {
-                    setStateFromData(docSnapFromCache.data() as UserFirestoreData);
-                }
-            } catch (e) {
-                // If cache fails, it's not a critical error, just log it.
-                console.log("Cache miss or error, fetching from server.", e);
-            }
-            
-            // Then, fetch from server to get the latest data
-            const docSnapFromServer = await getDoc(userRef);
-            if (docSnapFromServer.exists()) {
-                setStateFromData(docSnapFromServer.data() as UserFirestoreData);
-            } else {
-                 // If no data document, create it along with the profile
-                const userProfileRef = doc(db, 'users', uid);
-                const userProfileData: UserProfile = {
-                    uid: user!.uid,
-                    displayName: user!.displayName!,
-                    photoURL: user!.photoURL!,
-                    xp: 0,
-                    lastLogin: serverTimestamp(),
-                };
-                const newUserData: UserFirestoreData = {
-                    onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
-                    detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
-                    lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
-                }
-                const batch = writeBatch(db);
-                batch.set(userProfileRef, userProfileData);
-                batch.set(userRef, newUserData);
-                await batch.commit();
-                setStateFromData(newUserData);
-            }
-        } catch (error) {
-            console.error("Error loading data from Firestore:", error);
-            toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor." });
-        } finally {
-            setLoading(false);
-        }
-    }, [user, setStateFromData, toast]);
-    
-     useEffect(() => {
+    useEffect(() => {
         if (authLoading) {
             setLoading(true);
             return;
         }
 
-        if (user) {
-            loadDataFromFirestore(user.uid);
-        } else {
-            // When user is null (logged out), reset state to default
-             const emptyData = {
-                onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
-                detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
-                lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
-            };
-            setStateFromData(emptyData);
+        if (!user) {
+            setStateFromData(null);
             setLoading(false);
+            return;
         }
-    }, [user, authLoading, loadDataFromFirestore, setStateFromData]);
+
+        setLoading(true);
+        const userRef = doc(db, 'usersData', user.uid);
+
+        const unsubscribe = onSnapshot(userRef, 
+            (docSnap) => {
+                if (docSnap.exists()) {
+                    setStateFromData(docSnap.data() as UserFirestoreData);
+                } else {
+                    // This case handles a brand new user. We create their documents.
+                    const userProfileRef = doc(db, 'users', user.uid);
+                    const userProfileData: UserProfile = {
+                        uid: user.uid,
+                        displayName: user.displayName!,
+                        photoURL: user.photoURL!,
+                        xp: 0,
+                        lastLogin: serverTimestamp(),
+                    };
+                    const newUserData: UserFirestoreData = {
+                        onboardingComplete: false, workoutRoutine: null, completedWorkouts: [],
+                        detailedWorkoutLogs: [], pendingFeedback: [], diamonds: 0, xp: 0, streak: 0,
+                        lastWorkoutDate: null, triviaHistory: [], quizHistory: [], missionData: null
+                    };
+                    const batch = writeBatch(db);
+                    batch.set(userProfileRef, userProfileData);
+                    batch.set(userRef, newUserData);
+                    batch.commit().catch(console.error);
+                    setStateFromData(newUserData);
+                }
+                setLoading(false);
+            }, 
+            (error) => {
+                console.error("Error with Firestore snapshot listener:", error);
+                toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo sincronizar con el servidor." });
+                setLoading(false);
+            }
+        );
+
+        // Cleanup the listener when the component unmounts or user changes
+        return () => unsubscribe();
+
+    }, [user, authLoading, setStateFromData, toast]);
 
 
     const addXP = useCallback(async (amount: number, bonusReason?: string) => {
@@ -288,7 +256,6 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     const addCompletedWorkout = useCallback(async (workout: CompletedWorkout) => {
         if (completedWorkouts === null || streak === null) return;
         const updated = [...completedWorkouts, workout];
-        setCompletedWorkoutsState(updated);
 
         const today = new Date();
         let currentStreakValue = streak;
@@ -305,6 +272,9 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         }
         
         const newLastWorkoutDate = today.toISOString();
+        
+        // Optimistically update local state for immediate UI response
+        setCompletedWorkoutsState(updated);
         setStreakState(currentStreakValue);
         setLastWorkoutDateState(newLastWorkoutDate);
 
@@ -424,6 +394,24 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             setLoading(false);
         }
     }, []);
+    
+    const resetAllData = useCallback(async () => {
+        if (user) {
+            try {
+                // We delete the documents, and the onSnapshot listener will
+                // see that they don't exist and reset the state to default.
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'users', user.uid));
+                batch.delete(doc(db, 'usersData', user.uid));
+                await batch.commit();
+            } catch (error) {
+                console.error("Error resetting all user data in Firestore:", error);
+            }
+        } else {
+            // If no user, just reset local state
+            setStateFromData(null);
+        }
+    }, [user, setStateFromData]);
 
     const value: UserDataContextType = {
         loading: loading || authLoading, onboardingComplete, workoutRoutine, completedWorkouts,
