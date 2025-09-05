@@ -16,32 +16,17 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
 
-// Initialize Firestore with a function to handle persistence
-let db: Firestore | null = null;
-const getDb = async (): Promise<Firestore> => {
-  if (db) {
-    return db;
-  }
-
-  const firestore = initializeFirestore(app, {});
-  
-  if (typeof window !== 'undefined') {
-    try {
-      await enableIndexedDbPersistence(firestore);
-    } catch (err: any) {
-      if (err.code === 'failed-precondition') {
-        console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
-      } else if (err.code === 'unimplemented') {
-        console.warn('Firestore persistence is not supported in this browser.');
-      }
+if (typeof window !== 'undefined') {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Firestore persistence failed: multiple tabs open. Persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Firestore persistence is not supported in this browser.');
     }
-  }
-  
-  db = firestore;
-  return db;
-};
-
+  });
+}
 
 // Export the initialized services
-export { app, auth, getDb };
+export { app, auth, db };
