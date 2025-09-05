@@ -172,7 +172,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
         setLoading(true);
         try {
             const userRef = doc(db, 'usersData', uid);
-            const docSnap = await getDocumentWithRetries(userRef);
+            const docSnap = await getDoc(userRef);
 
             if (docSnap.exists()) {
                 const firestoreData = docSnap.data() as UserFirestoreData;
@@ -200,8 +200,17 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (error) {
             console.error("Error loading data from Firestore:", error);
-            if ((error as any).code === 'unavailable') {
-                 toast({ variant: 'destructive', title: "Offline", description: "Could not connect to the server. Some features might be unavailable." });
+            if ((error as any).code === 'unavailable' || (error as any).message?.includes('offline')) {
+                 // Try loading from cache if online fails
+                 try {
+                     const docSnap = await getDoc(doc(db, 'usersData', uid), { source: 'cache' });
+                     if (docSnap.exists()) {
+                         setStateFromData(docSnap.data() as UserFirestoreData);
+                         toast({ variant: 'default', title: "Modo sin conexión", description: "Mostrando datos locales. Tu progreso se sincronizará cuando vuelvas a estar en línea." });
+                     }
+                 } catch (cacheError) {
+                     toast({ variant: 'destructive', title: "Error de Conexión", description: "No se pudo conectar al servidor ni cargar datos locales." });
+                 }
             }
         } finally {
             setLoading(false);
