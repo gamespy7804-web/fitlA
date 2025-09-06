@@ -1,6 +1,7 @@
 
 {
   "hosting": {
+    "target": "trainsmart-ai-q4a19",
     "public": "out",
     "ignore": [
       "firebase.json",
